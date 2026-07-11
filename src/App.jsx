@@ -4,6 +4,7 @@ import {
   AreaChart, Area, PieChart, Pie, Cell, Legend
 } from "recharts";
 import { Plus, Pencil, Trash2, X, ChevronDown, AlertTriangle, CheckCircle2, Clock3, Download, Upload } from "lucide-react";
+import ProjectDetails from "./components/ProjectDetails";
 
 const FONTS = `
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -139,6 +140,24 @@ export default function Dashboard() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [currentHash, setCurrentHash] = useState(window.location.hash);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentHash(window.location.hash);
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
+  const activeProjectId = useMemo(() => {
+    const match = currentHash.match(/^#\/project\/(.+)$/);
+    return match ? match[1] : null;
+  }, [currentHash]);
+
+  const activeProject = useMemo(() => {
+    return projects.find(p => p.id === activeProjectId);
+  }, [projects, activeProjectId]);
 
   useEffect(() => {
     try {
@@ -281,7 +300,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div style={{ background: COLORS.bg, color: COLORS.text, minHeight: "100%", fontFamily: "Inter, sans-serif", padding: "28px 24px 60px" }}>
+    <div style={{ background: COLORS.bg, color: COLORS.text, minHeight: "100%", fontFamily: "Inter, sans-serif" }}>
       <style>{FONTS}{`
         ::-webkit-scrollbar { height: 8px; width: 8px; }
         ::-webkit-scrollbar-thumb { background: ${COLORS.border}; border-radius: 8px; }
@@ -290,7 +309,19 @@ export default function Dashboard() {
         button { cursor: pointer; font-family: inherit; }
         input, select { font-family: 'Inter', sans-serif; }
         .chip { transition: all .15s ease; }
+        .project-link { color: ${COLORS.accent}; text-decoration: none; font-weight: 600; transition: color .15s ease; }
+        .project-link:hover { color: #a89eff; text-decoration: underline; }
       `}</style>
+
+      {activeProject ? (
+        <ProjectDetails 
+          project={activeProject} 
+          onBack={() => { window.location.hash = ""; }} 
+          onUpdate={(updated) => setProjects(prev => prev.map(p => p.id === updated.id ? updated : p))} 
+          onDelete={(id) => { setProjects(prev => prev.filter(p => p.id !== id)); window.location.hash = ""; }} 
+        />
+      ) : (
+        <div style={{ padding: "28px 24px 60px" }}>
 
       {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, marginBottom: 28 }}>
@@ -492,7 +523,11 @@ export default function Dashboard() {
                     </span>
                   </td>
                   <td style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>{PROFILE_SHORT[p.profile] || p.profile}</td>
-                  <td style={{ padding: "10px 14px", fontWeight: 500, whiteSpace: "nowrap" }}>{p.projectName}</td>
+                  <td style={{ padding: "10px 14px", fontWeight: 500, whiteSpace: "nowrap" }}>
+                    <a href={`#/project/${p.id}`} className="project-link">
+                      {p.projectName}
+                    </a>
+                  </td>
                   <td style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>{p.phase || "—"}</td>
                   <td className="mono" style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>{fmtMoney(p.price)}</td>
                   <td className="mono" style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>{p.dateline || "—"}</td>
@@ -586,6 +621,8 @@ export default function Dashboard() {
               <button onClick={() => doDelete(confirmDelete)} style={{ flex: 1, background: COLORS.late, color: "#1a0d0d", border: "none", borderRadius: 9, padding: "10px 0", fontWeight: 700 }}>Delete</button>
             </div>
           </div>
+        </div>
+      )}
         </div>
       )}
     </div>

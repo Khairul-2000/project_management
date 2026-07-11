@@ -42,6 +42,8 @@ const STACK_COLOR = {
   Deploy: "#E8D45F",
   Other: "#7C8798",
 };
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 function deriveStack(phase) {
   const p = (phase || "").toLowerCase();
   if (p.includes("backend")) return "Backend";
@@ -50,6 +52,24 @@ function deriveStack(phase) {
   if (p.includes("automation")) return "Automation";
   if (p.includes("deploy")) return "Deploy";
   return "Other";
+}
+function getProjectMonthYear(dateStr) {
+  const value = String(dateStr || "").trim();
+  if (!value) return { month: null, year: null };
+
+  const slashDate = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (slashDate) {
+    const year = parseInt(slashDate[3], 10);
+    return { month: parseInt(slashDate[1], 10), year: year < 100 ? 2000 + year : year };
+  }
+
+  const isoDate = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (isoDate) return { month: parseInt(isoDate[2], 10), year: parseInt(isoDate[1], 10) };
+
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) return { month: parsed.getMonth() + 1, year: parsed.getFullYear() };
+
+  return { month: null, year: null };
 }
 
 const RAW = [
@@ -141,6 +161,8 @@ export default function Dashboard() {
   const [form, setForm] = useState(emptyForm);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [currentHash, setCurrentHash] = useState(window.location.hash);
+  const [selectedMonth, setSelectedMonth] = useState("All");
+  const [selectedYear, setSelectedYear] = useState("All");
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -159,6 +181,13 @@ export default function Dashboard() {
     return projects.find(p => p.id === activeProjectId);
   }, [projects, activeProjectId]);
 
+  const availableYears = useMemo(() => {
+    const years = projects
+      .map(p => getProjectMonthYear(p.date).year)
+      .filter(Boolean);
+    return [...new Set(years)].sort((a, b) => a - b);
+  }, [projects]);
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem("delivery-ops-projects");
@@ -176,21 +205,30 @@ export default function Dashboard() {
     catch (e) { console.error("save failed", e); }
   }, [projects, loaded]);
 
-  const filtered = useMemo(() => {
+  const monthFilteredProjects = useMemo(() => {
     return projects.filter(p => {
+      const { month, year } = getProjectMonthYear(p.date);
+      if (selectedMonth !== "All" && month !== selectedMonth) return false;
+      if (selectedYear !== "All" && year !== selectedYear) return false;
+      return true;
+    });
+  }, [projects, selectedMonth, selectedYear]);
+
+  const filtered = useMemo(() => {
+    return monthFilteredProjects.filter(p => {
       if (stackFilter !== "All" && (p.stack || deriveStack(p.phase)) !== stackFilter) return false;
       if (profileFilter !== "All" && p.profile !== profileFilter) return false;
       if (statusFilter !== "All" && statusOf(p) !== statusFilter) return false;
       return true;
     });
-  }, [projects, stackFilter, profileFilter, statusFilter]);
+  }, [monthFilteredProjects, stackFilter, profileFilter, statusFilter]);
 
   const kpis = useMemo(() => {
-    const total = projects.length;
-    const totalValue = projects.reduce((s, p) => s + Number(p.price || 0), 0);
-    const delivered = projects.filter(p => statusOf(p) === "delivered");
-    const wip = projects.filter(p => statusOf(p) === "wip");
-    const late = projects.filter(p => statusOf(p) === "late");
+    const total = monthFilteredProjects.length;
+    const totalValue = monthFilteredProjects.reduce((s, p) => s + Number(p.price || 0), 0);
+    const delivered = monthFilteredProjects.filter(p => statusOf(p) === "delivered");
+    const wip = monthFilteredProjects.filter(p => statusOf(p) === "wip");
+    const late = monthFilteredProjects.filter(p => statusOf(p) === "late");
     return {
       total, totalValue,
       deliveredCount: delivered.length,
@@ -200,27 +238,27 @@ export default function Dashboard() {
       lateCount: late.length,
       lateValue: late.reduce((s, p) => s + Number(p.price || 0), 0),
     };
-  }, [projects]);
+  }, [monthFilteredProjects]);
 
   const byStack = useMemo(() => {
     return STACKS.map(s => {
-      const rows = projects.filter(p => (p.stack || deriveStack(p.phase)) === s);
+      const rows = monthFilteredProjects.filter(p => (p.stack || deriveStack(p.phase)) === s);
       const delivered = rows.filter(p => statusOf(p) === "delivered").length;
       const wip = rows.filter(p => statusOf(p) === "wip").length;
       const late = rows.filter(p => statusOf(p) === "late").length;
       const value = rows.reduce((s2, p) => s2 + Number(p.price || 0), 0);
       return { stack: s, name: s, delivered, wip, late, total: rows.length, value, pct: rows.length ? Math.round((delivered / rows.length) * 100) : 0 };
     }).filter(d => d.total > 0);
-  }, [projects]);
+  }, [monthFilteredProjects]);
 
   const byProfile = useMemo(() => {
     return PROFILES.map(pf => {
-      const rows = projects.filter(p => p.profile === pf);
+      const rows = monthFilteredProjects.filter(p => p.profile === pf);
       const value = rows.reduce((s, p) => s + Number(p.price || 0), 0);
       const delivered = rows.filter(p => statusOf(p) === "delivered").length;
       return { profile: pf, name: PROFILE_SHORT[pf], total: rows.length, value, delivered };
     });
-  }, [projects]);
+  }, [monthFilteredProjects]);
 
   const statusPie = useMemo(() => ([
     { name: "Delivered", value: kpis.deliveredCount, color: COLORS.delivered },
@@ -230,17 +268,20 @@ export default function Dashboard() {
 
   const timeline = useMemo(() => {
     const map = {};
-    projects.forEach(p => {
+    monthFilteredProjects.forEach(p => {
       const key = p.date || "unknown";
       map[key] = (map[key] || 0) + 1;
     });
     return Object.entries(map)
       .sort((a, b) => new Date(a[0]) - new Date(b[0]))
       .map(([date, count]) => ({ date, count }));
-  }, [projects]);
+  }, [monthFilteredProjects]);
 
   function openAdd() {
-    setForm(emptyForm);
+    setForm({
+      ...emptyForm,
+      date: selectedMonth !== "All" && selectedYear !== "All" ? `${selectedMonth}/1/${selectedYear}` : new Date().toLocaleDateString('en-US')
+    });
     setEditingId(null);
     setModalOpen(true);
   }
@@ -311,6 +352,8 @@ export default function Dashboard() {
         .chip { transition: all .15s ease; }
         .project-link { color: ${COLORS.accent}; text-decoration: none; font-weight: 600; transition: color .15s ease; }
         .project-link:hover { color: #a89eff; text-decoration: underline; }
+        .month-scroll::-webkit-scrollbar { display: none; }
+        .month-scroll { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
       {activeProject ? (
@@ -343,6 +386,102 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* CALENDAR FILTER STRIP */}
+      <div style={{ 
+        background: COLORS.panel, 
+        border: `1px solid ${COLORS.border}`, 
+        borderRadius: 14, 
+        padding: "12px 18px", 
+        marginBottom: 20,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: 16
+      }}>
+        {/* Left side: Year Selector */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>Year:</span>
+          <div style={{ display: "flex", background: COLORS.panel2, borderRadius: 8, padding: 3, border: `1px solid ${COLORS.border}` }}>
+            {["All", ...availableYears].map(yr => (
+              <button 
+                key={yr} 
+                onClick={() => setSelectedYear(yr === "All" ? "All" : Number(yr))}
+                style={{
+                  background: selectedYear === yr ? COLORS.accent : "transparent",
+                  color: selectedYear === yr ? "#0D1117" : COLORS.muted,
+                  border: "none",
+                  borderRadius: 6,
+                  padding: "5px 12px",
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease"
+                }}
+              >
+                {yr}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Right side: Month Tabs */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, justifyContent: "flex-end", minWidth: 280 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>Month:</span>
+          <div style={{ 
+            display: "flex", 
+            background: COLORS.panel2, 
+            borderRadius: 8, 
+            padding: 3, 
+            border: `1px solid ${COLORS.border}`,
+            overflowX: "auto",
+            maxWidth: "100%"
+          }} className="month-scroll">
+            <button 
+              onClick={() => setSelectedMonth("All")}
+              style={{
+                background: selectedMonth === "All" ? COLORS.accent : "transparent",
+                color: selectedMonth === "All" ? "#0D1117" : COLORS.muted,
+                border: "none",
+                borderRadius: 6,
+                padding: "5px 12px",
+                fontSize: 12.5,
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+                whiteSpace: "nowrap"
+              }}
+            >
+              All
+            </button>
+            {MONTHS.map((m, idx) => {
+              const monthNum = idx + 1;
+              const isSelected = selectedMonth === monthNum;
+              return (
+                <button 
+                  key={m} 
+                  onClick={() => setSelectedMonth(monthNum)}
+                  style={{
+                    background: isSelected ? COLORS.accent : "transparent",
+                    color: isSelected ? "#0D1117" : COLORS.muted,
+                    border: "none",
+                    borderRadius: 6,
+                    padding: "5px 10px",
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  {m}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* KPI STRIP */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
         {[
@@ -364,28 +503,32 @@ export default function Dashboard() {
       <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: "18px 20px", marginBottom: 20 }}>
         <div className="disp" style={{ fontWeight: 600, fontSize: 15, marginBottom: 14 }}>Workload by department (stack)</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 22 }}>
-          {byStack.map(d => (
-            <div key={d.stack} style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 210 }}>
-              <div style={{ position: "relative", width: 84, height: 84 }}>
-                <RadialGauge percent={d.pct} color={STACK_COLOR[d.stack]} />
-                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <div className="disp" style={{ fontSize: 17, fontWeight: 700 }}>{d.pct}%</div>
+          {byStack.length === 0 ? (
+            <div style={{ color: COLORS.muted, fontSize: 13, padding: "12px 0" }}>No active workloads for the selected timeframe.</div>
+          ) : (
+            byStack.map(d => (
+              <div key={d.stack} style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 210 }}>
+                <div style={{ position: "relative", width: 84, height: 84 }}>
+                  <RadialGauge percent={d.pct} color={STACK_COLOR[d.stack]} />
+                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                    <div className="disp" style={{ fontSize: 17, fontWeight: 700 }}>{d.pct}%</div>
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 13.5, display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 99, background: STACK_COLOR[d.stack], display: "inline-block" }} />
+                    {d.name}
+                  </div>
+                  <div className="mono" style={{ fontSize: 11.5, color: COLORS.muted, marginTop: 3 }}>{d.total} orders · {fmtMoney(d.value)}</div>
+                  <div style={{ display: "flex", gap: 6, marginTop: 5 }}>
+                    <span className="mono" style={{ fontSize: 10.5, color: COLORS.delivered }}>{d.delivered} done</span>
+                    <span className="mono" style={{ fontSize: 10.5, color: COLORS.wip }}>{d.wip} wip</span>
+                    <span className="mono" style={{ fontSize: 10.5, color: COLORS.late }}>{d.late} late</span>
+                  </div>
                 </div>
               </div>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 13.5, display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 99, background: STACK_COLOR[d.stack], display: "inline-block" }} />
-                  {d.name}
-                </div>
-                <div className="mono" style={{ fontSize: 11.5, color: COLORS.muted, marginTop: 3 }}>{d.total} orders · {fmtMoney(d.value)}</div>
-                <div style={{ display: "flex", gap: 6, marginTop: 5 }}>
-                  <span className="mono" style={{ fontSize: 10.5, color: COLORS.delivered }}>{d.delivered} done</span>
-                  <span className="mono" style={{ fontSize: 10.5, color: COLORS.wip }}>{d.wip} wip</span>
-                  <span className="mono" style={{ fontSize: 10.5, color: COLORS.late }}>{d.late} late</span>
-                </div>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

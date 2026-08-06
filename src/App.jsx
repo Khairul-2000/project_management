@@ -3,8 +3,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, PieChart, Pie, Cell, Legend
 } from "recharts";
-import { Plus, Pencil, Trash2, X, ChevronDown, AlertTriangle, CheckCircle2, Clock3, Download, Upload } from "lucide-react";
+import { Plus, Pencil, Trash2, X, AlertTriangle, CheckCircle2, Clock3, Download, Upload, ExternalLink } from "lucide-react";
 import ProjectDetails from "./components/ProjectDetails";
+import projectsDb from "./data/projects.json";
 
 const FONTS = `
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -72,51 +73,21 @@ function getProjectMonthYear(dateStr) {
   return { month: null, year: null };
 }
 
-const RAW = [
-["5/31/2026","C_Forward_STA Sales","code_muse_Fiverr","jinvalex",1600,"Mobile App Backend","Order Late","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","Web_Chrome_Fiverr","tyronerosales",240,"Publish Deploy","Order Late","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","binary_bards_fiverr","lalaneeds",1600,"Mobile App Backend","Order Late","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","code_muse_Fiverr","ferrifim",959.20,"AI Automation","Order Late","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","code_muse_Fiverr","aschlenvoigt",1000,"AI Automation","Order Late","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","Ui_verse_Fiverr","derickotoo",2400,"Mobile App Frontend","Order Late","WIP","Delivered"],
-["5/31/2026","C_Forward_STA Sales","code_muse_Fiverr","stefansmall89",240,"Publish Deploy","Order Late","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","Ui_verse_Fiverr","mothirahman",200,"Mobile App Backend","Order Late","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","Web_Chrome_Fiverr","richardgraney",1200,"AI Automation","Order Done","Delivered","Delivered"],
-["5/31/2026","C_Forward_STA Sales","Ui_verse_Fiverr","tongugeofrey",400,"Publish Deploy","5 Days","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","Ui_verse_Fiverr","mustafafly",1040,"AI App Backend","Order Late","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","Ui_verse_Fiverr","steveb_81",800,"Mobile App UI/UX","Order Late","WIP","Delivered"],
-["5/31/2026","C_Forward_STA Sales","Ui_verse_Fiverr","lexi_comb",1280,"Mobile App Backend","10 Days","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","SparkFlow_Fiverr","joedor999",200,"AI Automation","Order Done","Delivered","Delivered"],
-["5/31/2026","C_Forward_STA Sales","Web_Chrome_Fiverr","charismaexpert",1200,"AI Website Backend","Order Done","Delivered","Delivered"],
-["5/31/2026","C_Forward_STA Sales","binary_bards_fiverr","blu_yonder",160,"Publish Deploy","Order Late","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","binary_bards_fiverr","simonsabir606",160,"AI Automation","Order Done","Delivered","Delivered"],
-["5/31/2026","C_Forward_STA Sales","code_muse_Fiverr","lasharra",1200,"AI App UI/UX","Order Done","Delivered","Delivered"],
-["5/31/2026","C_Forward_STA Sales","Ui_verse_Fiverr","steveb_81",480,"AI Website Frontend","Order Late","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","Ui_verse_Fiverr","ahomesllc",2800,"Mobile App Backend","33 Days","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","Ui_verse_Fiverr","affultim",960,"Mobile App UI/UX","14 Days","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","code_muse_Fiverr","robertomassa887",640,"Mobile App Frontend","13H 28M 1S","WIP","WIP"],
-["5/31/2026","C_Forward_STA Sales","Ui_verse_Fiverr","sleepee",800,"Publish Deploy","28 Days","WIP","WIP"],
-["7/1/2026","Ariful","Ui_verse_Fiverr","kierantait159",800,"Mobile App UI/UX","4 Days","WIP","WIP"],
-["7/2/2026","Shad","Web_Chrome_Fiverr","charismaexpert",400,"Publish Deploy","14 Days","WIP","WIP"],
-["7/2/2026","Munna","code_muse_Fiverr","amurgai3",1440,"AI Website Frontend","15 Days","WIP","WIP"],
-["7/4/2026","Ibrahim","binary_bards_fiverr","simonsabir606",32,"","Order Done","Delivered","Delivered"],
-["7/8/2026","Toki","code_muse_Fiverr","jinvalex",520,"Custom Website UI/UX","16 Days","WIP","WIP"],
-["7/10/2026","Elio","SparkFlow_Fiverr","joedor999",1000,"AI Website Backend","23 Days","WIP","WIP"],
-];
+const DATA_VERSION = 3;
+const STORAGE_KEY = "delivery-ops-projects";
+const VERSION_KEY = "delivery-ops-projects-version";
 
-const seedData = RAW.map((r, i) => ({
-  id: `seed-${i}`,
-  date: r[0],
-  salesPerson: r[1],
-  profile: r[2],
-  projectName: r[3],
-  price: r[4],
-  phase: r[5],
-  stack: deriveStack(r[5]),
-  dateline: r[6],
-  salesStatus: r[7],
-  teamLeadStatus: r[8],
+const seedData = projectsDb.map((p) => ({
+  ...p,
+  stack: p.stack || deriveStack(p.phase),
 }));
+
+function extractOrderId(urlOrId) {
+  const value = String(urlOrId || "").trim();
+  if (!value) return "";
+  const match = value.match(/\/orders\/([^/]+)/i);
+  return match ? match[1] : value;
+}
 
 function statusOf(p) {
   if (p.salesStatus === "Delivered") return "delivered";
@@ -146,8 +117,8 @@ function RadialGauge({ percent, color, size = 84 }) {
 }
 
 const emptyForm = {
-  date: "", salesPerson: "", profile: PROFILES[0], projectName: "", price: "",
-  phase: "", stack: "Backend", dateline: "", salesStatus: "WIP", teamLeadStatus: "WIP",
+  date: "", salesPerson: "", profile: PROFILES[0], teamName: "Pritom", projectName: "", price: "",
+  phase: "", stack: "Backend", orderId: "", orderUrl: "", dateline: "", salesStatus: "WIP", teamLeadStatus: "WIP",
 };
 
 export default function Dashboard() {
@@ -190,10 +161,17 @@ export default function Dashboard() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("delivery-ops-projects");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length) setProjects(parsed);
+      const storedVersion = Number(localStorage.getItem(VERSION_KEY) || 0);
+      if (storedVersion < DATA_VERSION) {
+        setProjects(seedData);
+        localStorage.setItem(VERSION_KEY, String(DATA_VERSION));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(seedData));
+      } else {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length) setProjects(parsed);
+        }
       }
     } catch (e) { /* no stored data yet, keep seed */ }
     setLoaded(true);
@@ -201,7 +179,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!loaded) return;
-    try { localStorage.setItem("delivery-ops-projects", JSON.stringify(projects)); }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); }
     catch (e) { console.error("save failed", e); }
   }, [projects, loaded]);
 
@@ -286,16 +264,34 @@ export default function Dashboard() {
     setModalOpen(true);
   }
   function openEdit(p) {
-    setForm({ ...p, price: String(p.price), stack: p.stack || deriveStack(p.phase) });
+    setForm({
+      ...emptyForm,
+      ...p,
+      price: String(p.price ?? ""),
+      stack: p.stack || deriveStack(p.phase),
+      teamName: p.teamName || "",
+      orderId: p.orderId || "",
+      orderUrl: p.orderUrl || "",
+    });
     setEditingId(p.id);
     setModalOpen(true);
   }
   function saveForm() {
     if (!form.projectName.trim()) return;
+    const orderId = extractOrderId(form.orderId || form.orderUrl);
+    const orderUrl = form.orderUrl?.trim()
+      || (orderId ? `https://www.fiverr.com/orders/${orderId}/activities` : "");
+    const payload = {
+      ...form,
+      price: Number(form.price) || 0,
+      stack: form.stack || deriveStack(form.phase),
+      orderId,
+      orderUrl,
+    };
     if (editingId) {
-      setProjects(prev => prev.map(p => p.id === editingId ? { ...form, id: editingId, price: Number(form.price) || 0 } : p));
+      setProjects(prev => prev.map(p => p.id === editingId ? { ...payload, id: editingId } : p));
     } else {
-      setProjects(prev => [...prev, { ...form, id: `p-${Date.now()}`, price: Number(form.price) || 0 }]);
+      setProjects(prev => [...prev, { ...payload, id: `p-${Date.now()}` }]);
     }
     setModalOpen(false);
   }
@@ -644,14 +640,14 @@ export default function Dashboard() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ background: COLORS.panel2, textAlign: "left" }}>
-                {["Date","Sales person","Department","Profile","Project","Phase","Price","Dateline","Status","Actions"].map(h => (
+                {["Date","Sales person","Team","Department","Profile","Project","Phase","Order","Price","Dateline","Status","Actions"].map(h => (
                   <th key={h} style={{ padding: "10px 14px", color: COLORS.muted, fontWeight: 600, fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.4, whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={10} style={{ padding: 24, textAlign: "center", color: COLORS.muted }}>No projects match this filter.</td></tr>
+                <tr><td colSpan={12} style={{ padding: 24, textAlign: "center", color: COLORS.muted }}>No projects match this filter.</td></tr>
               )}
               {filtered.map((p, i) => {
                 const stack = p.stack || deriveStack(p.phase);
@@ -659,6 +655,7 @@ export default function Dashboard() {
                 <tr key={p.id} style={{ borderTop: `1px solid ${COLORS.border}`, background: i % 2 ? "transparent" : COLORS.panel2 + "55" }}>
                   <td className="mono" style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>{p.date}</td>
                   <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>{p.salesPerson}</td>
+                  <td style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>{p.teamName || "—"}</td>
                   <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                       <span style={{ width: 7, height: 7, borderRadius: 99, background: STACK_COLOR[stack], display: "inline-block" }} />
@@ -672,6 +669,19 @@ export default function Dashboard() {
                     </a>
                   </td>
                   <td style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>{p.phase || "—"}</td>
+                  <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                    {p.orderUrl || p.orderId ? (
+                      <a
+                        href={p.orderUrl || `https://www.fiverr.com/orders/${p.orderId}/activities`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="project-link mono"
+                        style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12 }}
+                      >
+                        {p.orderId || "Open"} <ExternalLink size={12} />
+                      </a>
+                    ) : "—"}
+                  </td>
                   <td className="mono" style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>{fmtMoney(p.price)}</td>
                   <td className="mono" style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>{p.dateline || "—"}</td>
                   <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>{badge(statusOf(p))}</td>
@@ -698,15 +708,17 @@ export default function Dashboard() {
             {[
               ["date", "Date", "text", "e.g. 7/12/2026"],
               ["salesPerson", "Sales person", "text", ""],
+              ["teamName", "Team name", "text", "e.g. Pritom"],
               ["projectName", "Project name", "text", ""],
               ["phase", "Phase", "text", "e.g. Mobile App Backend"],
+              ["orderUrl", "Order URL / ID", "text", "https://www.fiverr.com/orders/..."],
               ["price", "Price (USD)", "number", ""],
               ["dateline", "Dateline", "text", "e.g. 5 Days / Order Late"],
             ].map(([key, label, type, ph]) => (
               <div key={key} style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: 11.5, color: COLORS.muted, marginBottom: 4, fontWeight: 600 }}>{label}</div>
                 <input
-                  type={type} placeholder={ph} value={form[key]}
+                  type={type} placeholder={ph} value={form[key] || ""}
                   onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                   style={{ width: "100%", background: COLORS.panel2, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "9px 11px", color: COLORS.text, fontSize: 13.5, boxSizing: "border-box" }}
                 />
@@ -734,6 +746,7 @@ export default function Dashboard() {
                 <select value={form.salesStatus} onChange={e => setForm(f => ({ ...f, salesStatus: e.target.value }))}
                   style={{ width: "100%", background: COLORS.panel2, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "9px 11px", color: COLORS.text, fontSize: 13.5 }}>
                   <option value="WIP">WIP</option>
+                  <option value="NRA">NRA</option>
                   <option value="Delivered">Delivered</option>
                 </select>
               </div>

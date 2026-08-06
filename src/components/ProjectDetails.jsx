@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { 
   ArrowLeft, Calendar, User, DollarSign, Tag, CheckSquare, 
-  Trash2, Plus, Clock, Clock3, FileText, CheckCircle2, AlertTriangle, Users
+  Trash2, Plus, Clock, Clock3, FileText, CheckCircle2, AlertTriangle, Users, ExternalLink
 } from "lucide-react";
 
 const COLORS = {
@@ -302,6 +302,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[
                 { label: "Sales Person", value: project.salesPerson, Icon: User },
+                { label: "Team", value: project.teamName || "—", Icon: Users },
                 { label: "Intake Date", value: project.date, Icon: Calendar },
                 { label: "Fiverr Profile", value: PROFILE_SHORT[project.profile] || project.profile, Icon: Tag },
                 { label: "Timeline / Dateline", value: project.dateline || "—", Icon: Clock },
@@ -316,6 +317,24 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
                   </div>
                 </div>
               ))}
+              {(project.orderUrl || project.orderId) && (
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.muted }}>
+                    <ExternalLink size={16} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11.5, color: COLORS.muted }}>Fiverr Order</div>
+                    <a
+                      href={project.orderUrl || `https://www.fiverr.com/orders/${project.orderId}/activities`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ fontSize: 13.5, fontWeight: 600, marginTop: 2, color: COLORS.accent, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
+                    >
+                      {project.orderId || "Open order"} <ExternalLink size={12} />
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

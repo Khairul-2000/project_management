@@ -5,8 +5,7 @@ export default function KpiStrip({ kpis }) {
   const items = [
     { label: "Total projects", value: kpis.total, sub: fmtMoney(kpis.totalValue), color: COLORS.text },
     { label: "Delivered", value: kpis.deliveredCount, sub: fmtMoney(kpis.deliveredValue), color: COLORS.delivered },
-    { label: "In progress", value: kpis.wipCount, sub: fmtMoney(kpis.wipValue), color: COLORS.wip },
-    { label: "Late", value: kpis.lateCount, sub: fmtMoney(kpis.lateValue), color: COLORS.late },
+    { label: "WIP", value: kpis.wipCount, sub: fmtMoney(kpis.wipValue), color: COLORS.wip },
     {
       label: "Delivery rate",
       value: kpis.total ? Math.round((kpis.deliveredCount / kpis.total) * 100) + "%" : "0%",

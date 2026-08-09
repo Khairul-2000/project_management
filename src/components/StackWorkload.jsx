@@ -33,9 +33,8 @@ export default function StackWorkload({ byStack }) {
                   {d.total} orders · {fmtMoney(d.value)}
                 </div>
                 <div style={{ display: "flex", gap: 6, marginTop: 5 }}>
-                  <span className="mono" style={{ fontSize: 10.5, color: COLORS.delivered }}>{d.delivered} done</span>
-                  <span className="mono" style={{ fontSize: 10.5, color: COLORS.wip }}>{d.wip} wip</span>
-                  <span className="mono" style={{ fontSize: 10.5, color: COLORS.late }}>{d.late} late</span>
+                  <span className="mono" style={{ fontSize: 10.5, color: COLORS.delivered }}>{d.delivered} delivered</span>
+                  <span className="mono" style={{ fontSize: 10.5, color: COLORS.wip }}>{d.wip} WIP</span>
                 </div>
               </div>
             </div>

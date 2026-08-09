@@ -10,12 +10,15 @@
     "preview": "vite preview --host 0.0.0.0 --port 8079"
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
+    "googleapis": "^174.0.1",
     "lucide-react": "^0.383.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.12.7"
   },
   "devDependencies": {
+    "@types/node": "^26.2.0",
     "@vitejs/plugin-react": "^4.3.1",
     "vite": "^5.4.0"
   }

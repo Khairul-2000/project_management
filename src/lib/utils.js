@@ -18,6 +18,45 @@ export function getDeveloperRole(stack) {
   return "Developer";
 }
 
+const MONTH_NAME_TO_NUM = {
+  jan: 1,
+  january: 1,
+  feb: 2,
+  february: 2,
+  mar: 3,
+  march: 3,
+  apr: 4,
+  april: 4,
+  may: 5,
+  jun: 6,
+  june: 6,
+  jul: 7,
+  july: 7,
+  aug: 8,
+  august: 8,
+  sep: 9,
+  sept: 9,
+  september: 9,
+  oct: 10,
+  october: 10,
+  nov: 11,
+  november: 11,
+  dec: 12,
+  december: 12,
+};
+
+/** Parse month/year from tab titles like "STA Aug 2026". */
+export function getMonthYearFromSheetTab(sheetTab) {
+  const value = String(sheetTab || "").trim();
+  if (!value) return { month: null, year: null };
+  const match = value.match(/\b([A-Za-z]+)\s+(\d{4})\b/);
+  if (!match) return { month: null, year: null };
+  const month = MONTH_NAME_TO_NUM[match[1].toLowerCase()] || null;
+  const year = Number(match[2]) || null;
+  if (!month || !year) return { month: null, year: null };
+  return { month, year };
+}
+
 export function getProjectMonthYear(dateStr) {
   const value = String(dateStr || "").trim();
   if (!value) return { month: null, year: null };
@@ -35,6 +74,16 @@ export function getProjectMonthYear(dateStr) {
   if (!Number.isNaN(parsed.getTime())) return { month: parsed.getMonth() + 1, year: parsed.getFullYear() };
 
   return { month: null, year: null };
+}
+
+/**
+ * Month filter should follow the Google Sheet tab (STA Aug 2026),
+ * not Initial Data — carry-over rows often keep an older date.
+ */
+export function getFilterMonthYear(project) {
+  const fromTab = getMonthYearFromSheetTab(project?.sheetTab);
+  if (fromTab.month && fromTab.year) return fromTab;
+  return getProjectMonthYear(project?.date);
 }
 
 export function normalizeProjects(list) {
@@ -66,8 +115,8 @@ export function extractOrderId(urlOrId) {
 }
 
 export function statusOf(p) {
-  if (p.salesStatus === "Delivered") return "delivered";
-  if ((p.dateline || "").toLowerCase().includes("late")) return "late";
+  const lead = String(p.teamLeadStatus || "").trim().toLowerCase();
+  if (lead === "delivered") return "delivered";
   return "wip";
 }
 

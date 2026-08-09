@@ -22,8 +22,7 @@ export default function ChartsSection({ byStack, statusPie, timeline }) {
                 labelStyle={{ color: COLORS.text }}
               />
               <Bar dataKey="delivered" stackId="s" fill={COLORS.delivered} name="Delivered" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="wip" stackId="s" fill={COLORS.wip} name="In progress" />
-              <Bar dataKey="late" stackId="s" fill={COLORS.late} name="Late" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="wip" stackId="s" fill={COLORS.wip} name="WIP" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -21,18 +21,28 @@ import {
 import {
   deriveStack,
   getDeveloperRole,
-  getProjectMonthYear,
+  getFilterMonthYear,
   normalizeProjects,
   extractOrderId,
   statusOf,
 } from "./lib/utils";
-import { loadProjectsFromDb, saveProjectsToDb } from "./lib/db";
+import {
+  loadProjectsFromDb,
+  saveProjectsToDb,
+  getGoogleStatus,
+  getGoogleAuthUrl,
+  syncFromSheets,
+} from "./lib/db";
+
+const SHEETS_POLL_MS = 2 * 60 * 1000;
 
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [canWriteDb, setCanWriteDb] = useState(false);
   const [saveState, setSaveState] = useState("");
+  const [googleStatus, setGoogleStatus] = useState(null);
+  const [syncing, setSyncing] = useState(false);
   const [stackFilter, setStackFilter] = useState("All");
   const [profileFilter, setProfileFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -67,9 +77,45 @@ export default function Dashboard() {
   );
 
   const availableYears = useMemo(() => {
-    const years = projects.map((p) => getProjectMonthYear(p.date).year).filter(Boolean);
+    const years = projects.map((p) => getFilterMonthYear(p).year).filter(Boolean);
     return [...new Set(years)].sort((a, b) => a - b);
   }, [projects]);
+
+  const hasSheetTabs = useMemo(
+    () => projects.some((p) => Boolean(p.sheetTab)),
+    [projects]
+  );
+
+  async function runSheetSync({ silent = false } = {}) {
+    setSyncing(true);
+    if (!silent) setSaveState("Syncing from Google Sheets…");
+    try {
+      const result = await syncFromSheets();
+      setProjects(result.projects);
+      setGoogleStatus((prev) => ({
+        ...(prev || {}),
+        connected: true,
+        lastSyncAt: result.lastSyncAt,
+      }));
+      const tabs = result.sheetTitles?.length
+        ? result.sheetTitles.length
+        : result.sheetTitle
+          ? 1
+          : 0;
+      setSaveState(
+        tabs > 1
+          ? `Synced ${result.count} rows from ${tabs} tabs`
+          : `Synced ${result.count} rows from Sheets`
+      );
+      return result;
+    } catch (err) {
+      console.error(err);
+      if (!silent) setSaveState(err.message || "Sheet sync failed");
+      throw err;
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -77,10 +123,49 @@ export default function Dashboard() {
       try {
         localStorage.removeItem("delivery-ops-projects");
         localStorage.removeItem("delivery-ops-projects-version");
-        const { projects: rows, canWrite } = await loadProjectsFromDb();
+
+        const params = new URLSearchParams(window.location.search);
+        const googleFlag = params.get("google");
+        if (googleFlag) {
+          const message = params.get("message");
+          window.history.replaceState({}, "", window.location.pathname + window.location.hash);
+          if (googleFlag === "connected") {
+            setSaveState("Google connected — syncing sheet…");
+          } else if (googleFlag === "error") {
+            setSaveState(`Google auth failed${message ? `: ${message}` : ""}`);
+          }
+        }
+
+        const [{ projects: rows, canWrite }, status] = await Promise.all([
+          loadProjectsFromDb(),
+          getGoogleStatus().catch(() => null),
+        ]);
         if (cancelled) return;
         setProjects(rows);
         setCanWriteDb(canWrite);
+        if (status) setGoogleStatus(status);
+
+        if (status?.connected || googleFlag === "connected") {
+          try {
+            const result = await syncFromSheets();
+            if (cancelled) return;
+            setProjects(result.projects);
+            setGoogleStatus((prev) => ({
+              ...(prev || status || {}),
+              connected: true,
+              lastSyncAt: result.lastSyncAt,
+            }));
+            const tabs = result.sheetTitles?.length || (result.sheetTitle ? 1 : 0);
+            setSaveState(
+              tabs > 1
+                ? `Synced ${result.count} rows from ${tabs} tabs`
+                : `Synced ${result.count} rows from Sheets`
+            );
+          } catch (err) {
+            console.error(err);
+            if (!cancelled) setSaveState(err.message || "Sheet sync failed");
+          }
+        }
       } catch (err) {
         console.error(err);
         if (!cancelled) setSaveState("Failed to load JSON database");
@@ -92,6 +177,14 @@ export default function Dashboard() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!googleStatus?.connected) return undefined;
+    const id = setInterval(() => {
+      runSheetSync({ silent: true }).catch(() => {});
+    }, SHEETS_POLL_MS);
+    return () => clearInterval(id);
+  }, [googleStatus?.connected]);
 
   async function persistProjects(nextProjects) {
     setProjects(nextProjects);
@@ -111,7 +204,7 @@ export default function Dashboard() {
 
   const monthFilteredProjects = useMemo(() => {
     return projects.filter((p) => {
-      const { month, year } = getProjectMonthYear(p.date);
+      const { month, year } = getFilterMonthYear(p);
       if (selectedMonth !== "All" && month !== selectedMonth) return false;
       if (selectedYear !== "All" && year !== selectedYear) return false;
       return true;
@@ -177,8 +270,7 @@ export default function Dashboard() {
   const statusPie = useMemo(
     () => [
       { name: "Delivered", value: kpis.deliveredCount, color: COLORS.delivered },
-      { name: "In progress", value: kpis.wipCount, color: COLORS.wip },
-      { name: "Late", value: kpis.lateCount, color: COLORS.late },
+      { name: "WIP", value: kpis.wipCount, color: COLORS.wip },
     ],
     [kpis]
   );
@@ -347,6 +439,8 @@ export default function Dashboard() {
         .project-link:hover { color: #a89eff; text-decoration: underline; }
         .month-scroll::-webkit-scrollbar { display: none; }
         .month-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 0.9s linear infinite; }
       `}</style>
 
       {activeProject ? (
@@ -366,6 +460,12 @@ export default function Dashboard() {
           <DashboardHeader
             saveState={saveState}
             canWriteDb={canWriteDb}
+            googleStatus={googleStatus}
+            syncing={syncing}
+            onSync={() => runSheetSync().catch(() => {})}
+            onConnectGoogle={() => {
+              window.location.href = getGoogleAuthUrl();
+            }}
             onExport={exportJson}
             onImport={importJson}
             onAdd={openAdd}
@@ -377,6 +477,7 @@ export default function Dashboard() {
             selectedMonth={selectedMonth}
             onYearChange={setSelectedYear}
             onMonthChange={setSelectedMonth}
+            mode={hasSheetTabs ? "sheetTab" : "date"}
           />
 
           <KpiStrip kpis={kpis} />

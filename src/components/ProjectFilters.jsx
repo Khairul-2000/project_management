@@ -34,8 +34,7 @@ export default function ProjectFilters({
         {[
           ["All", "All"],
           ["delivered", "Delivered"],
-          ["wip", "In progress"],
-          ["late", "Late"],
+          ["wip", "WIP"],
         ].map(([key, label]) => (
           <button
             key={key}

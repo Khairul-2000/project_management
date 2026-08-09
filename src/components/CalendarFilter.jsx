@@ -6,7 +6,10 @@ export default function CalendarFilter({
   selectedMonth,
   onYearChange,
   onMonthChange,
+  mode = "date",
 }) {
+  const bySheetTab = mode === "sheetTab";
+
   return (
     <div
       style={{
@@ -16,12 +19,24 @@ export default function CalendarFilter({
         padding: "12px 18px",
         marginBottom: 20,
         display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        flexWrap: "wrap",
-        gap: 16,
+        flexDirection: "column",
+        gap: 12,
       }}
     >
+      {bySheetTab && (
+        <div className="mono" style={{ fontSize: 11.5, color: COLORS.muted }}>
+          Viewing by sheet tab (STA Month Year) — same grouping as Google Sheets
+        </div>
+      )}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 16,
+        }}
+      >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>
           Year:
@@ -107,6 +122,7 @@ export default function CalendarFilter({
             );
           })}
         </div>
+      </div>
       </div>
     </div>
   );

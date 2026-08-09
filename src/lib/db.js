@@ -29,3 +29,35 @@ export async function saveProjectsToDb(projects) {
     throw new Error(err.error || "Failed to save database");
   }
 }
+
+export async function getGoogleStatus() {
+  const res = await fetch("/api/google/status", { cache: "no-store" });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Could not read Google status");
+  }
+  return res.json();
+}
+
+export function getGoogleAuthUrl() {
+  return "/api/google/auth";
+}
+
+export async function syncFromSheets() {
+  const res = await fetch("/api/sheets/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || "Sheet sync failed");
+  }
+  return {
+    projects: normalizeProjects(data.projects || []),
+    lastSyncAt: data.lastSyncAt || null,
+    count: data.count ?? 0,
+    sheetTitle: data.sheetTitle || "",
+    sheetTitles: Array.isArray(data.sheetTitles) ? data.sheetTitles : [],
+  };
+}

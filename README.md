@@ -8,41 +8,106 @@ You need [Node.js](https://nodejs.org) 18+ installed.
 
 ```bash
 npm install
+cp .env.example .env   # then fill in Google OAuth credentials (see below)
 npm run dev
 ```
 
-Then open the URL it prints (usually `http://localhost:5173`).
+Then open the URL it prints (usually `http://localhost:8079`).
 
-Your data saves automatically to your browser's local storage on this machine — closing the tab or restarting your computer won't lose it. It's tied to this browser though, so use **Export** (top right) to back up a JSON copy, and **Import** to restore it or move it to another computer.
+Project data lives in `public/data/projects.json`. With Google connected, the dashboard pulls the private sheet into that file (and refreshes every 2 minutes). Use **Export** / **Import** to back up or move a JSON copy.
+
+## Google Sheets sync (OAuth)
+
+The sheet can stay private. Your Google account only needs **Viewer** access. The app uses OAuth (not a public CSV link).
+
+### 1. Google Cloud setup
+
+1. Open [Google Cloud Console](https://console.cloud.google.com/) and create (or pick) a project.
+2. Enable **Google Sheets API** for that project.
+3. Go to **APIs & Services → OAuth consent screen**, configure it (External is fine for personal use). Add your Google account as a test user if the app is in Testing.
+4. Go to **APIs & Services → Credentials → Create credentials → OAuth client ID**.
+5. Application type: **Web application**.
+6. Authorized redirect URI:
+   ```
+   http://localhost:8079/api/google/callback
+   ```
+7. Copy the **Client ID** and **Client secret**.
+
+### 2. Local `.env`
+
+```bash
+cp .env.example .env
+```
+
+Set at least:
+
+```env
+GOOGLE_CLIENT_ID=....apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=....
+GOOGLE_REDIRECT_URI=http://localhost:8079/api/google/callback
+GOOGLE_SHEET_ID=1ha_1ty00uNlMAqPeLe5Rg946IQl5GbYagAS5oRHzseE
+GOOGLE_SHEET_GID=1486932215
+GOOGLE_SHEET_TAB_PREFIX=STA
+```
+
+`GOOGLE_SHEET_TAB_PREFIX=STA` pulls **all** monthly tabs like `STA Aug 2026`, `STA July 2026`, merges them into `projects.json`, and dedupes by Order ID (newer month wins). If nothing matches the prefix, it falls back to `GOOGLE_SHEET_GID`.
+
+Do not commit `.env` or `.google-tokens.json` (both are gitignored).
+
+### 3. Connect and sync
+
+1. `npm run dev`
+2. In the header, click **Connect Google** and sign in with the account that can view the sheet.
+3. After redirect, the app syncs automatically. Use **Sync now** anytime.
+4. While the tab stays open, it re-syncs about every **2 minutes** and writes into `public/data/projects.json`.
+
+### Column mapping
+
+| Sheet column | Dashboard field |
+|---|---|
+| Initial Data | `date` |
+| Sales Person | `salesPerson` |
+| Profile Name | `profile` |
+| Teams Name | `teamName` |
+| Project Name | `projectName` |
+| Project Price | `price` |
+| Phase Name | `phase` (stack derived) |
+| Order ID | `orderId` / `orderUrl` |
+| Dateline | `dateline` |
+| Sales Status | `salesStatus` |
+| Team Lead Status | `teamLeadStatus` (WIP / Delivered — drives dashboard status) |
+
+Dashboard status uses **Team Lead Status** only (`WIP` / `Delivered`).
+
+Core columns come from the sheet on each sync. Local-only fields (`subtasks`, `notes`, `teamMembers`, etc.) are kept when the same row is matched by Order ID (or project name + date).
 
 ## Build for deployment
 
 ```bash
 npm run build
+npm start
 ```
 
-This creates a `dist/` folder with static HTML/CSS/JS — no server required. You can:
+`npm start` serves `dist/` and the same `/api/projects` + Google Sheets routes. Point `GOOGLE_REDIRECT_URI` at your deployed origin’s `/api/google/callback` if you host this server somewhere other than localhost.
 
-- **Drag and drop `dist/` onto [Netlify Drop](https://app.netlify.com/drop)** — live in seconds, free.
-- **Deploy with [Vercel](https://vercel.com)**: `npx vercel dist --prod` (after `npm i -g vercel` or using `npx`).
-- **GitHub Pages**: push `dist/` to a `gh-pages` branch, or use the `gh-pages` npm package.
-- Host it on any static file host (S3, Cloudflare Pages, your own server, etc.) — just point it at `dist/`.
+Static-only hosts (Netlify Drop, GitHub Pages without a Node server) cannot run the OAuth/sync APIs — use `npm start` or keep syncing locally and deploying updated `projects.json`.
 
 ## What's inside
 
-- `src/App.jsx` — the whole dashboard: KPIs, department (stack) gauges, Fiverr-profile summary, charts (recharts), filters, and the add/edit/delete project table + modal.
+- `src/App.jsx` — dashboard: KPIs, department gauges, Fiverr-profile summary, charts, filters, project table.
+- `server/googleSheets.js` — OAuth + Sheets fetch/merge into `projects.json`.
+- `server/sheetsApiMiddleware.js` — `/api/google/*` and `/api/sheets/sync`.
 - Data model, per project:
-  - `date`, `salesPerson`, `profile` (Fiverr seller profile), `projectName`, `price`, `phase`, `stack` (department: Backend / Frontend / UI/UX / Automation / Deploy / Other), `dateline`, `salesStatus`, `teamLeadStatus`.
-- "Department" = tech stack, auto-derived from Phase Name when you add a project, but you can override it in the form.
-- "Late" status = the Dateline field containing "Order Late"; everything else with a live countdown counts as in progress.
-- Delivered/in-progress/late is currently read from the **Sales Status** column. If you'd rather it track **Team Lead Status** instead, change `statusOf()` near the top of `src/App.jsx`.
+  - `date`, `salesPerson`, `profile`, `projectName`, `price`, `phase`, `stack`, `dateline`, `salesStatus`, `teamLeadStatus`, …
+- "Department" = tech stack, auto-derived from Phase Name.
+- "Late" = Dateline containing "Order Late"; delivered comes from Sales Status = Delivered.
 
 ## Customizing
 
-- **Add a Fiverr profile**: add it to the `PROFILES` array and `PROFILE_SHORT` map near the top of `src/App.jsx`.
-- **Add a department/stack**: add it to `STACKS` and `STACK_COLOR`, and teach `deriveStack()` the phase keyword that should map to it.
-- **Colors/fonts**: all in the `COLORS` object and the `FONTS` Google Fonts import at the top of `src/App.jsx`.
+- **Add a Fiverr profile**: `PROFILES` and `PROFILE_SHORT` in `src/lib/constants.js`.
+- **Add a department/stack**: `STACKS`, `STACK_COLOR`, and `deriveStack()` in `src/lib/utils.js`.
+- **Colors/fonts**: `COLORS` and `FONTS` in `src/lib/constants.js`.
 
 ## Tech stack
 
-React + Vite, [recharts](https://recharts.org) for charts, [lucide-react](https://lucide.dev) for icons. No backend — everything runs in the browser.
+React + Vite, [recharts](https://recharts.org), [lucide-react](https://lucide.dev), Node APIs for JSON DB + Google Sheets (`googleapis`).

@@ -2,13 +2,14 @@ import http from "http";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { handleSheetsApi } from "./server/sheetsApiMiddleware.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.resolve(__dirname, "dist");
 const DB_PATH = path.resolve(__dirname, "public/data/projects.json");
 const DIST_DB_PATH = path.resolve(DIST_DIR, "data/projects.json");
 const PORT = Number(process.env.PORT) || 8079;
-const HOST =  "0.0.0.0";
+const HOST = "0.0.0.0";
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -63,7 +64,6 @@ function handleProjectsApi(req, res) {
         const pretty = JSON.stringify(parsed, null, 2) + "\n";
         fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
         fs.writeFileSync(DB_PATH, pretty, "utf8");
-        // Keep dist copy in sync when present
         try {
           fs.mkdirSync(path.dirname(DIST_DB_PATH), { recursive: true });
           fs.writeFileSync(DIST_DB_PATH, pretty, "utf8");
@@ -120,8 +120,15 @@ if (!fs.existsSync(DIST_DIR)) {
   process.exit(1);
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   const pathname = (req.url || "/").split("?")[0];
+
+  try {
+    if (await handleSheetsApi(req, res)) return;
+  } catch (err) {
+    sendJson(res, 500, { error: err.message || "Sheets API error" });
+    return;
+  }
 
   if (pathname === "/api/projects" || pathname.startsWith("/api/projects/")) {
     handleProjectsApi(req, res);

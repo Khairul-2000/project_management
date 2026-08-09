@@ -35,8 +35,8 @@ const PROFILE_SHORT = {
 };
 
 function statusOf(p) {
-  if (p.salesStatus === "Delivered") return "delivered";
-  if ((p.dateline || "").toLowerCase().includes("late")) return "late";
+  const lead = String(p.teamLeadStatus || "").trim().toLowerCase();
+  if (lead === "delivered") return "delivered";
   return "wip";
 }
 
@@ -187,7 +187,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
   const badge = (status) => {
     const map = {
       delivered: { c: COLORS.delivered, l: "Delivered", Icon: CheckCircle2 },
-      wip: { c: COLORS.wip, l: "In progress", Icon: Clock3 },
+      wip: { c: COLORS.wip, l: "WIP", Icon: Clock3 },
       late: { c: COLORS.late, l: "Late", Icon: AlertTriangle },
     };
     const { c, l, Icon } = map[status] || map.wip;

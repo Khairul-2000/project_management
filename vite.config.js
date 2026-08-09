@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { sheetsApiMiddleware } from "./server/sheetsApiMiddleware.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = path.resolve(__dirname, "public/data/projects.json");
@@ -53,9 +54,11 @@ function jsonDatabasePlugin() {
   return {
     name: "json-database",
     configureServer(server) {
+      server.middlewares.use(sheetsApiMiddleware);
       server.middlewares.use(projectsApiMiddleware);
     },
     configurePreviewServer(server) {
+      server.middlewares.use(sheetsApiMiddleware);
       server.middlewares.use(projectsApiMiddleware);
     },
   };

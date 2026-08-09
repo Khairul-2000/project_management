@@ -3,11 +3,12 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { handleSheetsApi } from "./server/sheetsApiMiddleware.js";
+import { handleAuthApi } from "./server/authApiMiddleware.js";
+import { handleProjectsApi } from "./server/projectsApiMiddleware.js";
+import { sendJson } from "./server/httpHelpers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.resolve(__dirname, "dist");
-const DB_PATH = path.resolve(__dirname, "public/data/projects.json");
-const DIST_DB_PATH = path.resolve(DIST_DIR, "data/projects.json");
 const PORT = Number(process.env.PORT) || 8079;
 const HOST = "0.0.0.0";
 
@@ -26,62 +27,6 @@ const MIME = {
   ".map": "application/json",
 };
 
-function sendJson(res, status, payload) {
-  const body = typeof payload === "string" ? payload : JSON.stringify(payload);
-  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
-  res.end(body);
-}
-
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk;
-    });
-    req.on("end", () => resolve(body));
-    req.on("error", reject);
-  });
-}
-
-function handleProjectsApi(req, res) {
-  if (req.method === "GET") {
-    try {
-      const data = fs.readFileSync(DB_PATH, "utf8");
-      sendJson(res, 200, data);
-    } catch (err) {
-      sendJson(res, 500, { error: err.message });
-    }
-    return;
-  }
-
-  if (req.method === "PUT" || req.method === "POST") {
-    readBody(req)
-      .then((body) => {
-        const parsed = JSON.parse(body);
-        if (!Array.isArray(parsed)) {
-          throw new Error("Database must be a JSON array");
-        }
-        const pretty = JSON.stringify(parsed, null, 2) + "\n";
-        fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-        fs.writeFileSync(DB_PATH, pretty, "utf8");
-        try {
-          fs.mkdirSync(path.dirname(DIST_DB_PATH), { recursive: true });
-          fs.writeFileSync(DIST_DB_PATH, pretty, "utf8");
-        } catch {
-          /* ignore if dist is missing or read-only */
-        }
-        sendJson(res, 200, { ok: true });
-      })
-      .catch((err) => {
-        sendJson(res, 400, { error: err.message });
-      });
-    return;
-  }
-
-  res.writeHead(405, { Allow: "GET, PUT, POST" });
-  res.end("Method Not Allowed");
-}
-
 function safeJoin(root, requestPath) {
   const decoded = decodeURIComponent(requestPath.split("?")[0]);
   const normalized = path.normalize(decoded).replace(/^(\.\.[/\\])+/, "");
@@ -92,6 +37,13 @@ function safeJoin(root, requestPath) {
 
 function serveStatic(req, res) {
   const urlPath = req.url === "/" ? "/index.html" : req.url.split("?")[0];
+
+  // Never expose projects DB as a static file
+  if (urlPath === "/data/projects.json") {
+    sendJson(res, 403, { error: "Use /api/projects" });
+    return;
+  }
+
   let filePath = safeJoin(DIST_DIR, urlPath);
 
   if (!filePath) {
@@ -121,17 +73,12 @@ if (!fs.existsSync(DIST_DIR)) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const pathname = (req.url || "/").split("?")[0];
-
   try {
+    if (await handleAuthApi(req, res)) return;
     if (await handleSheetsApi(req, res)) return;
+    if (await handleProjectsApi(req, res)) return;
   } catch (err) {
-    sendJson(res, 500, { error: err.message || "Sheets API error" });
-    return;
-  }
-
-  if (pathname === "/api/projects" || pathname.startsWith("/api/projects/")) {
-    handleProjectsApi(req, res);
+    sendJson(res, 500, { error: err.message || "API error" });
     return;
   }
 

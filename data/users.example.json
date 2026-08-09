@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "id": "u-admin",
+      "name": "Khairul Islam",
+      "username": "khairul",
+      "passwordHash": null,
+      "role": "admin",
+      "active": true,
+      "assignedProjectIds": []
+    }
+  ]
+}

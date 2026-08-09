@@ -1,30 +1,32 @@
 import { AlertTriangle, CheckCircle2, Clock3 } from "lucide-react";
-import { COLORS } from "../lib/constants";
+import { useTheme } from "../lib/theme";
 
-export default function StatusBadge({ status }) {
+export default function StatusBadge({ status, compact = false }) {
+  const { colors } = useTheme();
   const map = {
-    delivered: { c: COLORS.delivered, l: "Delivered", Icon: CheckCircle2 },
-    wip: { c: COLORS.wip, l: "WIP", Icon: Clock3 },
-    late: { c: COLORS.late, l: "Late", Icon: AlertTriangle },
+    delivered: { c: colors.delivered, l: "Delivered", short: "Done", Icon: CheckCircle2, bg: "rgba(31, 157, 99, 0.14)" },
+    wip: { c: colors.wip, l: "WIP", short: "WIP", Icon: Clock3, bg: "rgba(217, 161, 23, 0.16)" },
+    late: { c: colors.late, l: "Late", short: "Late", Icon: AlertTriangle, bg: "rgba(226, 75, 74, 0.14)" },
   };
-  const { c, l, Icon } = map[status];
+  const { c, l, short, Icon, bg } = map[status] || map.wip;
   return (
     <span
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: 5,
+        gap: compact ? 3 : 5,
         color: c,
-        background: c + "1A",
-        border: `1px solid ${c}44`,
-        borderRadius: 999,
-        padding: "3px 9px",
-        fontSize: 11.5,
-        fontWeight: 600,
-        fontFamily: "Inter, sans-serif",
+        background: bg,
+        border: `1px solid ${c}33`,
+        borderRadius: compact ? 8 : 10,
+        padding: compact ? "2px 6px" : "4px 9px",
+        fontSize: compact ? 10.5 : 11.5,
+        fontWeight: 700,
+        whiteSpace: "nowrap",
       }}
+      title={l}
     >
-      <Icon size={12} strokeWidth={2.5} /> {l}
+      <Icon size={compact ? 11 : 12} strokeWidth={2.5} /> {compact ? short : l}
     </span>
   );
 }

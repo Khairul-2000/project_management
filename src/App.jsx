@@ -7,17 +7,21 @@ import StackWorkload from "./components/StackWorkload";
 import ProfileWorkload from "./components/ProfileWorkload";
 import ChartsSection from "./components/ChartsSection";
 import ProjectFilters from "./components/ProjectFilters";
+import ProjectSearch from "./components/ProjectSearch";
 import ProjectsTable from "./components/ProjectsTable";
 import ProjectFormModal from "./components/ProjectFormModal";
 import DeleteConfirmModal from "./components/DeleteConfirmModal";
+import RunningHorseLoader from "./components/RunningHorseLoader";
+import LoginPage from "./components/LoginPage";
+import UsersAdmin from "./components/UsersAdmin";
 import {
   FONTS,
-  COLORS,
   PROFILES,
   PROFILE_SHORT,
   STACKS,
   emptyForm,
 } from "./lib/constants";
+import { useTheme } from "./lib/theme";
 import {
   deriveStack,
   getDeveloperRole,
@@ -33,10 +37,15 @@ import {
   getGoogleAuthUrl,
   syncFromSheets,
 } from "./lib/db";
+import { fetchMe, logout as apiLogout } from "./lib/auth";
 
 const SHEETS_POLL_MS = 2 * 60 * 1000;
 
 export default function Dashboard() {
+  const { colors, isDark } = useTheme();
+  const [sessionChecked, setSessionChecked] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [view, setView] = useState("dashboard"); // dashboard | users
   const [projects, setProjects] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [canWriteDb, setCanWriteDb] = useState(false);
@@ -46,6 +55,7 @@ export default function Dashboard() {
   const [stackFilter, setStackFilter] = useState("All");
   const [profileFilter, setProfileFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -56,9 +66,11 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  const isAdmin = currentUser?.role === "admin";
+
   useEffect(() => {
     setCurrentPage(1);
-  }, [stackFilter, profileFilter, statusFilter, selectedMonth, selectedYear, pageSize]);
+  }, [stackFilter, profileFilter, statusFilter, selectedMonth, selectedYear, pageSize, searchQuery]);
 
   useEffect(() => {
     const handleHashChange = () => setCurrentHash(window.location.hash);
@@ -121,6 +133,32 @@ export default function Dashboard() {
     let cancelled = false;
     (async () => {
       try {
+        const user = await fetchMe();
+        if (cancelled) return;
+        setCurrentUser(user);
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) setCurrentUser(null);
+      } finally {
+        if (!cancelled) setSessionChecked(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setLoaded(false);
+      setProjects([]);
+      return undefined;
+    }
+
+    let cancelled = false;
+    (async () => {
+      setLoaded(false);
+      try {
         localStorage.removeItem("delivery-ops-projects");
         localStorage.removeItem("delivery-ops-projects-version");
 
@@ -136,39 +174,45 @@ export default function Dashboard() {
           }
         }
 
-        const [{ projects: rows, canWrite }, status] = await Promise.all([
-          loadProjectsFromDb(),
-          getGoogleStatus().catch(() => null),
-        ]);
+        const { projects: rows, canWrite } = await loadProjectsFromDb();
         if (cancelled) return;
         setProjects(rows);
         setCanWriteDb(canWrite);
-        if (status) setGoogleStatus(status);
 
-        if (status?.connected || googleFlag === "connected") {
-          try {
-            const result = await syncFromSheets();
-            if (cancelled) return;
-            setProjects(result.projects);
-            setGoogleStatus((prev) => ({
-              ...(prev || status || {}),
-              connected: true,
-              lastSyncAt: result.lastSyncAt,
-            }));
-            const tabs = result.sheetTitles?.length || (result.sheetTitle ? 1 : 0);
-            setSaveState(
-              tabs > 1
-                ? `Synced ${result.count} rows from ${tabs} tabs`
-                : `Synced ${result.count} rows from Sheets`
-            );
-          } catch (err) {
-            console.error(err);
-            if (!cancelled) setSaveState(err.message || "Sheet sync failed");
+        if (currentUser.role === "admin") {
+          const status = await getGoogleStatus().catch(() => null);
+          if (cancelled) return;
+          if (status) setGoogleStatus(status);
+
+          if (status?.connected || googleFlag === "connected") {
+            try {
+              const result = await syncFromSheets();
+              if (cancelled) return;
+              setProjects(result.projects);
+              setGoogleStatus((prev) => ({
+                ...(prev || status || {}),
+                connected: true,
+                lastSyncAt: result.lastSyncAt,
+              }));
+              const tabs = result.sheetTitles?.length || (result.sheetTitle ? 1 : 0);
+              setSaveState(
+                tabs > 1
+                  ? `Synced ${result.count} rows from ${tabs} tabs`
+                  : `Synced ${result.count} rows from Sheets`
+              );
+            } catch (err) {
+              console.error(err);
+              if (!cancelled) setSaveState(err.message || "Sheet sync failed");
+            }
           }
         }
       } catch (err) {
         console.error(err);
-        if (!cancelled) setSaveState("Failed to load JSON database");
+        if (err.code === 401) {
+          setCurrentUser(null);
+        } else if (!cancelled) {
+          setSaveState(err.message || "Failed to load projects");
+        }
       } finally {
         if (!cancelled) setLoaded(true);
       }
@@ -176,15 +220,25 @@ export default function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [currentUser?.id, currentUser?.role]);
 
   useEffect(() => {
-    if (!googleStatus?.connected) return undefined;
+    if (!isAdmin || !googleStatus?.connected) return undefined;
     const id = setInterval(() => {
       runSheetSync({ silent: true }).catch(() => {});
     }, SHEETS_POLL_MS);
     return () => clearInterval(id);
-  }, [googleStatus?.connected]);
+  }, [isAdmin, googleStatus?.connected]);
+
+  async function handleLogout() {
+    await apiLogout().catch(() => {});
+    setCurrentUser(null);
+    setProjects([]);
+    setView("dashboard");
+    setGoogleStatus(null);
+    setSaveState("");
+    window.location.hash = "";
+  }
 
   async function persistProjects(nextProjects) {
     setProjects(nextProjects);
@@ -212,13 +266,36 @@ export default function Dashboard() {
   }, [projects, selectedMonth, selectedYear]);
 
   const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return monthFilteredProjects.filter((p) => {
       if (stackFilter !== "All" && (p.stack || deriveStack(p.phase)) !== stackFilter) return false;
       if (profileFilter !== "All" && p.profile !== profileFilter) return false;
       if (statusFilter !== "All" && statusOf(p) !== statusFilter) return false;
+      if (q) {
+        const haystack = [
+          p.projectName,
+          p.orderId,
+          p.orderUrl,
+          p.salesPerson,
+          p.teamName,
+          p.profile,
+          p.phase,
+          p.stack,
+          p.dateline,
+          p.salesStatus,
+          p.teamLeadStatus,
+          p.supervisor,
+          p.sheetTab,
+          p.membersRaw,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
       return true;
     });
-  }, [monthFilteredProjects, stackFilter, profileFilter, statusFilter]);
+  }, [monthFilteredProjects, stackFilter, profileFilter, statusFilter, searchQuery]);
 
   const kpis = useMemo(() => {
     const total = monthFilteredProjects.length;
@@ -269,10 +346,10 @@ export default function Dashboard() {
 
   const statusPie = useMemo(
     () => [
-      { name: "Delivered", value: kpis.deliveredCount, color: COLORS.delivered },
-      { name: "WIP", value: kpis.wipCount, color: COLORS.wip },
+      { name: "Delivered", value: kpis.deliveredCount, color: colors.delivered },
+      { name: "WIP", value: kpis.wipCount, color: colors.wip },
     ],
-    [kpis]
+    [kpis, colors.delivered, colors.wip]
   );
 
   const timeline = useMemo(() => {
@@ -408,42 +485,80 @@ export default function Dashboard() {
     e.target.value = "";
   }
 
+  if (!sessionChecked) {
+    return (
+      <div
+        style={{
+          background: `linear-gradient(160deg, ${colors.bg} 0%, ${colors.bgAccent} 100%)`,
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
+        <RunningHorseLoader size={52} />
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <>
+        <style>{FONTS}</style>
+        <LoginPage onLoggedIn={(user) => setCurrentUser(user)} />
+      </>
+    );
+  }
+
   if (!loaded) {
     return (
       <div
         style={{
-          background: COLORS.bg,
-          color: COLORS.muted,
+          background: `linear-gradient(160deg, ${colors.bg} 0%, ${colors.bgAccent} 100%)`,
           minHeight: "100vh",
           display: "grid",
           placeItems: "center",
-          fontFamily: "Inter, sans-serif",
         }}
       >
-        Loading JSON database…
+        <RunningHorseLoader size={52} />
       </div>
     );
   }
 
   return (
-    <div style={{ background: COLORS.bg, color: COLORS.text, minHeight: "100%", fontFamily: "Inter, sans-serif" }}>
+    <div
+      style={{
+        background: isDark
+          ? `linear-gradient(160deg, ${colors.bg} 0%, ${colors.bgAccent} 55%, #10151D 100%)`
+          : `linear-gradient(160deg, ${colors.bg} 0%, #F2F5FA 48%, ${colors.bgAccent} 100%)`,
+        color: colors.text,
+        minHeight: "100%",
+        fontFamily: "Manrope, sans-serif",
+      }}
+    >
       <style>{FONTS}{`
         ::-webkit-scrollbar { height: 8px; width: 8px; }
-        ::-webkit-scrollbar-thumb { background: ${COLORS.border}; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb { background: ${colors.border}; border-radius: 8px; }
         .mono { font-family: 'IBM Plex Mono', monospace; }
-        .disp { font-family: 'Space Grotesk', sans-serif; }
+        .disp { font-family: 'Manrope', sans-serif; }
         button { cursor: pointer; font-family: inherit; }
-        input, select { font-family: 'Inter', sans-serif; }
+        input, select { font-family: 'Manrope', sans-serif; }
         .chip { transition: all .15s ease; }
-        .project-link { color: ${COLORS.accent}; text-decoration: none; font-weight: 600; transition: color .15s ease; }
-        .project-link:hover { color: #a89eff; text-decoration: underline; }
+        .project-link { color: ${colors.accent}; text-decoration: none; font-weight: 700; transition: color .15s ease; }
+        .project-link:hover { color: ${isDark ? colors.accentSoft : "#3B4558"}; text-decoration: underline; }
         .month-scroll::-webkit-scrollbar { display: none; }
         .month-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.9s linear infinite; }
+        .table-row { transition: background .12s ease; }
+        .table-row:hover td { background: ${colors.rowHover} !important; }
+        @media (max-width: 900px) {
+          .charts-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
-      {activeProject ? (
+      {view === "users" && isAdmin ? (
+        <UsersAdmin projects={projects} onBack={() => setView("dashboard")} />
+      ) : activeProject ? (
         <ProjectDetails
           project={activeProject}
           onBack={() => {
@@ -451,17 +566,20 @@ export default function Dashboard() {
           }}
           onUpdate={(updated) => persistProjects(projects.map((p) => (p.id === updated.id ? updated : p)))}
           onDelete={(id) => {
+            if (!isAdmin) return;
             persistProjects(projects.filter((p) => p.id !== id));
             window.location.hash = "";
           }}
         />
       ) : (
-        <div style={{ padding: "28px 24px 60px" }}>
+        <div style={{ padding: "20px 16px 48px", maxWidth: 1400, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
           <DashboardHeader
             saveState={saveState}
             canWriteDb={canWriteDb}
             googleStatus={googleStatus}
             syncing={syncing}
+            currentUser={currentUser}
+            isAdmin={isAdmin}
             onSync={() => runSheetSync().catch(() => {})}
             onConnectGoogle={() => {
               window.location.href = getGoogleAuthUrl();
@@ -469,6 +587,8 @@ export default function Dashboard() {
             onExport={exportJson}
             onImport={importJson}
             onAdd={openAdd}
+            onLogout={handleLogout}
+            onOpenUsers={() => setView("users")}
           />
 
           <CalendarFilter
@@ -494,6 +614,12 @@ export default function Dashboard() {
             onProfileChange={setProfileFilter}
           />
 
+          <ProjectSearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            resultCount={filtered.length}
+          />
+
           <ProjectsTable
             projects={filtered}
             totalCount={projects.length}
@@ -503,9 +629,10 @@ export default function Dashboard() {
             onPageSizeChange={setPageSize}
             onEdit={openEdit}
             onDelete={setConfirmDelete}
+            canManage={isAdmin}
           />
 
-          {modalOpen && (
+          {modalOpen && isAdmin && (
             <ProjectFormModal
               editingId={editingId}
               form={form}
@@ -515,7 +642,7 @@ export default function Dashboard() {
             />
           )}
 
-          {confirmDelete && (
+          {confirmDelete && isAdmin && (
             <DeleteConfirmModal
               onCancel={() => setConfirmDelete(null)}
               onConfirm={() => doDelete(confirmDelete)}

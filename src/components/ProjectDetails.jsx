@@ -3,36 +3,9 @@ import {
   ArrowLeft, Calendar, User, DollarSign, Tag, CheckSquare, 
   Trash2, Plus, Clock, Clock3, FileText, CheckCircle2, AlertTriangle, Users, ExternalLink
 } from "lucide-react";
-
-const COLORS = {
-  bg: "#0D1117",
-  panel: "#141A22",
-  panel2: "#1A212B",
-  border: "#232B37",
-  text: "#E7EBF1",
-  muted: "#7C8798",
-  delivered: "#3ECF8E",
-  wip: "#F2B84B",
-  late: "#F0635A",
-  accent: "#8C7CFF",
-};
-
-const STACK_COLOR = {
-  Backend: "#7C9CFF",
-  Frontend: "#FF9F6B",
-  "UI/UX": "#C792F0",
-  Automation: "#5FD0D6",
-  Deploy: "#E8D45F",
-  Other: "#7C8798",
-};
-
-const PROFILE_SHORT = {
-  code_muse_Fiverr: "CodeMuse",
-  Web_Chrome_Fiverr: "WebChrome",
-  binary_bards_fiverr: "BinaryBards",
-  Ui_verse_Fiverr: "UiVerse",
-  SparkFlow_Fiverr: "SparkFlow",
-};
+import { STACK_COLOR, PROFILE_SHORT } from "../lib/constants";
+import { useTheme } from "../lib/theme";
+import { listTeamDirectory } from "../lib/auth";
 
 function statusOf(p) {
   const lead = String(p.teamLeadStatus || "").trim().toLowerCase();
@@ -55,12 +28,12 @@ function getInitials(name) {
 
 function getAvatarBg(name) {
   const colors = [
-    "linear-gradient(135deg, #7C9CFF, #4C6CFF)", // blue
-    "linear-gradient(135deg, #FF9F6B, #FF6F2B)", // orange
-    "linear-gradient(135deg, #C792F0, #9A4CE0)", // purple
-    "linear-gradient(135deg, #5FD0D6, #2BA6AD)", // teal
-    "linear-gradient(135deg, #E8D45F, #B8A31F)", // yellow
-    "linear-gradient(135deg, #FF7C7C, #E04C4C)"  // red
+    "linear-gradient(135deg, #4F7CFF, #2F5CE0)",
+    "linear-gradient(135deg, #F08A56, #E06A30)",
+    "linear-gradient(135deg, #9B6FE0, #7A4CC0)",
+    "linear-gradient(135deg, #2BB8BE, #1A9499)",
+    "linear-gradient(135deg, #C9B03A, #A89220)",
+    "linear-gradient(135deg, #E24B4A, #C03838)"
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -79,9 +52,13 @@ const ROLES = [
 ];
 
 export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) {
+  const { colors } = useTheme();
+  const COLORS = colors;
   const [newSubtaskText, setNewSubtaskText] = useState("");
-  const [newMemberName, setNewMemberName] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState("");
   const [newMemberRole, setNewMemberRole] = useState(ROLES[0]);
+  const [directory, setDirectory] = useState([]);
+  const [teamError, setTeamError] = useState("");
   const [notesText, setNotesText] = useState(project.notes || "");
   const [saveStatus, setSaveStatus] = useState("");
 
@@ -90,6 +67,20 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
     setNotesText(project.notes || "");
     setSaveStatus("");
   }, [project.id, project.notes]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listTeamDirectory()
+      .then((users) => {
+        if (!cancelled) setDirectory(users);
+      })
+      .catch(() => {
+        if (!cancelled) setDirectory([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const defaultSubtasks = useMemo(() => [
     { id: "1", text: "Requirements gathering & analysis", completed: false },
@@ -106,11 +97,36 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
   const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const stackColor = STACK_COLOR[project.stack] || STACK_COLOR.Other;
 
-  const defaultTeam = useMemo(() => [
-    { id: "m1", name: "Alex Chen", role: "Project Lead" },
-    { id: "m2", name: "Elena Rostova", role: "UI/UX Designer" }
-  ], []);
-  const team = project.teamMembers || defaultTeam;
+  const team = Array.isArray(project.teamMembers) ? project.teamMembers : [];
+
+  const assignedUserIds = useMemo(() => {
+    const ids = new Set();
+    for (const m of team) {
+      if (m?.userId) ids.add(String(m.userId));
+      else if (m?.id && String(m.id).startsWith("u-")) ids.add(String(m.id));
+    }
+    return ids;
+  }, [team]);
+
+  const assignedNames = useMemo(() => {
+    return new Set(
+      team
+        .map((m) => String(m?.name || "").trim().toLowerCase())
+        .filter(Boolean)
+    );
+  }, [team]);
+
+  const availableUsers = useMemo(() => {
+    return directory.filter((u) => {
+      if (assignedUserIds.has(String(u.id))) return false;
+      const name = String(u.name || "").trim().toLowerCase();
+      if (name && assignedNames.has(name)) return false;
+      // Also hide if short first name already on team (sheet-style "Arman")
+      const first = name.split(/\s+/)[0];
+      if (first && assignedNames.has(first)) return false;
+      return true;
+    });
+  }, [directory, assignedUserIds, assignedNames]);
 
   const handleToggleSubtask = (subtaskId) => {
     const updatedSubtasks = subtasks.map(t =>
@@ -147,24 +163,34 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
 
   const handleAddMember = (e) => {
     e.preventDefault();
-    if (!newMemberName.trim()) return;
+    setTeamError("");
+    const user = directory.find((u) => String(u.id) === String(selectedUserId));
+    if (!user) {
+      setTeamError("Select a team member from the list.");
+      return;
+    }
+    if (assignedUserIds.has(String(user.id))) {
+      setTeamError("That user is already on this project.");
+      return;
+    }
     const newMember = {
-      id: `member-${Date.now()}`,
-      name: newMemberName.trim(),
-      role: newMemberRole
+      id: user.id,
+      userId: user.id,
+      name: user.name,
+      role: newMemberRole,
     };
     onUpdate({
       ...project,
-      teamMembers: [...team, newMember]
+      teamMembers: [...team, newMember],
     });
-    setNewMemberName("");
+    setSelectedUserId("");
   };
 
   const handleRemoveMember = (memberId) => {
-    const updatedTeam = team.filter(m => m.id !== memberId);
+    const updatedTeam = team.filter((m) => m.id !== memberId);
     onUpdate({
       ...project,
-      teamMembers: updatedTeam
+      teamMembers: updatedTeam,
     });
   };
 
@@ -210,7 +236,14 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
   };
 
   return (
-    <div style={{ background: COLORS.bg, color: COLORS.text, minHeight: "100%", fontFamily: "Inter, sans-serif", padding: "28px 24px 60px" }}>
+    <div style={{
+      background: `linear-gradient(160deg, ${COLORS.bg} 0%, ${COLORS.bgAccent} 100%)`,
+      color: COLORS.text,
+      minHeight: "100%",
+      fontFamily: "Manrope, sans-serif",
+      padding: "20px 16px 48px",
+    }}>
+      <div style={{ maxWidth: 1400, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
       
       {/* BREADCRUMB & BACK BUTTON */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
@@ -218,18 +251,19 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
           display: "flex", 
           alignItems: "center", 
           gap: 6, 
-          background: COLORS.panel2, 
+          background: COLORS.panel, 
           color: COLORS.text, 
           border: `1px solid ${COLORS.border}`, 
-          borderRadius: 8, 
+          borderRadius: 12, 
           padding: "8px 14px", 
           fontWeight: 600, 
           fontSize: 13,
           cursor: "pointer",
           transition: "all 0.15s ease",
+          boxShadow: COLORS.shadowSoft,
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.background = COLORS.border; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = COLORS.panel2; }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = COLORS.panel2; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = COLORS.panel; }}
         >
           <ArrowLeft size={16} /> Back to Console
         </button>
@@ -242,14 +276,15 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
       <div style={{ 
         background: COLORS.panel, 
         border: `1px solid ${COLORS.border}`, 
-        borderRadius: 14, 
+        borderRadius: 20, 
         padding: "24px 28px", 
         marginBottom: 24,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         flexWrap: "wrap",
-        gap: 16
+        gap: 16,
+        boxShadow: COLORS.shadowSoft,
       }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
@@ -267,7 +302,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
             </span>
             {badge(statusOf(project))}
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, fontFamily: "Space Grotesk, sans-serif" }}>
+          <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, fontFamily: "Manrope, sans-serif" }}>
             {project.projectName}
           </h1>
           <p style={{ color: COLORS.muted, fontSize: 13.5, margin: "6px 0 0" }}>
@@ -296,8 +331,8 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           
           {/* INFO CARD */}
-          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: 20 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 16px", fontFamily: "Space Grotesk, sans-serif" }}>Metadata & Details</h3>
+          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 20, padding: 20 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 16px", fontFamily: "Manrope, sans-serif" }}>Metadata & Details</h3>
             
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[
@@ -342,10 +377,10 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
           </div>
 
           {/* TEAM MEMBERS CARD */}
-          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: 20 }}>
+          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 20, padding: 20 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <Users size={18} style={{ color: COLORS.accent }} />
-              <h3 style={{ fontSize: 15, fontWeight: 600, margin: 0, fontFamily: "Space Grotesk, sans-serif" }}>Assigned Team</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 600, margin: 0, fontFamily: "Manrope, sans-serif" }}>Assigned Team</h3>
             </div>
             
             {/* TEAM LIST */}
@@ -400,20 +435,34 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
             {/* ADD MEMBER FORM */}
             <form onSubmit={handleAddMember} style={{ display: "flex", flexDirection: "column", gap: 10, borderTop: `1px solid ${COLORS.border}`, paddingTop: 14 }}>
               <div style={{ fontSize: 11.5, color: COLORS.muted, fontWeight: 600 }}>ASSIGN NEW MEMBER</div>
-              <input 
-                type="text" 
-                placeholder="Developer name..." 
-                value={newMemberName}
-                onChange={(e) => setNewMemberName(e.target.value)}
-                style={{ 
-                  background: COLORS.panel2, 
-                  border: `1px solid ${COLORS.border}`, 
-                  borderRadius: 8, 
-                  padding: "8px 10px", 
-                  color: COLORS.text, 
-                  fontSize: 13 
-                }} 
-              />
+              <select
+                value={selectedUserId}
+                onChange={(e) => {
+                  setSelectedUserId(e.target.value);
+                  setTeamError("");
+                }}
+                style={{
+                  background: COLORS.panel2,
+                  border: `1px solid ${COLORS.border}`,
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  color: COLORS.text,
+                  fontSize: 13,
+                  cursor: "pointer",
+                }}
+              >
+                <option value="">
+                  {availableUsers.length ? "Select user…" : "All users already assigned"}
+                </option>
+                {availableUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
+              {teamError && (
+                <div style={{ fontSize: 12, color: COLORS.late }}>{teamError}</div>
+              )}
               <div style={{ display: "flex", gap: 8 }}>
                 <select 
                   value={newMemberRole}
@@ -431,9 +480,9 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
                 >
                   {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
-                <button type="submit" style={{ 
-                  background: COLORS.accent, 
-                  color: "#0D1117", 
+                <button type="submit" disabled={!selectedUserId} style={{ 
+                  background: selectedUserId ? COLORS.accent : COLORS.border, 
+                  color: selectedUserId ? "#fff" : COLORS.muted, 
                   border: "none", 
                   borderRadius: 8, 
                   padding: "0 14px", 
@@ -442,7 +491,8 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
                   display: "flex", 
                   alignItems: "center", 
                   gap: 4,
-                  cursor: "pointer"
+                  cursor: selectedUserId ? "pointer" : "not-allowed",
+                  opacity: selectedUserId ? 1 : 0.7,
                 }}>
                   <Plus size={15} strokeWidth={2.5} /> Assign
                 </button>
@@ -451,8 +501,8 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
           </div>
 
           {/* STATUS CONTROLLER */}
-          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: 20 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 16px", fontFamily: "Space Grotesk, sans-serif" }}>Pipeline Status</h3>
+          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 20, padding: 20 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, margin: "0 0 16px", fontFamily: "Manrope, sans-serif" }}>Pipeline Status</h3>
             
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
@@ -500,8 +550,8 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
           </div>
 
           {/* DANGER ZONE */}
-          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: 20 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 600, color: COLORS.late, margin: "0 0 8px", fontFamily: "Space Grotesk, sans-serif" }}>Danger Zone</h3>
+          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 20, padding: 20 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: COLORS.late, margin: "0 0 8px", fontFamily: "Manrope, sans-serif" }}>Danger Zone</h3>
             <p style={{ color: COLORS.muted, fontSize: 12.5, margin: "0 0 14px" }}>Remove this project permanently from the delivery database.</p>
             <button 
               onClick={() => {
@@ -533,10 +583,10 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           
           {/* MILESTONES & WORKSPACE */}
-          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: 20 }}>
+          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 20, padding: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
               <div>
-                <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, fontFamily: "Space Grotesk, sans-serif" }}>Delivery Milestones</h3>
+                <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, fontFamily: "Manrope, sans-serif" }}>Delivery Milestones</h3>
                 <p style={{ color: COLORS.muted, fontSize: 12.5, margin: "4px 0 0" }}>Check off tasks as the project progresses</p>
               </div>
               <div className="mono" style={{ fontSize: 12.5, color: COLORS.accent, fontWeight: 600, background: COLORS.accent + "1A", padding: "4px 10px", borderRadius: 8 }}>
@@ -625,7 +675,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
               />
               <button type="submit" style={{ 
                 background: COLORS.accent, 
-                color: "#0D1117", 
+                color: "#fff", 
                 border: "none", 
                 borderRadius: 8, 
                 padding: "0 14px", 
@@ -642,10 +692,10 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
           </div>
 
           {/* PROJECT NOTES */}
-          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: 20 }}>
+          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 20, padding: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <div>
-                <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, fontFamily: "Space Grotesk, sans-serif" }}>Developer Notes</h3>
+                <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, fontFamily: "Manrope, sans-serif" }}>Developer Notes</h3>
                 <p style={{ color: COLORS.muted, fontSize: 12.5, margin: "4px 0 0" }}>Internal logs, requirements or updates</p>
               </div>
               {saveStatus && (
@@ -665,7 +715,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
                 borderRadius: 10, 
                 padding: 12, 
                 color: COLORS.text, 
-                fontFamily: "Inter, sans-serif", 
+                fontFamily: "Manrope, sans-serif", 
                 fontSize: 13.5, 
                 resize: "vertical", 
                 boxSizing: "border-box",
@@ -699,6 +749,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
         </div>
       </div>
 
+      </div>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { Pencil, Trash2, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
-import { COLORS, PROFILE_SHORT, STACK_COLOR, PAGE_SIZE_OPTIONS } from "../lib/constants";
+import { PROFILE_SHORT, STACK_COLOR, PAGE_SIZE_OPTIONS } from "../lib/constants";
 import { deriveStack, statusOf, fmtMoney } from "../lib/utils";
+import { useTheme } from "../lib/theme";
 import StatusBadge from "./StatusBadge";
 
 export default function ProjectsTable({
@@ -13,7 +14,9 @@ export default function ProjectsTable({
   onPageSizeChange,
   onEdit,
   onDelete,
+  canManage = true,
 }) {
+  const { colors, card } = useTheme();
   const totalPages = Math.max(1, Math.ceil(projects.length / pageSize));
   const safePage = Math.min(currentPage, totalPages);
 
@@ -40,27 +43,61 @@ export default function ProjectsTable({
       }, []);
   }
 
+  const th = {
+    padding: "10px 8px",
+    color: colors.muted,
+    fontWeight: 700,
+    fontSize: 10,
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    whiteSpace: "nowrap",
+    textAlign: "left",
+  };
+
+  const td = {
+    padding: "9px 8px",
+    verticalAlign: "middle",
+    fontSize: 12,
+  };
+
+  const ellipsis = {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  };
+
+  const headers = [
+    { label: "Date", style: { width: 78 } },
+    { label: "Sales", style: { width: "11%" } },
+    { label: "Team", style: { width: "7%" } },
+    { label: "Dept", style: { width: "8%" } },
+    { label: "Profile", style: { width: "8%" } },
+    { label: "Project", style: { width: "13%" } },
+    { label: "Phase", style: { width: "11%" } },
+    { label: "Order", style: { width: "10%" } },
+    { label: "Price", style: { width: 72 } },
+    { label: "Dateline", style: { width: "8%" } },
+    { label: "Status", style: { width: 78 } },
+    ...(canManage ? [{ label: "Actions", style: { width: 84, textAlign: "right" } }] : []),
+  ];
+
   return (
     <>
-      <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 14, overflow: "hidden" }}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+      <div style={{ ...card, borderRadius: 16, overflow: "hidden" }}>
+        <div style={{ width: "100%", overflowX: "auto" }}>
+          <table
+            style={{
+              width: "100%",
+              minWidth: 980,
+              tableLayout: "fixed",
+              borderCollapse: "collapse",
+            }}
+          >
             <thead>
-              <tr style={{ background: COLORS.panel2, textAlign: "left" }}>
-                {["Date", "Sales person", "Team", "Department", "Profile", "Project", "Phase", "Order", "Price", "Dateline", "Status", "Actions"].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      padding: "10px 14px",
-                      color: COLORS.muted,
-                      fontWeight: 600,
-                      fontSize: 11.5,
-                      textTransform: "uppercase",
-                      letterSpacing: 0.4,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {h}
+              <tr style={{ background: colors.panel2 }}>
+                {headers.map((h) => (
+                  <th key={h.label} style={{ ...th, ...h.style }}>
+                    {h.label === "Actions" ? "" : h.label}
                   </th>
                 ))}
               </tr>
@@ -68,7 +105,7 @@ export default function ProjectsTable({
             <tbody>
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={12} style={{ padding: 24, textAlign: "center", color: COLORS.muted }}>
+                  <td colSpan={headers.length} style={{ padding: 24, textAlign: "center", color: colors.muted }}>
                     No projects match this filter.
                   </td>
                 </tr>
@@ -78,81 +115,115 @@ export default function ProjectsTable({
                 return (
                   <tr
                     key={p.id}
+                    className="table-row"
                     style={{
-                      borderTop: `1px solid ${COLORS.border}`,
-                      background: i % 2 ? "transparent" : COLORS.panel2 + "55",
+                      borderTop: `1px solid ${colors.border}`,
+                      background: i % 2 ? colors.panel : colors.bgAccent,
                     }}
                   >
-                    <td className="mono" style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>
+                    <td className="mono" style={{ ...td, ...ellipsis, color: colors.muted }} title={p.date}>
                       {p.date}
                     </td>
-                    <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>{p.salesPerson}</td>
-                    <td style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>
+                    <td style={{ ...td, ...ellipsis, fontWeight: 500 }} title={p.salesPerson}>
+                      {p.salesPerson}
+                    </td>
+                    <td style={{ ...td, ...ellipsis, color: colors.muted }} title={p.teamName || ""}>
                       {p.teamName || "—"}
                     </td>
-                    <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <td style={{ ...td, ...ellipsis }} title={stack}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 650, maxWidth: "100%" }}>
                         <span
                           style={{
-                            width: 7,
-                            height: 7,
+                            width: 6,
+                            height: 6,
                             borderRadius: 99,
                             background: STACK_COLOR[stack],
-                            display: "inline-block",
+                            flexShrink: 0,
                           }}
                         />
-                        {stack}
+                        <span style={ellipsis}>{stack}</span>
                       </span>
                     </td>
-                    <td style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>
+                    <td style={{ ...td, ...ellipsis, color: colors.muted }} title={PROFILE_SHORT[p.profile] || p.profile}>
                       {PROFILE_SHORT[p.profile] || p.profile}
                     </td>
-                    <td style={{ padding: "10px 14px", fontWeight: 500, whiteSpace: "nowrap" }}>
-                      <a href={`#/project/${p.id}`} className="project-link">
+                    <td style={{ ...td, fontWeight: 700 }} title={p.projectName}>
+                      <a href={`#/project/${p.id}`} className="project-link" style={{ ...ellipsis, display: "block" }}>
                         {p.projectName}
                       </a>
                     </td>
-                    <td style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>
+                    <td style={{ ...td, ...ellipsis, color: colors.muted }} title={p.phase || ""}>
                       {p.phase || "—"}
                     </td>
-                    <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                    <td style={td} title={p.orderId || ""}>
                       {p.orderUrl || p.orderId ? (
                         <a
                           href={p.orderUrl || `https://www.fiverr.com/orders/${p.orderId}/activities`}
                           target="_blank"
                           rel="noreferrer"
                           className="project-link mono"
-                          style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12 }}
+                          style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, maxWidth: "100%" }}
                         >
-                          {p.orderId || "Open"} <ExternalLink size={12} />
+                          <span style={ellipsis}>{p.orderId || "Open"}</span>
+                          <ExternalLink size={11} style={{ flexShrink: 0 }} />
                         </a>
                       ) : (
                         "—"
                       )}
                     </td>
-                    <td className="mono" style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                    <td className="mono" style={{ ...td, ...ellipsis, fontWeight: 650 }} title={fmtMoney(p.price)}>
                       {fmtMoney(p.price)}
                     </td>
-                    <td className="mono" style={{ padding: "10px 14px", color: COLORS.muted, whiteSpace: "nowrap" }}>
+                    <td className="mono" style={{ ...td, ...ellipsis, color: colors.muted }} title={p.dateline || ""}>
                       {p.dateline || "—"}
                     </td>
-                    <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
-                      <StatusBadge status={statusOf(p)} />
+                    <td style={td}>
+                      <StatusBadge status={statusOf(p)} compact />
                     </td>
-                    <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
-                      <button
-                        onClick={() => onEdit(p)}
-                        style={{ background: "none", border: "none", color: COLORS.muted, padding: 5 }}
-                      >
-                        <Pencil size={15} />
-                      </button>
-                      <button
-                        onClick={() => onDelete(p.id)}
-                        style={{ background: "none", border: "none", color: COLORS.late, padding: 5 }}
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                    {canManage && (
+                    <td style={{ ...td, width: 84, textAlign: "right", whiteSpace: "nowrap" }}>
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
+                        <button
+                          onClick={() => onEdit(p)}
+                          title="Edit"
+                          aria-label="Edit project"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 30,
+                            height: 30,
+                            background: colors.panel2,
+                            border: `1px solid ${colors.border}`,
+                            borderRadius: 8,
+                            color: colors.text,
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => onDelete(p.id)}
+                          title="Delete"
+                          aria-label="Delete project"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 30,
+                            height: 30,
+                            background: "rgba(226, 75, 74, 0.12)",
+                            border: `1px solid rgba(226, 75, 74, 0.28)`,
+                            borderRadius: 8,
+                            color: colors.late,
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </td>
+                    )}
                   </tr>
                 );
               })}
@@ -167,28 +238,28 @@ export default function ProjectsTable({
               flexWrap: "wrap",
               alignItems: "center",
               justifyContent: "space-between",
-              gap: 12,
-              padding: "12px 14px",
-              borderTop: `1px solid ${COLORS.border}`,
-              background: COLORS.panel2,
+              gap: 10,
+              padding: "10px 12px",
+              borderTop: `1px solid ${colors.border}`,
+              background: colors.panel2,
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <span className="mono" style={{ fontSize: 11.5, color: COLORS.muted }}>
+              <span style={{ fontSize: 11.5, color: colors.muted, fontWeight: 500 }}>
                 Showing {rangeStart}–{rangeEnd} of {projects.length}
               </span>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: COLORS.muted }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: colors.muted, fontWeight: 500 }}>
                 Rows
                 <select
                   value={pageSize}
                   onChange={(e) => onPageSizeChange(Number(e.target.value))}
                   style={{
-                    background: COLORS.panel,
-                    border: `1px solid ${COLORS.border}`,
-                    borderRadius: 6,
-                    padding: "5px 8px",
-                    color: COLORS.text,
-                    fontSize: 12.5,
+                    background: colors.panel,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: 8,
+                    padding: "5px 7px",
+                    color: colors.text,
+                    fontSize: 12,
                   }}
                 >
                   {PAGE_SIZE_OPTIONS.map((n) => (
@@ -200,7 +271,7 @@ export default function ProjectsTable({
               </label>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
               <button
                 onClick={() => onPageChange(safePage - 1)}
                 disabled={safePage <= 1}
@@ -208,21 +279,21 @@ export default function ProjectsTable({
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 32,
-                  height: 32,
-                  background: COLORS.panel,
-                  color: safePage <= 1 ? COLORS.border : COLORS.text,
-                  border: `1px solid ${COLORS.border}`,
+                  width: 28,
+                  height: 28,
+                  background: colors.panel,
+                  color: safePage <= 1 ? colors.border : colors.text,
+                  border: `1px solid ${colors.border}`,
                   borderRadius: 8,
                   opacity: safePage <= 1 ? 0.5 : 1,
                 }}
                 aria-label="Previous page"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={14} />
               </button>
               {getPageNumbers().map((page, idx) =>
                 page === "…" ? (
-                  <span key={`ellipsis-${idx}`} className="mono" style={{ padding: "0 6px", color: COLORS.muted, fontSize: 12 }}>
+                  <span key={`ellipsis-${idx}`} style={{ padding: "0 4px", color: colors.muted, fontSize: 11 }}>
                     …
                   </span>
                 ) : (
@@ -230,14 +301,14 @@ export default function ProjectsTable({
                     key={page}
                     onClick={() => onPageChange(page)}
                     style={{
-                      minWidth: 32,
-                      height: 32,
-                      background: safePage === page ? COLORS.accent : COLORS.panel,
-                      color: safePage === page ? "#0D1117" : COLORS.text,
-                      border: `1px solid ${safePage === page ? COLORS.accent : COLORS.border}`,
+                      minWidth: 28,
+                      height: 28,
+                      background: safePage === page ? colors.accent : colors.panel,
+                      color: safePage === page ? colors.onAccent : colors.text,
+                      border: `1px solid ${safePage === page ? colors.accent : colors.border}`,
                       borderRadius: 8,
-                      fontSize: 12.5,
-                      fontWeight: 600,
+                      fontSize: 12,
+                      fontWeight: 700,
                     }}
                   >
                     {page}
@@ -251,23 +322,23 @@ export default function ProjectsTable({
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 32,
-                  height: 32,
-                  background: COLORS.panel,
-                  color: safePage >= totalPages ? COLORS.border : COLORS.text,
-                  border: `1px solid ${COLORS.border}`,
+                  width: 28,
+                  height: 28,
+                  background: colors.panel,
+                  color: safePage >= totalPages ? colors.border : colors.text,
+                  border: `1px solid ${colors.border}`,
                   borderRadius: 8,
                   opacity: safePage >= totalPages ? 0.5 : 1,
                 }}
                 aria-label="Next page"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={14} />
               </button>
             </div>
           </div>
         )}
       </div>
-      <div className="mono" style={{ marginTop: 10, fontSize: 11.5, color: COLORS.muted }}>
+      <div style={{ marginTop: 8, fontSize: 11.5, color: colors.muted, fontWeight: 500 }}>
         {projects.length} of {totalCount} projects match filters · page {safePage} of {totalPages}
       </div>
     </>

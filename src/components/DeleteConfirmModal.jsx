@@ -1,12 +1,13 @@
-import { COLORS } from "../lib/constants";
+import { useTheme } from "../lib/theme";
 
 export default function DeleteConfirmModal({ onCancel, onConfirm }) {
+  const { colors } = useTheme();
   return (
     <div
       style={{
         position: "fixed",
         inset: 0,
-        background: "#000000AA",
+        background: colors.overlay,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -18,26 +19,32 @@ export default function DeleteConfirmModal({ onCancel, onConfirm }) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: COLORS.panel,
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: 14,
-          padding: 22,
+          background: colors.panel,
+          border: `1px solid ${colors.border}`,
+          borderRadius: 20,
+          padding: 24,
           width: 340,
+          boxShadow: colors.shadow,
+          color: colors.text,
         }}
       >
-        <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>Delete this project?</div>
-        <div style={{ color: COLORS.muted, fontSize: 13, marginBottom: 18 }}>This can't be undone.</div>
+        <div className="disp" style={{ fontWeight: 800, fontSize: 17, marginBottom: 8 }}>
+          Delete this project?
+        </div>
+        <div style={{ color: colors.muted, fontSize: 13, marginBottom: 18, fontWeight: 500 }}>
+          This can't be undone.
+        </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button
             onClick={onCancel}
             style={{
               flex: 1,
-              background: COLORS.panel2,
-              color: COLORS.text,
-              border: `1px solid ${COLORS.border}`,
-              borderRadius: 9,
+              background: colors.panel2,
+              color: colors.text,
+              border: `1px solid ${colors.border}`,
+              borderRadius: 12,
               padding: "10px 0",
-              fontWeight: 600,
+              fontWeight: 650,
             }}
           >
             Cancel
@@ -46,10 +53,10 @@ export default function DeleteConfirmModal({ onCancel, onConfirm }) {
             onClick={onConfirm}
             style={{
               flex: 1,
-              background: COLORS.late,
-              color: "#1a0d0d",
+              background: colors.late,
+              color: "#fff",
               border: "none",
-              borderRadius: 9,
+              borderRadius: 12,
               padding: "10px 0",
               fontWeight: 700,
             }}

@@ -25,14 +25,16 @@
         "role": "Supervisor"
       },
       {
-        "id": "mem-1786167679869-37w2",
-        "name": "Arman",
+        "id": "u-mslo41o8-487104",
+        "userId": "u-mslo41o8-487104",
+        "name": "Md. Arman Hosen",
         "role": "Backend Developer"
       },
       {
-        "id": "mem-1786167679869-sip8",
-        "name": "Bayajit",
-        "role": "Backend Developer"
+        "id": "u-mslo41o8-e02250",
+        "userId": "u-mslo41o8-e02250",
+        "name": "Bayajit Islam",
+        "role": "Frontend Developer"
       }
     ],
     "subtasks": [
@@ -954,38 +956,7 @@
         "role": "Backend Developer"
       }
     ],
-    "subtasks": [
-      {
-        "id": "1",
-        "text": "Requirements gathering & analysis",
-        "completed": false
-      },
-      {
-        "id": "2",
-        "text": "UI/UX Mockup design",
-        "completed": false
-      },
-      {
-        "id": "3",
-        "text": "Core API development",
-        "completed": false
-      },
-      {
-        "id": "4",
-        "text": "Frontend integration & testing",
-        "completed": false
-      },
-      {
-        "id": "5",
-        "text": "Client review & revisions",
-        "completed": false
-      },
-      {
-        "id": "6",
-        "text": "Final deployment & delivery",
-        "completed": false
-      }
-    ],
+    "subtasks": [],
     "notes": "",
     "membersRaw": "Pronay, Arman, Bayajit"
   },
@@ -1196,13 +1167,7 @@
     "supervisor": "",
     "shift": "Day",
     "possibility": "No",
-    "teamMembers": [
-      {
-        "id": "mem-1786167679869-vcb6",
-        "name": "Ovie",
-        "role": "UI/UX Designer"
-      }
-    ],
+    "teamMembers": [],
     "subtasks": [],
     "notes": "client are not active, didn't response anything after several message.",
     "membersRaw": "Ovie"
@@ -1471,7 +1436,7 @@
     "stack": "Backend",
     "orderId": "FO429FBE966C8",
     "orderUrl": "https://www.fiverr.com/orders/FO429FBE966C8/activities",
-    "dateline": "14 Days",
+    "dateline": "13 Days",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -1535,7 +1500,7 @@
     "date": "8/6/2026",
     "salesPerson": "Nadim",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "",
+    "teamName": "Pritom",
     "projectName": "plifplifplif",
     "price": 320,
     "phase": "AI Automation",

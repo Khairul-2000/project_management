@@ -1,13 +1,26 @@
 import { X } from "lucide-react";
-import { COLORS, STACKS, PROFILES, PROFILE_SHORT } from "../lib/constants";
+import { STACKS, PROFILES, PROFILE_SHORT } from "../lib/constants";
+import { useTheme } from "../lib/theme";
 
 export default function ProjectFormModal({ editingId, form, onChange, onClose, onSave }) {
+  const { colors } = useTheme();
+  const fieldStyle = {
+    width: "100%",
+    background: colors.panel2,
+    border: `1px solid ${colors.border}`,
+    borderRadius: 10,
+    padding: "9px 11px",
+    color: colors.text,
+    fontSize: 13.5,
+    boxSizing: "border-box",
+  };
+
   return (
     <div
       style={{
         position: "fixed",
         inset: 0,
-        background: "#000000AA",
+        background: colors.overlay,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -19,21 +32,23 @@ export default function ProjectFormModal({ editingId, form, onChange, onClose, o
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: COLORS.panel,
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: 14,
-          padding: 22,
+          background: colors.panel,
+          border: `1px solid ${colors.border}`,
+          borderRadius: 20,
+          padding: 24,
           width: 440,
           maxWidth: "100%",
           maxHeight: "88vh",
           overflowY: "auto",
+          boxShadow: colors.shadow,
+          color: colors.text,
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div className="disp" style={{ fontWeight: 700, fontSize: 17 }}>
             {editingId ? "Edit project" : "New project"}
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: COLORS.muted }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: colors.muted }}>
             <X size={18} />
           </button>
         </div>
@@ -51,40 +66,23 @@ export default function ProjectFormModal({ editingId, form, onChange, onClose, o
           ["possibility", "Possibility", "text", "e.g. No"],
         ].map(([key, label, type, ph]) => (
           <div key={key} style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 11.5, color: COLORS.muted, marginBottom: 4, fontWeight: 600 }}>{label}</div>
+            <div style={{ fontSize: 11.5, color: colors.muted, marginBottom: 4, fontWeight: 600 }}>{label}</div>
             <input
               type={type}
               placeholder={ph}
               value={form[key] || ""}
               onChange={(e) => onChange({ ...form, [key]: e.target.value })}
-              style={{
-                width: "100%",
-                background: COLORS.panel2,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: 8,
-                padding: "9px 11px",
-                color: COLORS.text,
-                fontSize: 13.5,
-                boxSizing: "border-box",
-              }}
+              style={fieldStyle}
             />
           </div>
         ))}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
           <div>
-            <div style={{ fontSize: 11.5, color: COLORS.muted, marginBottom: 4, fontWeight: 600 }}>Department (stack)</div>
+            <div style={{ fontSize: 11.5, color: colors.muted, marginBottom: 4, fontWeight: 600 }}>Department (stack)</div>
             <select
               value={form.stack}
               onChange={(e) => onChange({ ...form, stack: e.target.value })}
-              style={{
-                width: "100%",
-                background: COLORS.panel2,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: 8,
-                padding: "9px 11px",
-                color: COLORS.text,
-                fontSize: 13.5,
-              }}
+              style={fieldStyle}
             >
               {STACKS.map((s) => (
                 <option key={s} value={s}>
@@ -94,19 +92,11 @@ export default function ProjectFormModal({ editingId, form, onChange, onClose, o
             </select>
           </div>
           <div>
-            <div style={{ fontSize: 11.5, color: COLORS.muted, marginBottom: 4, fontWeight: 600 }}>Fiverr profile</div>
+            <div style={{ fontSize: 11.5, color: colors.muted, marginBottom: 4, fontWeight: 600 }}>Fiverr profile</div>
             <select
               value={form.profile}
               onChange={(e) => onChange({ ...form, profile: e.target.value })}
-              style={{
-                width: "100%",
-                background: COLORS.panel2,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: 8,
-                padding: "9px 11px",
-                color: COLORS.text,
-                fontSize: 13.5,
-              }}
+              style={fieldStyle}
             >
               {PROFILES.map((pf) => (
                 <option key={pf} value={pf}>
@@ -118,19 +108,11 @@ export default function ProjectFormModal({ editingId, form, onChange, onClose, o
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 18 }}>
           <div>
-            <div style={{ fontSize: 11.5, color: COLORS.muted, marginBottom: 4, fontWeight: 600 }}>Sales status</div>
+            <div style={{ fontSize: 11.5, color: colors.muted, marginBottom: 4, fontWeight: 600 }}>Sales status</div>
             <select
               value={form.salesStatus}
               onChange={(e) => onChange({ ...form, salesStatus: e.target.value })}
-              style={{
-                width: "100%",
-                background: COLORS.panel2,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: 8,
-                padding: "9px 11px",
-                color: COLORS.text,
-                fontSize: 13.5,
-              }}
+              style={fieldStyle}
             >
               <option value="WIP">WIP</option>
               <option value="NRA">NRA</option>
@@ -138,19 +120,11 @@ export default function ProjectFormModal({ editingId, form, onChange, onClose, o
             </select>
           </div>
           <div>
-            <div style={{ fontSize: 11.5, color: COLORS.muted, marginBottom: 4, fontWeight: 600 }}>Team lead status</div>
+            <div style={{ fontSize: 11.5, color: colors.muted, marginBottom: 4, fontWeight: 600 }}>Team lead status</div>
             <select
               value={form.teamLeadStatus}
               onChange={(e) => onChange({ ...form, teamLeadStatus: e.target.value })}
-              style={{
-                width: "100%",
-                background: COLORS.panel2,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: 8,
-                padding: "9px 11px",
-                color: COLORS.text,
-                fontSize: 13.5,
-              }}
+              style={fieldStyle}
             >
               <option value="WIP">WIP</option>
               <option value="Delivered">Delivered</option>
@@ -161,10 +135,10 @@ export default function ProjectFormModal({ editingId, form, onChange, onClose, o
           onClick={onSave}
           style={{
             width: "100%",
-            background: COLORS.accent,
-            color: "#0D1117",
+            background: colors.accent,
+            color: colors.onAccent,
             border: "none",
-            borderRadius: 9,
+            borderRadius: 12,
             padding: "11px 0",
             fontWeight: 700,
             fontSize: 14,

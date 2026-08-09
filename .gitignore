@@ -3,3 +3,4 @@ dist
 .DS_Store
 .env
 .google-tokens.json
+data/users.json

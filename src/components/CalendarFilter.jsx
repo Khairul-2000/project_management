@@ -1,4 +1,5 @@
-import { COLORS, MONTHS } from "../lib/constants";
+import { MONTHS } from "../lib/constants";
+import { useTheme } from "../lib/theme";
 
 export default function CalendarFilter({
   availableYears,
@@ -8,23 +9,28 @@ export default function CalendarFilter({
   onMonthChange,
   mode = "date",
 }) {
+  const { colors, card } = useTheme();
   const bySheetTab = mode === "sheetTab";
 
+  function segBtn(active) {
+    return {
+      background: active ? colors.accent : "transparent",
+      color: active ? colors.onAccent : colors.muted,
+      border: "none",
+      borderRadius: 10,
+      padding: "6px 11px",
+      fontSize: 12.5,
+      fontWeight: 650,
+      cursor: "pointer",
+      transition: "all 0.15s ease",
+      whiteSpace: "nowrap",
+    };
+  }
+
   return (
-    <div
-      style={{
-        background: COLORS.panel,
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: 14,
-        padding: "12px 18px",
-        marginBottom: 20,
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-      }}
-    >
+    <div style={{ ...card, padding: "14px 16px", marginBottom: 16 }}>
       {bySheetTab && (
-        <div className="mono" style={{ fontSize: 11.5, color: COLORS.muted }}>
+        <div style={{ fontSize: 12, color: colors.muted, marginBottom: 10, fontWeight: 500 }}>
           Viewing by sheet tab (STA Month Year) — same grouping as Google Sheets
         </div>
       )}
@@ -34,95 +40,63 @@ export default function CalendarFilter({
           alignItems: "center",
           justifyContent: "space-between",
           flexWrap: "wrap",
-          gap: 16,
+          gap: 14,
         }}
       >
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>
-          Year:
-        </span>
-        <div style={{ display: "flex", background: COLORS.panel2, borderRadius: 8, padding: 3, border: `1px solid ${COLORS.border}` }}>
-          {["All", ...availableYears].map((yr) => (
-            <button
-              key={yr}
-              onClick={() => onYearChange(yr === "All" ? "All" : Number(yr))}
-              style={{
-                background: selectedYear === yr ? COLORS.accent : "transparent",
-                color: selectedYear === yr ? "#0D1117" : COLORS.muted,
-                border: "none",
-                borderRadius: 6,
-                padding: "5px 12px",
-                fontSize: 12.5,
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-              }}
-            >
-              {yr}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, justifyContent: "flex-end", minWidth: 280 }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: COLORS.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>
-          Month:
-        </span>
-        <div
-          className="month-scroll"
-          style={{
-            display: "flex",
-            background: COLORS.panel2,
-            borderRadius: 8,
-            padding: 3,
-            border: `1px solid ${COLORS.border}`,
-            overflowX: "auto",
-            maxWidth: "100%",
-          }}
-        >
-          <button
-            onClick={() => onMonthChange("All")}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: colors.muted, textTransform: "uppercase", letterSpacing: 0.4 }}>
+            Year
+          </span>
+          <div
             style={{
-              background: selectedMonth === "All" ? COLORS.accent : "transparent",
-              color: selectedMonth === "All" ? "#0D1117" : COLORS.muted,
-              border: "none",
-              borderRadius: 6,
-              padding: "5px 12px",
-              fontSize: 12.5,
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "all 0.15s ease",
-              whiteSpace: "nowrap",
+              display: "flex",
+              background: colors.panel2,
+              borderRadius: 12,
+              padding: 4,
+              border: `1px solid ${colors.border}`,
             }}
           >
-            All
-          </button>
-          {MONTHS.map((m, idx) => {
-            const monthNum = idx + 1;
-            const isSelected = selectedMonth === monthNum;
-            return (
+            {["All", ...availableYears].map((yr) => (
               <button
-                key={m}
-                onClick={() => onMonthChange(monthNum)}
-                style={{
-                  background: isSelected ? COLORS.accent : "transparent",
-                  color: isSelected ? "#0D1117" : COLORS.muted,
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "5px 10px",
-                  fontSize: 12.5,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                  whiteSpace: "nowrap",
-                }}
+                key={yr}
+                onClick={() => onYearChange(yr === "All" ? "All" : Number(yr))}
+                style={segBtn(selectedYear === yr)}
               >
-                {m}
+                {yr}
               </button>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, justifyContent: "flex-end", minWidth: 260 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: colors.muted, textTransform: "uppercase", letterSpacing: 0.4 }}>
+            Month
+          </span>
+          <div
+            className="month-scroll"
+            style={{
+              display: "flex",
+              background: colors.panel2,
+              borderRadius: 12,
+              padding: 4,
+              border: `1px solid ${colors.border}`,
+              overflowX: "auto",
+              maxWidth: "100%",
+            }}
+          >
+            <button onClick={() => onMonthChange("All")} style={segBtn(selectedMonth === "All")}>
+              All
+            </button>
+            {MONTHS.map((m, idx) => {
+              const monthNum = idx + 1;
+              return (
+                <button key={m} onClick={() => onMonthChange(monthNum)} style={segBtn(selectedMonth === monthNum)}>
+                  {m}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

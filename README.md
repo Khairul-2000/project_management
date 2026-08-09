@@ -14,7 +14,26 @@ npm run dev
 
 Then open the URL it prints (usually `http://localhost:8079`).
 
-Project data lives in `public/data/projects.json`. With Google connected, the dashboard pulls the private sheet into that file (and refreshes every 2 minutes). Use **Export** / **Import** to back up or move a JSON copy.
+## Login (local users)
+
+Accounts live in `data/users.json` (gitignored; created on first run).
+
+Default **admin** (first run):
+- Username: `khairul`
+- Password: value of `ADMIN_BOOTSTRAP_PASSWORD` in `.env` (default `admin123`)
+
+Also set:
+
+```env
+SESSION_SECRET=change-me-to-a-long-random-string
+ADMIN_BOOTSTRAP_PASSWORD=admin123
+```
+
+- **Admin** sees all projects, Google sync, Users admin, import/export.
+- **Members** only see projects an admin assigned to them (Users → Assign).
+- Seeded team members start **without** a password — admin sets one in **Users** before they can sign in.
+
+Project data lives in `public/data/projects.json` (API-gated). With Google connected, the dashboard pulls the private sheet into that file (and refreshes every 2 minutes for admins).
 
 ## Google Sheets sync (OAuth)
 
@@ -52,7 +71,7 @@ GOOGLE_SHEET_TAB_PREFIX=STA
 
 `GOOGLE_SHEET_TAB_PREFIX=STA` pulls **all** monthly tabs like `STA Aug 2026`, `STA July 2026`, merges them into `projects.json`, and dedupes by Order ID (newer month wins). If nothing matches the prefix, it falls back to `GOOGLE_SHEET_GID`.
 
-Do not commit `.env` or `.google-tokens.json` (both are gitignored).
+Do not commit `.env`, `.google-tokens.json`, or `data/users.json` (gitignored).
 
 ### 3. Connect and sync
 

@@ -1,32 +1,68 @@
-import { COLORS } from "../lib/constants";
+import { FolderKanban, CheckCircle2, Clock3, Percent } from "lucide-react";
 import { fmtMoney } from "../lib/utils";
+import { useTheme } from "../lib/theme";
 
 export default function KpiStrip({ kpis }) {
+  const { colors, card } = useTheme();
   const items = [
-    { label: "Total projects", value: kpis.total, sub: fmtMoney(kpis.totalValue), color: COLORS.text },
-    { label: "Delivered", value: kpis.deliveredCount, sub: fmtMoney(kpis.deliveredValue), color: COLORS.delivered },
-    { label: "WIP", value: kpis.wipCount, sub: fmtMoney(kpis.wipValue), color: COLORS.wip },
+    {
+      label: "Total projects",
+      value: kpis.total,
+      sub: fmtMoney(kpis.totalValue),
+      color: colors.text,
+      Icon: FolderKanban,
+      tint: "rgba(28, 34, 48, 0.08)",
+    },
+    {
+      label: "Delivered",
+      value: kpis.deliveredCount,
+      sub: fmtMoney(kpis.deliveredValue),
+      color: colors.delivered,
+      Icon: CheckCircle2,
+      tint: "rgba(31, 157, 99, 0.12)",
+    },
+    {
+      label: "WIP",
+      value: kpis.wipCount,
+      sub: fmtMoney(kpis.wipValue),
+      color: colors.wip,
+      Icon: Clock3,
+      tint: "rgba(217, 161, 23, 0.14)",
+    },
     {
       label: "Delivery rate",
       value: kpis.total ? Math.round((kpis.deliveredCount / kpis.total) * 100) + "%" : "0%",
       sub: "of all orders",
-      color: COLORS.accent,
+      color: colors.accent,
+      Icon: Percent,
+      tint: "rgba(232, 185, 35, 0.18)",
     },
   ];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 16 }}>
       {items.map((k, i) => (
-        <div key={i} style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 12, padding: "14px 16px" }}>
-          <div style={{ color: COLORS.muted, fontSize: 11.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
-            {k.label}
+        <div key={i} style={{ ...card, padding: "14px 16px" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+            <div style={{ color: colors.muted, fontSize: 12, fontWeight: 650 }}>{k.label}</div>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                background: k.tint,
+                color: k.color,
+                display: "grid",
+                placeItems: "center",
+              }}
+            >
+              <k.Icon size={15} strokeWidth={2.25} />
+            </div>
           </div>
-          <div className="disp" style={{ fontSize: 26, fontWeight: 700, color: k.color, marginTop: 4 }}>
+          <div className="disp" style={{ fontSize: 26, fontWeight: 800, color: k.color, marginTop: 8, letterSpacing: -0.5 }}>
             {k.value}
           </div>
-          <div className="mono" style={{ fontSize: 11.5, color: COLORS.muted, marginTop: 2 }}>
-            {k.sub}
-          </div>
+          <div style={{ fontSize: 12, color: colors.muted, marginTop: 3, fontWeight: 500 }}>{k.sub}</div>
         </div>
       ))}
     </div>

@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { google } from "googleapis";
 import dotenv from "dotenv";
+import { syncAssignmentsFromProjects } from "./usersStore.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -116,6 +117,11 @@ function writeProjectsJson(projects) {
     fs.writeFileSync(DIST_DB_PATH, pretty, "utf8");
   } catch {
     /* dist may be missing */
+  }
+  try {
+    syncAssignmentsFromProjects(projects);
+  } catch (err) {
+    console.error("[sheets] assignment sync failed:", err.message);
   }
 }
 

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Pencil, Trash2, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
 import { PROFILE_SHORT, STACK_COLOR, PAGE_SIZE_OPTIONS } from "../lib/constants";
-import { deriveStack, statusOf, fmtMoney } from "../lib/utils";
+import { getProjectStack, statusOf, fmtMoney } from "../lib/utils";
 import { useTheme } from "../lib/theme";
 import StatusBadge from "./StatusBadge";
 
@@ -111,7 +111,7 @@ export default function ProjectsTable({
                 </tr>
               )}
               {pageRows.map((p, i) => {
-                const stack = p.stack || deriveStack(p.phase);
+                const stack = getProjectStack(p);
                 return (
                   <tr
                     key={p.id}

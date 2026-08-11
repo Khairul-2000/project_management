@@ -4,3 +4,4 @@ dist
 .env
 .google-tokens.json
 data/users.json
+projects.json

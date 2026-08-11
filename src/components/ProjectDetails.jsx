@@ -6,16 +6,24 @@ import {
 import { STACK_COLOR, PROFILE_SHORT } from "../lib/constants";
 import { useTheme } from "../lib/theme";
 import { listTeamDirectory } from "../lib/auth";
-
-function statusOf(p) {
-  const lead = String(p.teamLeadStatus || "").trim().toLowerCase();
-  if (lead === "delivered") return "delivered";
-  return "wip";
-}
-
-function fmtMoney(n) {
-  return "$" + Number(n).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-}
+import {
+  statusOf,
+  fmtMoney,
+  parseProjectDate,
+  parseDatelineDays,
+  getSheetRemainingDays,
+  getSuggestedDeliveryDate,
+  getOriginalDeliveryDate,
+  getCurrentDeliveryDate,
+  getTotalExtensionDays,
+  getDaysLeft,
+  getProjectExtensions,
+  hasAdminSchedule,
+  formatDisplayDate,
+  formatDaysLeft,
+  toInputDate,
+  diffCalendarDays,
+} from "../lib/utils";
 
 function getInitials(name) {
   return name
@@ -45,14 +53,16 @@ function getAvatarBg(name) {
 const ROLES = [
   "Backend Developer",
   "Frontend Developer",
+  "App Developer",
+  "AI Engineer",
   "UI/UX Designer",
   "DevOps Engineer",
   "QA Engineer",
-  "Project Lead"
+  "Project Lead",
 ];
 
-export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) {
-  const { colors } = useTheme();
+export default function ProjectDetails({ project, onBack, onUpdate, onDelete, isAdmin = false }) {
+  const { colors, isDark } = useTheme();
   const COLORS = colors;
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -61,12 +71,20 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
   const [teamError, setTeamError] = useState("");
   const [notesText, setNotesText] = useState(project.notes || "");
   const [saveStatus, setSaveStatus] = useState("");
+  const [deliveryInput, setDeliveryInput] = useState("");
+  const [extendInput, setExtendInput] = useState("");
+  const [scheduleError, setScheduleError] = useState("");
 
-  // Sync notes when project ID changes
+  // Sync notes / schedule inputs when project changes
   useEffect(() => {
     setNotesText(project.notes || "");
     setSaveStatus("");
-  }, [project.id, project.notes]);
+    setScheduleError("");
+    const suggested = getSuggestedDeliveryDate(project);
+    const original = getOriginalDeliveryDate(project);
+    setDeliveryInput(toInputDate(original || suggested || ""));
+    setExtendInput("");
+  }, [project.id, project.notes, project.deliveryDate, project.date, project.dateline, project.extensions]);
 
   useEffect(() => {
     let cancelled = false;
@@ -210,6 +228,118 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
     });
   };
 
+  const startDate = parseProjectDate(project.date);
+  const sheetRemaining = getSheetRemainingDays(project.dateline);
+  const datelineDays = parseDatelineDays(project.dateline);
+  const suggestedDelivery = getSuggestedDeliveryDate(project);
+  const originalDelivery = getOriginalDeliveryDate(project);
+  const currentDelivery = getCurrentDeliveryDate(project);
+  const totalExtDays = getTotalExtensionDays(project);
+  const daysLeft = getDaysLeft(project);
+  const extensions = getProjectExtensions(project);
+  const adminSchedule = hasAdminSchedule(project);
+  const hasDelivery = Boolean(currentDelivery) || sheetRemaining === -1;
+
+  const timelineStops = useMemo(() => {
+    const stops = [];
+    if (startDate) {
+      stops.push({ key: "start", label: formatDisplayDate(startDate), sub: "Project start", kind: "start" });
+    }
+
+    if (adminSchedule && originalDelivery) {
+      stops.push({
+        key: "delivery",
+        label: formatDisplayDate(originalDelivery),
+        sub: "Delivery",
+        kind: "delivery",
+      });
+      let prev = originalDelivery;
+      extensions.forEach((ext, idx) => {
+        const next = ext.date
+          ? parseProjectDate(ext.date)
+          : ext.days != null && prev
+            ? (() => {
+                const d = new Date(prev);
+                d.setDate(d.getDate() + (Number(ext.days) || 0));
+                return d;
+              })()
+            : null;
+        if (!next) return;
+        const gained = diffCalendarDays(prev, next);
+        stops.push({
+          key: `ext-${idx}`,
+          label: formatDisplayDate(next),
+          sub: `Extended${gained != null ? ` · +${gained}d` : ""}`,
+          kind: "extension",
+        });
+        prev = next;
+      });
+      return stops;
+    }
+
+    // Sheet-only: show live countdown as current due (not Initial Date + days)
+    if (currentDelivery && sheetRemaining != null && sheetRemaining >= 0) {
+      stops.push({
+        key: "delivery",
+        label: formatDisplayDate(currentDelivery),
+        sub: `Due · ${sheetRemaining}d on sheet`,
+        kind: "delivery",
+      });
+    } else if (sheetRemaining === -1) {
+      stops.push({
+        key: "late",
+        label: "Order Late",
+        sub: "Sheet status — set a delivery date or extend",
+        kind: "extension",
+      });
+    }
+    return stops;
+  }, [startDate, originalDelivery, currentDelivery, extensions, adminSchedule, sheetRemaining]);
+
+  function handleSaveDeliveryDate(e) {
+    e.preventDefault();
+    setScheduleError("");
+    const next = parseProjectDate(deliveryInput);
+    if (!next) {
+      setScheduleError("Pick a valid delivery date.");
+      return;
+    }
+    onUpdate({
+      ...project,
+      deliveryDate: toInputDate(next),
+    });
+    setSaveStatus(`Delivery date set to ${formatDisplayDate(next)}`);
+  }
+
+  function handleTakeExtension(e) {
+    e.preventDefault();
+    setScheduleError("");
+    const baseline = currentDelivery || suggestedDelivery;
+    if (!baseline && sheetRemaining !== -1) {
+      setScheduleError("Set a delivery date first.");
+      return;
+    }
+    const next = parseProjectDate(extendInput);
+    if (!next) {
+      setScheduleError("Pick the new delivery date for this extension.");
+      return;
+    }
+    const from = baseline || parseProjectDate(toInputDate(new Date()));
+    const gained = from ? diffCalendarDays(from, next) : null;
+    if (gained == null || gained < 1) {
+      setScheduleError("New delivery date must be after the current delivery date.");
+      return;
+    }
+    const lockedOriginal = project.deliveryDate || toInputDate(baseline || next);
+    onUpdate({
+      ...project,
+      deliveryDate: lockedOriginal,
+      extensions: [...extensions, { date: toInputDate(next), createdAt: new Date().toISOString() }],
+    });
+    setExtendInput("");
+    setSaveStatus(`Extended to ${formatDisplayDate(next)} (+${gained}d)`);
+  }
+
   const badge = (status) => {
     const map = {
       delivered: { c: COLORS.delivered, l: "Delivered", Icon: CheckCircle2 },
@@ -340,7 +470,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
                 { label: "Team", value: project.teamName || "—", Icon: Users },
                 { label: "Intake Date", value: project.date, Icon: Calendar },
                 { label: "Fiverr Profile", value: PROFILE_SHORT[project.profile] || project.profile, Icon: Tag },
-                { label: "Timeline / Dateline", value: project.dateline || "—", Icon: Clock },
+                { label: "Sheet Dateline", value: project.dateline || "—", Icon: Clock },
                 { label: "Supervisor", value: project.supervisor || "—", Icon: User },
                 { label: "Shift", value: project.shift || "—", Icon: Clock3 },
                 { label: "Possibility", value: project.possibility || "—", Icon: AlertTriangle },
@@ -375,6 +505,221 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete }) 
               )}
             </div>
           </div>
+
+          {/* Delivery schedule */}
+          <section aria-label="Delivery schedule">
+            <style>{`
+              @keyframes scheduleFadeIn {
+                from { opacity: 0; transform: translateY(4px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+              .schedule-row { animation: scheduleFadeIn 0.35s ease-out both; }
+            `}</style>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                gap: 10,
+                marginBottom: 14,
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Calendar size={16} style={{ color: COLORS.accentSoft }} />
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, fontFamily: "Manrope, sans-serif" }}>
+                  Delivery schedule
+                </h3>
+              </div>
+              {hasDelivery ? (
+                <div style={{ fontSize: 12.5, color: COLORS.muted, textAlign: "right" }}>
+                  Current due{" "}
+                  <strong style={{ color: daysLeft != null && daysLeft <= 4 ? COLORS.late : COLORS.text }}>
+                    {formatDisplayDate(currentDelivery)}
+                  </strong>
+                  {" · "}
+                  {formatDaysLeft(daysLeft)}
+                  {totalExtDays ? ` · +${totalExtDays}d extended` : ""}
+                </div>
+              ) : null}
+            </div>
+
+            {timelineStops.length ? (
+              <div style={{ display: "flex", flexDirection: "column", marginBottom: isAdmin ? 16 : 0 }}>
+                {timelineStops.map((stop, idx) => (
+                  <div
+                    key={stop.key}
+                    className="schedule-row"
+                    style={{ display: "flex", gap: 12, alignItems: "stretch", animationDelay: `${idx * 0.05}s` }}
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 14 }}>
+                      <div
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: 99,
+                          marginTop: 5,
+                          background:
+                            stop.kind === "extension"
+                              ? COLORS.accentSoft
+                              : stop.kind === "delivery"
+                                ? COLORS.delivered
+                                : COLORS.muted,
+                          boxShadow:
+                            idx === timelineStops.length - 1 ? `0 0 0 3px ${COLORS.accentSoft}40` : "none",
+                          flexShrink: 0,
+                        }}
+                      />
+                      {idx < timelineStops.length - 1 ? (
+                        <div style={{ width: 2, flex: 1, minHeight: 20, background: COLORS.border, marginTop: 4 }} />
+                      ) : null}
+                    </div>
+                    <div style={{ paddingBottom: idx < timelineStops.length - 1 ? 16 : 2 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: -0.2 }}>{stop.label}</div>
+                      <div style={{ fontSize: 12, color: COLORS.muted, marginTop: 2 }}>{stop.sub}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: 13, color: COLORS.muted, marginBottom: isAdmin ? 14 : 0 }}>
+                No delivery date yet
+                {project.dateline ? ` — sheet shows “${project.dateline}”` : ""}.
+                {isAdmin ? " Set one below." : ""}
+              </div>
+            )}
+
+            {isAdmin && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <form
+                  onSubmit={handleSaveDeliveryDate}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "minmax(0, 1fr) auto",
+                    gap: 10,
+                    alignItems: "end",
+                    padding: 12,
+                    borderRadius: 12,
+                    background: COLORS.panel2,
+                    border: `1px solid ${COLORS.border}`,
+                  }}
+                >
+                  <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12, color: COLORS.muted, fontWeight: 650 }}>
+                    {hasDelivery ? "Update delivery date" : "Set delivery date"}
+                    <input
+                      type="date"
+                      value={deliveryInput}
+                      onChange={(e) => setDeliveryInput(e.target.value)}
+                      required
+                      style={{
+                        width: "100%",
+                        boxSizing: "border-box",
+                        background: COLORS.panel,
+                        border: `1px solid ${COLORS.border}`,
+                        borderRadius: 10,
+                        padding: "9px 11px",
+                        color: COLORS.text,
+                        fontSize: 13,
+                        colorScheme: isDark ? "dark" : "light",
+                      }}
+                    />
+                    {suggestedDelivery && !adminSchedule ? (
+                      <span style={{ fontWeight: 500, fontSize: 11.5 }}>
+                        Prefill from sheet countdown: {formatDisplayDate(suggestedDelivery)}
+                        {datelineDays != null ? ` (“${project.dateline}” left)` : ""}
+                      </span>
+                    ) : null}
+                  </label>
+                  <button
+                    type="submit"
+                    style={{
+                      background: isDark ? "#1C2230" : COLORS.accent,
+                      color: isDark ? "#E8EDF5" : COLORS.onAccent,
+                      border: `1px solid ${isDark ? "#2A3341" : "transparent"}`,
+                      borderRadius: 10,
+                      padding: "10px 14px",
+                      fontWeight: 700,
+                      fontSize: 13,
+                      whiteSpace: "nowrap",
+                      height: 40,
+                    }}
+                  >
+                    Save date
+                  </button>
+                </form>
+
+                {hasDelivery ? (
+                  <form
+                    onSubmit={handleTakeExtension}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "minmax(0, 1fr) auto",
+                      gap: 10,
+                      alignItems: "end",
+                      padding: 12,
+                      borderRadius: 12,
+                      background: COLORS.panel2,
+                      border: `1px solid ${COLORS.border}`,
+                    }}
+                  >
+                    <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 12, color: COLORS.muted, fontWeight: 650 }}>
+                      Extend to new delivery date
+                      <input
+                        type="date"
+                        value={extendInput}
+                        min={toInputDate(
+                          currentDelivery
+                            ? new Date(
+                                currentDelivery.getFullYear(),
+                                currentDelivery.getMonth(),
+                                currentDelivery.getDate() + 1
+                              )
+                            : ""
+                        )}
+                        onChange={(e) => setExtendInput(e.target.value)}
+                        required
+                        style={{
+                          width: "100%",
+                          boxSizing: "border-box",
+                          background: COLORS.panel,
+                          border: `1px solid ${COLORS.border}`,
+                          borderRadius: 10,
+                          padding: "9px 11px",
+                          color: COLORS.text,
+                          fontSize: 13,
+                          colorScheme: isDark ? "dark" : "light",
+                        }}
+                      />
+                      <span style={{ fontWeight: 500, fontSize: 11.5 }}>
+                        Current due {formatDisplayDate(currentDelivery)} — pick a later date
+                      </span>
+                    </label>
+                    <button
+                      type="submit"
+                      style={{
+                        background: COLORS.accentSoft,
+                        color: "#12161E",
+                        border: "none",
+                        borderRadius: 10,
+                        padding: "10px 14px",
+                        fontWeight: 700,
+                        fontSize: 13,
+                        whiteSpace: "nowrap",
+                        height: 40,
+                      }}
+                    >
+                      Take extension
+                    </button>
+                  </form>
+                ) : null}
+
+                {scheduleError ? (
+                  <div style={{ color: COLORS.late, fontSize: 12.5, fontWeight: 650 }}>{scheduleError}</div>
+                ) : null}
+              </div>
+            )}
+          </section>
 
           {/* TEAM MEMBERS CARD */}
           <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 20, padding: 20 }}>

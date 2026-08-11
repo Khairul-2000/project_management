@@ -14,6 +14,7 @@ import DeleteConfirmModal from "./components/DeleteConfirmModal";
 import RunningHorseLoader from "./components/RunningHorseLoader";
 import LoginPage from "./components/LoginPage";
 import UsersAdmin from "./components/UsersAdmin";
+import DueSoonBanner from "./components/DueSoonBanner";
 import {
   FONTS,
   PROFILES,
@@ -26,6 +27,7 @@ import {
   deriveStack,
   getDeveloperRole,
   getFilterMonthYear,
+  getProjectStack,
   normalizeProjects,
   extractOrderId,
   statusOf,
@@ -63,6 +65,7 @@ export default function Dashboard() {
   const [currentHash, setCurrentHash] = useState(window.location.hash);
   const [selectedMonth, setSelectedMonth] = useState("All");
   const [selectedYear, setSelectedYear] = useState("All");
+  const [monthDefaultApplied, setMonthDefaultApplied] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -97,6 +100,25 @@ export default function Dashboard() {
     () => projects.some((p) => Boolean(p.sheetTab)),
     [projects]
   );
+
+  // Default calendar filter to the most recent month present in the data (once).
+  useEffect(() => {
+    if (monthDefaultApplied || !projects.length) return;
+
+    let best = null;
+    for (const p of projects) {
+      const { month, year } = getFilterMonthYear(p);
+      if (!month || !year) continue;
+      const key = year * 12 + month;
+      if (!best || key > best.key) best = { month, year, key };
+    }
+
+    if (best) {
+      setSelectedMonth(best.month);
+      setSelectedYear(best.year);
+    }
+    setMonthDefaultApplied(true);
+  }, [projects, monthDefaultApplied]);
 
   async function runSheetSync({ silent = false } = {}) {
     setSyncing(true);
@@ -237,6 +259,9 @@ export default function Dashboard() {
     setView("dashboard");
     setGoogleStatus(null);
     setSaveState("");
+    setSelectedMonth("All");
+    setSelectedYear("All");
+    setMonthDefaultApplied(false);
     window.location.hash = "";
   }
 
@@ -268,7 +293,7 @@ export default function Dashboard() {
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return monthFilteredProjects.filter((p) => {
-      if (stackFilter !== "All" && (p.stack || deriveStack(p.phase)) !== stackFilter) return false;
+      if (stackFilter !== "All" && getProjectStack(p) !== stackFilter) return false;
       if (profileFilter !== "All" && p.profile !== profileFilter) return false;
       if (statusFilter !== "All" && statusOf(p) !== statusFilter) return false;
       if (q) {
@@ -317,7 +342,7 @@ export default function Dashboard() {
 
   const byStack = useMemo(() => {
     return STACKS.map((s) => {
-      const rows = monthFilteredProjects.filter((p) => (p.stack || deriveStack(p.phase)) === s);
+      const rows = monthFilteredProjects.filter((p) => getProjectStack(p) === s);
       const delivered = rows.filter((p) => statusOf(p) === "delivered").length;
       const wip = rows.filter((p) => statusOf(p) === "wip").length;
       const late = rows.filter((p) => statusOf(p) === "late").length;
@@ -348,8 +373,9 @@ export default function Dashboard() {
     () => [
       { name: "Delivered", value: kpis.deliveredCount, color: colors.delivered },
       { name: "WIP", value: kpis.wipCount, color: colors.wip },
-    ],
-    [kpis, colors.delivered, colors.wip]
+      { name: "Late", value: kpis.lateCount, color: colors.late },
+    ].filter((d) => d.value > 0),
+    [kpis, colors.delivered, colors.wip, colors.late]
   );
 
   const timeline = useMemo(() => {
@@ -383,7 +409,7 @@ export default function Dashboard() {
       ...emptyForm,
       ...p,
       price: String(p.price ?? ""),
-      stack: p.stack || deriveStack(p.phase),
+      stack: getProjectStack(p),
       teamName: p.teamName || "",
       orderId: p.orderId || "",
       orderUrl: p.orderUrl || "",
@@ -446,6 +472,14 @@ export default function Dashboard() {
         { id: "6", text: "Final deployment & delivery", completed: false },
       ],
       notes: form.notes || "",
+      extensions: Array.isArray(form.extensions)
+        ? form.extensions
+        : editingId
+          ? projects.find((p) => p.id === editingId)?.extensions || []
+          : [],
+      deliveryDate:
+        form.deliveryDate ||
+        (editingId ? projects.find((p) => p.id === editingId)?.deliveryDate || "" : ""),
     };
     const next = editingId
       ? projects.map((p) => (p.id === editingId ? { ...payload, id: editingId } : p))
@@ -561,6 +595,7 @@ export default function Dashboard() {
       ) : activeProject ? (
         <ProjectDetails
           project={activeProject}
+          isAdmin={isAdmin}
           onBack={() => {
             window.location.hash = "";
           }}
@@ -600,8 +635,10 @@ export default function Dashboard() {
             mode={hasSheetTabs ? "sheetTab" : "date"}
           />
 
+          <DueSoonBanner projects={monthFilteredProjects} />
+
           <KpiStrip kpis={kpis} />
-          <StackWorkload byStack={byStack} />
+          <StackWorkload byStack={byStack} projects={monthFilteredProjects} />
           <ProfileWorkload byProfile={byProfile} />
           <ChartsSection byStack={byStack} statusPie={statusPie} timeline={timeline} />
 

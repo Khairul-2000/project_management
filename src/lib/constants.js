@@ -72,11 +72,12 @@ export const PROFILE_SHORT = {
   SparkFlow_Fiverr: "SparkFlow",
 };
 
-export const STACKS = ["Backend", "Frontend", "UI/UX", "Automation", "Deploy", "Other"];
+export const STACKS = ["Backend", "Frontend", "App Development", "UI/UX", "Automation", "Deploy", "Other"];
 
 export const STACK_COLOR = {
   Backend: "#4F7CFF",
   Frontend: "#F08A56",
+  "App Development": "#2BB67A",
   "UI/UX": "#9B6FE0",
   Automation: "#2BB8BE",
   Deploy: "#C9B03A",
@@ -104,4 +105,6 @@ export const emptyForm = {
   supervisor: "",
   shift: "Day",
   possibility: "No",
+  extensions: [],
+  deliveryDate: "",
 };

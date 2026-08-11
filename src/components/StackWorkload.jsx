@@ -1,14 +1,21 @@
+import { useState } from "react";
 import { STACK_COLOR } from "../lib/constants";
 import { fmtMoney } from "../lib/utils";
 import { useTheme } from "../lib/theme";
 import RadialGauge from "./RadialGauge";
+import StackWorkloadDetailModal from "./StackWorkloadDetailModal";
 
-export default function StackWorkload({ byStack }) {
+export default function StackWorkload({ byStack, projects = [] }) {
   const { colors, card } = useTheme();
+  const [activeStack, setActiveStack] = useState(null);
+
   return (
     <div style={{ ...card, padding: "16px 18px", marginBottom: 16 }}>
-      <div className="disp" style={{ fontWeight: 750, fontSize: 15, marginBottom: 12, letterSpacing: -0.2 }}>
-        Workload by department
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
+        <div className="disp" style={{ fontWeight: 750, fontSize: 15, letterSpacing: -0.2 }}>
+          Workload by department
+        </div>
+        <div style={{ fontSize: 12, color: colors.muted, fontWeight: 500 }}>Click a department for details</div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
         {byStack.length === 0 ? (
@@ -17,17 +24,29 @@ export default function StackWorkload({ byStack }) {
           </div>
         ) : (
           byStack.map((d) => (
-            <div
+            <button
               key={d.stack}
+              type="button"
+              onClick={() => setActiveStack(d.stack)}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
                 minWidth: 200,
                 background: colors.panel2,
-                border: `1px solid ${colors.border}`,
+                border: `1px solid ${activeStack === d.stack ? STACK_COLOR[d.stack] : colors.border}`,
                 borderRadius: 14,
                 padding: "10px 12px",
+                cursor: "pointer",
+                textAlign: "left",
+                color: colors.text,
+                transition: "border-color .15s ease, transform .12s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "none";
               }}
             >
               <div style={{ position: "relative", width: 68, height: 68 }}>
@@ -51,10 +70,18 @@ export default function StackWorkload({ byStack }) {
                   <span style={{ fontSize: 11, color: colors.wip, fontWeight: 650 }}>{d.wip} WIP</span>
                 </div>
               </div>
-            </div>
+            </button>
           ))
         )}
       </div>
+
+      {activeStack ? (
+        <StackWorkloadDetailModal
+          stack={activeStack}
+          projects={projects}
+          onClose={() => setActiveStack(null)}
+        />
+      ) : null}
     </div>
   );
 }

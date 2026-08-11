@@ -41,6 +41,8 @@ const LOCAL_ONLY_KEYS = [
   "subtasks",
   "notes",
   "membersRaw",
+  "extensions",
+  "deliveryDate",
 ];
 
 function env(name, fallback = "") {

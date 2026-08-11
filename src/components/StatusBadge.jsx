@@ -4,7 +4,7 @@ import { useTheme } from "../lib/theme";
 export default function StatusBadge({ status, compact = false }) {
   const { colors } = useTheme();
   const map = {
-    delivered: { c: colors.delivered, l: "Delivered", short: "Done", Icon: CheckCircle2, bg: "rgba(31, 157, 99, 0.14)" },
+    delivered: { c: colors.delivered, l: "Delivered", short: "Delivered", Icon: CheckCircle2, bg: "rgba(31, 157, 99, 0.14)" },
     wip: { c: colors.wip, l: "WIP", short: "WIP", Icon: Clock3, bg: "rgba(217, 161, 23, 0.16)" },
     late: { c: colors.late, l: "Late", short: "Late", Icon: AlertTriangle, bg: "rgba(226, 75, 74, 0.14)" },
   };

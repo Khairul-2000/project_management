@@ -115,6 +115,21 @@ export default function UsersAdmin({ projects, onBack }) {
     }
   }
 
+  async function changeRole(user, role) {
+    if (role === user.role) return;
+    setError("");
+    try {
+      const updated = await patchUser(user.id, { role });
+      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      setStatus(`Updated ${user.username} to ${updated.role}`);
+      if (assignUserId === user.id && updated.role === "admin") {
+        setAssignUserId(null);
+      }
+    } catch (err) {
+      setError(err.message || "Failed to update role");
+    }
+  }
+
   async function applyResetPassword(user) {
     const password = resetPassword[user.id];
     if (!password) return;
@@ -171,7 +186,7 @@ export default function UsersAdmin({ projects, onBack }) {
           User management
         </h1>
         <div style={{ color: colors.muted, fontSize: 13 }}>
-          Create member accounts and assign which projects each member can see.
+          Create accounts, change roles (member ↔ admin), and assign which projects each member can see.
           Project team names (supervisor / team members) can also auto-link via{" "}
           <strong>Sync from projects</strong>.
         </div>
@@ -277,7 +292,17 @@ export default function UsersAdmin({ projects, onBack }) {
                   <tr key={u.id} style={{ borderTop: `1px solid ${colors.border}` }}>
                     <td style={{ padding: "10px 12px", fontWeight: 650 }}>{u.name}</td>
                     <td className="mono" style={{ padding: "10px 12px" }}>{u.username}</td>
-                    <td style={{ padding: "10px 12px" }}>{u.role}</td>
+                    <td style={{ padding: "10px 12px" }}>
+                      <select
+                        value={u.role}
+                        onChange={(e) => changeRole(u, e.target.value)}
+                        aria-label={`Role for ${u.username}`}
+                        style={{ ...field, width: "auto", minWidth: 110, padding: "7px 8px" }}
+                      >
+                        <option value="member">Member</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </td>
                     <td style={{ padding: "10px 12px", color: u.active ? colors.delivered : colors.late }}>
                       {u.active ? "Yes" : "No"}
                     </td>

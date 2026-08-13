@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { assignmentsFromProjects } from "./nameMatch.js";
+import { listClientProjects } from "./clientProjectsStore.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -281,7 +282,8 @@ export function replaceUsers(users) {
  */
 export function syncAssignmentsFromProjects(projects) {
   const data = readUsersFile();
-  const { byUser, unmatched } = assignmentsFromProjects(projects, data.users);
+  const clientProjects = listClientProjects();
+  const { byUser, unmatched } = assignmentsFromProjects(projects, data.users, clientProjects);
   let updatedMembers = 0;
   let totalLinks = 0;
 

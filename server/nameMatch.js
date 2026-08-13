@@ -95,8 +95,9 @@ export function resolveUserIdForName(name, matchIndex) {
 /**
  * Build map userId -> projectId[] from project team fields.
  * Prefers explicit teamMembers[].userId when present.
+ * Also expands client-project teams to all phase row ids with the same projectNameKey.
  */
-export function assignmentsFromProjects(projects, users) {
+export function assignmentsFromProjects(projects, users, clientProjects = []) {
   const matchIndex = buildUserMatchIndex(users);
   const knownIds = new Set((users || []).filter((u) => u?.id && u.role !== "admin").map((u) => u.id));
   /** @type {Map<string, Set<string>>} */
@@ -110,6 +111,15 @@ export function assignmentsFromProjects(projects, users) {
     return true;
   }
 
+  function linkName(rawName, projectId) {
+    if (!rawName) return;
+    const userId = resolveUserIdForName(rawName, matchIndex);
+    if (!link(userId, projectId)) {
+      const key = normalizePersonName(rawName);
+      unmatched.set(key, (unmatched.get(key) || 0) + 1);
+    }
+  }
+
   for (const project of projects || []) {
     const projectId = String(project?.id || "");
     if (!projectId) continue;
@@ -117,33 +127,52 @@ export function assignmentsFromProjects(projects, users) {
     if (Array.isArray(project?.teamMembers)) {
       for (const m of project.teamMembers) {
         if (m?.userId && link(String(m.userId), projectId)) continue;
-        const rawName = m?.name;
-        if (!rawName) continue;
-        const userId = resolveUserIdForName(rawName, matchIndex);
-        if (!link(userId, projectId)) {
-          const key = normalizePersonName(rawName);
-          unmatched.set(key, (unmatched.get(key) || 0) + 1);
-        }
+        if (m?.name) linkName(m.name, projectId);
       }
     }
 
-    if (project?.supervisor) {
-      const userId = resolveUserIdForName(project.supervisor, matchIndex);
-      if (!link(userId, projectId)) {
-        const key = normalizePersonName(project.supervisor);
-        unmatched.set(key, (unmatched.get(key) || 0) + 1);
-      }
-    }
+    if (project?.supervisor) linkName(project.supervisor, projectId);
 
     if (project?.membersRaw) {
       for (const rawName of String(project.membersRaw)
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean)) {
-        const userId = resolveUserIdForName(rawName, matchIndex);
-        if (!link(userId, projectId)) {
-          const key = normalizePersonName(rawName);
-          unmatched.set(key, (unmatched.get(key) || 0) + 1);
+        linkName(rawName, projectId);
+      }
+    }
+  }
+
+  // Client-project teams → all phase ids sharing projectNameKey
+  const phasesByKey = new Map();
+  for (const project of projects || []) {
+    const key = String(project?.projectName || "")
+      .trim()
+      .toLowerCase();
+    if (!key || !project?.id) continue;
+    if (!phasesByKey.has(key)) phasesByKey.set(key, []);
+    phasesByKey.get(key).push(String(project.id));
+  }
+
+  for (const cp of clientProjects || []) {
+    const key = cp.projectNameKey || String(cp.projectName || "").trim().toLowerCase();
+    const phaseIds = phasesByKey.get(key) || [];
+    if (!phaseIds.length) continue;
+
+    for (const phaseId of phaseIds) {
+      if (Array.isArray(cp.teamMembers)) {
+        for (const m of cp.teamMembers) {
+          if (m?.userId && link(String(m.userId), phaseId)) continue;
+          if (m?.name) linkName(m.name, phaseId);
+        }
+      }
+      if (cp.supervisor) linkName(cp.supervisor, phaseId);
+      if (cp.membersRaw) {
+        for (const rawName of String(cp.membersRaw)
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)) {
+          linkName(rawName, phaseId);
         }
       }
     }

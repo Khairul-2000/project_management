@@ -70,7 +70,6 @@ export default function StackWorkloadDetailModal({ stack, projects, onClose }) {
 
   const delivered = stackProjects.filter((p) => statusOf(p) === "delivered").length;
   const wip = stackProjects.filter((p) => statusOf(p) === "wip").length;
-  const late = stackProjects.filter((p) => statusOf(p) === "late").length;
   const value = stackProjects.reduce((s, p) => s + Number(p.price || 0), 0);
 
   const tooltipStyle = {
@@ -131,12 +130,6 @@ export default function StackWorkloadDetailModal({ stack, projects, onClose }) {
               <span style={{ color: colors.delivered }}>{delivered} delivered</span>
               {" · "}
               <span style={{ color: colors.wip }}>{wip} WIP</span>
-              {late ? (
-                <>
-                  {" · "}
-                  <span style={{ color: colors.late }}>{late} late</span>
-                </>
-              ) : null}
             </div>
           </div>
           <button

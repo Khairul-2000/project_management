@@ -4,6 +4,13 @@ import { fileURLToPath } from "url";
 import { google } from "googleapis";
 import dotenv from "dotenv";
 import { syncAssignmentsFromProjects } from "./usersStore.js";
+import {
+  clientProjectHasTeam,
+  ensureClientProjectsFromPhases,
+  getClientProjectMap,
+  projectNameKey,
+  applyClientTeamToSinglePhase,
+} from "./clientProjectsStore.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -77,10 +84,13 @@ function deriveStack(phase) {
 }
 
 function extractOrderId(urlOrId) {
-  const value = String(urlOrId || "").trim();
+  let value = String(urlOrId || "").trim();
   if (!value) return "";
-  const match = value.match(/\/orders\/([^/]+)/i);
-  return match ? match[1] : value;
+  const match = value.match(/\/orders\/([^/?#]+)/i);
+  if (match) value = match[1];
+  // Sheets sometimes prefix Fiverr ids with "#"
+  value = value.replace(/^#+/, "").trim();
+  return value;
 }
 
 function stableHash(input) {
@@ -111,6 +121,8 @@ function readJsonFile(filePath, fallback) {
 }
 
 function writeProjectsJson(projects) {
+  // Re-seed client teams from final phase teams + stamp clientProjectId
+  ensureClientProjectsFromPhases(projects);
   const pretty = JSON.stringify(projects, null, 2) + "\n";
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
   fs.writeFileSync(DB_PATH, pretty, "utf8");
@@ -333,6 +345,56 @@ function matchKey(project) {
     .toLowerCase()}|${String(project.date || "").trim().toLowerCase()}`;
 }
 
+/** Prefer richer local fields when collapsing #FO… vs FO… duplicates. */
+function preferPhase(a, b) {
+  if (!a) return b;
+  if (!b) return a;
+  const aTeam = Array.isArray(a.teamMembers) ? a.teamMembers.length : 0;
+  const bTeam = Array.isArray(b.teamMembers) ? b.teamMembers.length : 0;
+  if (bTeam !== aTeam) return bTeam > aTeam ? b : a;
+  const aNotes = String(a.notes || "").length;
+  const bNotes = String(b.notes || "").length;
+  if (bNotes !== aNotes) return bNotes > aNotes ? b : a;
+  // Prefer id without "#" in sheet- prefix
+  if (String(a.id).includes("#") && !String(b.id).includes("#")) return b;
+  if (String(b.id).includes("#") && !String(a.id).includes("#")) return a;
+  return a;
+}
+
+function dedupeExistingPhases(existing) {
+  const byKey = new Map();
+  for (const p of existing || []) {
+    const key = matchKey(p);
+    const prev = byKey.get(key);
+    if (!prev) {
+      byKey.set(key, p);
+      continue;
+    }
+    const winner = preferPhase(prev, p);
+    const loser = winner === prev ? p : prev;
+    // Keep winner id stable without hash when possible
+    const orderId = extractOrderId(winner.orderId || winner.orderUrl);
+    const merged = {
+      ...loser,
+      ...winner,
+      orderId: orderId || winner.orderId,
+      id: orderId ? `sheet-${orderId}` : winner.id,
+      teamMembers: preferPhase(
+        { teamMembers: winner.teamMembers },
+        { teamMembers: loser.teamMembers }
+      ).teamMembers || winner.teamMembers || loser.teamMembers || [],
+      supervisor: winner.supervisor || loser.supervisor || "",
+      membersRaw: winner.membersRaw || loser.membersRaw || "",
+      notes: winner.notes || loser.notes || "",
+      subtasks: winner.subtasks?.length ? winner.subtasks : loser.subtasks,
+      extensions: winner.extensions?.length ? winner.extensions : loser.extensions,
+      deliveryDate: winner.deliveryDate || loser.deliveryDate || "",
+    };
+    byKey.set(key, merged);
+  }
+  return [...byKey.values()];
+}
+
 function mapSheetRow(row, index) {
   const orderRaw = cell(row, index, "orderId");
   const orderId = extractOrderId(orderRaw);
@@ -374,19 +436,29 @@ function normalizeStatus(value) {
 }
 
 function mergeProjects(sheetRows, existing) {
+  const existingDeduped = dedupeExistingPhases(existing);
   const byKey = new Map();
-  for (const p of existing) byKey.set(matchKey(p), p);
+  for (const p of existingDeduped) byKey.set(matchKey(p), p);
+
+  // Ensure parent client projects exist for sheet + existing names
+  ensureClientProjectsFromPhases([...existingDeduped, ...sheetRows]);
+  const clientByKey = getClientProjectMap();
 
   return sheetRows.map((mapped) => {
     const key = matchKey(mapped);
     const prev = byKey.get(key);
-    const id =
-      prev?.id ||
-      (mapped.orderId ? `sheet-${mapped.orderId}` : `sheet-${stableHash(key)}`);
+    const nameKey = projectNameKey(mapped.projectName);
+    const parent = clientByKey.get(nameKey);
+    const orderId = extractOrderId(mapped.orderId || mapped.orderUrl);
+    const id = prev?.id?.includes("#") && orderId
+      ? `sheet-${orderId}`
+      : prev?.id || (orderId ? `sheet-${orderId}` : `sheet-${stableHash(key)}`);
 
     const next = {
       ...mapped,
       id,
+      orderId: orderId || mapped.orderId,
+      clientProjectId: parent?.id || "",
       teamLeadStatus: mapped.teamLeadStatus || "WIP",
       supervisor: prev?.supervisor || "",
       shift: prev?.shift || "Day",
@@ -406,6 +478,17 @@ function mergeProjects(sheetRows, existing) {
 
     for (const k of LOCAL_ONLY_KEYS) {
       if (prev?.[k] !== undefined) next[k] = prev[k];
+    }
+
+    // Attach role-matched members from client project (keeps existing phase members)
+    if (parent && clientProjectHasTeam(parent)) {
+      const applied = applyClientTeamToSinglePhase(next, parent);
+      delete applied._membersAdded;
+      Object.assign(next, applied);
+    }
+
+    if (!next.clientProjectId && parent?.id) {
+      next.clientProjectId = parent.id;
     }
 
     return next;

@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Plus, Save } from "lucide-react";
+import { Plus, Save } from "lucide-react";
 import { useTheme } from "../lib/theme";
 import { createUser, listUsers, patchUser, syncAssignmentsFromProjects } from "../lib/auth";
 
-export default function UsersAdmin({ projects, onBack }) {
-  const { colors, card } = useTheme();
+export default function UsersAdmin({ projects, clientProjects = [] }) {
+  const { colors, card, isDark } = useTheme();
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
@@ -16,6 +16,68 @@ export default function UsersAdmin({ projects, onBack }) {
   const [assignSelected, setAssignSelected] = useState([]);
   const [resetPassword, setResetPassword] = useState({});
   const [syncingAssignments, setSyncingAssignments] = useState(false);
+
+  function projectNameKey(name) {
+    return String(name || "").trim().toLowerCase();
+  }
+
+  const phasesByClientKey = useMemo(() => {
+    const map = new Map();
+    for (const p of projects || []) {
+      const key = projectNameKey(p.projectName);
+      if (!key) continue;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(p);
+    }
+    return map;
+  }, [projects]);
+
+  const clientOptions = useMemo(() => {
+    const fromRegistry = (clientProjects || []).map((cp) => ({
+      id: cp.id,
+      projectName: cp.projectName,
+      projectNameKey: cp.projectNameKey || projectNameKey(cp.projectName),
+    }));
+    // Include any phase names missing from registry
+    const seen = new Set(fromRegistry.map((c) => c.projectNameKey));
+    for (const [key, phases] of phasesByClientKey) {
+      if (seen.has(key)) continue;
+      const name = phases[0]?.projectName || key;
+      fromRegistry.push({
+        id: `cp-${key.replace(/[^a-z0-9]+/g, "-")}`,
+        projectName: name,
+        projectNameKey: key,
+      });
+    }
+    return fromRegistry.sort((a, b) => a.projectName.localeCompare(b.projectName));
+  }, [clientProjects, phasesByClientKey]);
+
+  function clientIdsFromPhaseIds(phaseIds) {
+    const allowed = new Set((phaseIds || []).map(String));
+    const selected = [];
+    for (const cp of clientOptions) {
+      const phases = phasesByClientKey.get(cp.projectNameKey) || [];
+      if (phases.some((p) => allowed.has(String(p.id)))) selected.push(cp.id);
+    }
+    return selected;
+  }
+
+  function phaseIdsFromClientIds(clientIds) {
+    const selected = new Set((clientIds || []).map(String));
+    const ids = [];
+    for (const cp of clientOptions) {
+      if (!selected.has(String(cp.id))) continue;
+      for (const p of phasesByClientKey.get(cp.projectNameKey) || []) {
+        ids.push(String(p.id));
+      }
+    }
+    return [...new Set(ids)];
+  }
+
+  function countClientProjectsForUser(user) {
+    if (user.role === "admin") return null;
+    return clientIdsFromPhaseIds(user.assignedProjectIds || []).length;
+  }
 
   async function syncFromProjects() {
     setSyncingAssignments(true);
@@ -58,21 +120,17 @@ export default function UsersAdmin({ projects, onBack }) {
     [users, assignUserId]
   );
 
-  const filteredProjects = useMemo(() => {
+  const filteredClientProjects = useMemo(() => {
     const q = assignQuery.trim().toLowerCase();
-    return projects.filter((p) => {
+    return clientOptions.filter((cp) => {
       if (!q) return true;
-      return [p.projectName, p.orderId, p.phase, p.profile, p.sheetTab]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(q);
+      return cp.projectName.toLowerCase().includes(q);
     });
-  }, [projects, assignQuery]);
+  }, [clientOptions, assignQuery]);
 
   function openAssign(user) {
     setAssignUserId(user.id);
-    setAssignSelected([...(user.assignedProjectIds || [])]);
+    setAssignSelected(clientIdsFromPhaseIds(user.assignedProjectIds || []));
     setAssignQuery("");
   }
 
@@ -80,9 +138,10 @@ export default function UsersAdmin({ projects, onBack }) {
     if (!assignUserId) return;
     setStatus("Saving assignments…");
     try {
-      const updated = await patchUser(assignUserId, { assignedProjectIds: assignSelected });
+      const phaseIds = phaseIdsFromClientIds(assignSelected);
+      const updated = await patchUser(assignUserId, { assignedProjectIds: phaseIds });
       setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
-      setStatus(`Saved ${assignSelected.length} project(s) for ${updated.name}`);
+      setStatus(`Saved ${assignSelected.length} client project(s) for ${updated.name}`);
       setAssignUserId(null);
     } catch (err) {
       setError(err.message || "Save failed");
@@ -162,32 +221,13 @@ export default function UsersAdmin({ projects, onBack }) {
 
   return (
     <div style={{ padding: "20px 16px 48px", maxWidth: 1100, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
-      <button
-        onClick={onBack}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          background: colors.panel,
-          border: `1px solid ${colors.border}`,
-          borderRadius: 10,
-          color: colors.text,
-          padding: "8px 12px",
-          fontWeight: 650,
-          marginBottom: 16,
-          boxShadow: colors.shadowSoft,
-        }}
-      >
-        <ArrowLeft size={15} /> Back to dashboard
-      </button>
-
       <div style={{ ...card, padding: "20px 22px", marginBottom: 16 }}>
         <h1 className="disp" style={{ margin: "0 0 6px", fontSize: 24, fontWeight: 800 }}>
           User management
         </h1>
         <div style={{ color: colors.muted, fontSize: 13 }}>
-          Create accounts, change roles (member ↔ admin), and assign which projects each member can see.
-          Project team names (supervisor / team members) can also auto-link via{" "}
+          Create accounts, change roles (member ↔ admin), and assign which client projects each member can see.
+          Project team names (client + phase teams) can also auto-link via{" "}
           <strong>Sync from projects</strong>.
         </div>
         <div style={{ marginTop: 12 }}>
@@ -307,7 +347,7 @@ export default function UsersAdmin({ projects, onBack }) {
                       {u.active ? "Yes" : "No"}
                     </td>
                     <td style={{ padding: "10px 12px" }}>
-                      {u.role === "admin" ? "All" : u.assignedProjectIds?.length || 0}
+                      {u.role === "admin" ? "All" : countClientProjectsForUser(u)}
                     </td>
                     <td style={{ padding: "10px 12px" }}>
                       <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -344,7 +384,7 @@ export default function UsersAdmin({ projects, onBack }) {
                             background: colors.accentSoft,
                             border: "none",
                             borderRadius: 8,
-                            color: colors.accent,
+                            color: isDark ? colors.onAccent : colors.accent,
                             padding: "7px 10px",
                             fontWeight: 700,
                             fontSize: 12,
@@ -401,23 +441,24 @@ export default function UsersAdmin({ projects, onBack }) {
             }}
           >
             <div className="disp" style={{ fontWeight: 800, fontSize: 18, marginBottom: 6 }}>
-              Assign projects · {assignUser.name}
+              Assign client projects · {assignUser.name}
             </div>
             <div style={{ color: colors.muted, fontSize: 13, marginBottom: 12 }}>
-              Selected: {assignSelected.length}
+              Selected: {assignSelected.length} · grants access to all phases under each client name
             </div>
             <input
               value={assignQuery}
               onChange={(e) => setAssignQuery(e.target.value)}
-              placeholder="Search projects…"
+              placeholder="Search client projects…"
               style={{ ...field, marginBottom: 12 }}
             />
             <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 360, overflow: "auto" }}>
-              {filteredProjects.map((p) => {
-                const checked = assignSelected.includes(p.id);
+              {filteredClientProjects.map((cp) => {
+                const checked = assignSelected.includes(cp.id);
+                const phaseCount = (phasesByClientKey.get(cp.projectNameKey) || []).length;
                 return (
                   <label
-                    key={p.id}
+                    key={cp.id}
                     style={{
                       display: "flex",
                       gap: 10,
@@ -432,13 +473,13 @@ export default function UsersAdmin({ projects, onBack }) {
                     <input
                       type="checkbox"
                       checked={checked}
-                      onChange={() => toggleProject(p.id)}
+                      onChange={() => toggleProject(cp.id)}
                       style={{ marginTop: 3 }}
                     />
                     <span>
-                      <div style={{ fontWeight: 700 }}>{p.projectName}</div>
+                      <div style={{ fontWeight: 700 }}>{cp.projectName}</div>
                       <div style={{ fontSize: 12, color: colors.muted }}>
-                        {[p.orderId, p.phase, p.sheetTab].filter(Boolean).join(" · ")}
+                        {phaseCount} phase{phaseCount === 1 ? "" : "s"}
                       </div>
                     </span>
                   </label>

@@ -1,0 +1,441 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, "..");
+export const CLIENT_PROJECTS_PATH = path.resolve(ROOT, "data/client-projects.json");
+const PROJECTS_PATH = path.resolve(ROOT, "public/data/projects.json");
+const DIST_PROJECTS_PATH = path.resolve(ROOT, "dist/data/projects.json");
+
+export function projectNameKey(name) {
+  return String(name || "")
+    .trim()
+    .toLowerCase();
+}
+
+export function clientProjectIdFromName(name) {
+  const key = projectNameKey(name);
+  const slug =
+    key
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 64) || "unknown";
+  return `cp-${slug}`;
+}
+
+function ensureDir() {
+  fs.mkdirSync(path.dirname(CLIENT_PROJECTS_PATH), { recursive: true });
+}
+
+function emptyStore() {
+  return { clientProjects: [] };
+}
+
+export function readClientProjectsFile() {
+  ensureDir();
+  if (!fs.existsSync(CLIENT_PROJECTS_PATH)) {
+    return emptyStore();
+  }
+  try {
+    const parsed = JSON.parse(fs.readFileSync(CLIENT_PROJECTS_PATH, "utf8"));
+    if (!parsed || !Array.isArray(parsed.clientProjects)) return emptyStore();
+    return parsed;
+  } catch {
+    return emptyStore();
+  }
+}
+
+export function writeClientProjectsFile(data) {
+  ensureDir();
+  const payload = {
+    clientProjects: Array.isArray(data?.clientProjects) ? data.clientProjects : [],
+  };
+  fs.writeFileSync(CLIENT_PROJECTS_PATH, JSON.stringify(payload, null, 2) + "\n", "utf8");
+  return payload;
+}
+
+export function listClientProjects() {
+  return readClientProjectsFile().clientProjects;
+}
+
+function makeClientProject(projectName) {
+  const key = projectNameKey(projectName);
+  const display = String(projectName || "").trim() || key;
+  return {
+    id: clientProjectIdFromName(display),
+    projectName: display,
+    projectNameKey: key,
+    supervisor: "",
+    teamMembers: [],
+    membersRaw: "",
+    notes: "",
+    createdAt: new Date().toISOString(),
+  };
+}
+
+export function clientProjectHasTeam(cp) {
+  if (!cp) return false;
+  if (String(cp.supervisor || "").trim()) return true;
+  if (String(cp.membersRaw || "").trim()) return true;
+  return Array.isArray(cp.teamMembers) && cp.teamMembers.length > 0;
+}
+
+export function phaseTeamIsEmpty(phase) {
+  if (!phase) return true;
+  if (String(phase.supervisor || "").trim()) return false;
+  if (String(phase.membersRaw || "").trim()) return false;
+  return !(Array.isArray(phase.teamMembers) && phase.teamMembers.length > 0);
+}
+
+export function copyTeamFromClient(cp) {
+  return {
+    supervisor: cp?.supervisor || "",
+    teamMembers: Array.isArray(cp?.teamMembers)
+      ? cp.teamMembers.map((m) => ({ ...m }))
+      : [],
+    membersRaw: cp?.membersRaw || "",
+  };
+}
+
+export function deriveStackFromPhase(phase) {
+  const p = String(phase || "").toLowerCase();
+  if (p.includes("backend")) return "Backend";
+  if (p.includes("frontend")) return "Frontend";
+  if (p.includes("ui/ux")) return "UI/UX";
+  if (p.includes("automation")) return "Automation";
+  if (p.includes("deploy")) return "Deploy";
+  if (p.includes("app development")) return "App Development";
+  return "Other";
+}
+
+/** Which stacks a client-team role should attach to ("*" = every phase). */
+export function stacksForRole(role) {
+  const r = String(role || "").toLowerCase();
+  if (!r) return ["*"];
+  if (r.includes("supervisor") || r.includes("project lead") || r === "lead") return ["*"];
+  if (r.includes("backend")) return ["Backend"];
+  if (r.includes("frontend")) return ["Frontend"];
+  if (r.includes("ui") || r.includes("ux")) return ["UI/UX"];
+  if (r.includes("devops") || r.includes("deploy")) return ["Deploy"];
+  if (r.includes("automation") || r.includes("qa")) return ["Automation"];
+  if (r.includes("ai")) return ["Automation", "Backend", "Frontend", "Other"];
+  if (r.includes("app")) return ["App Development", "Frontend", "Backend"];
+  return ["*"];
+}
+
+function roleMatchesPhaseStack(role, stack) {
+  const targets = stacksForRole(role);
+  if (targets.includes("*")) return true;
+  return targets.includes(stack);
+}
+
+function phaseHasMember(phase, member) {
+  const team = Array.isArray(phase?.teamMembers) ? phase.teamMembers : [];
+  const uid = member?.userId ? String(member.userId) : "";
+  const name = String(member?.name || "")
+    .trim()
+    .toLowerCase();
+  return team.some((m) => {
+    if (uid && m?.userId && String(m.userId) === uid) return true;
+    return (
+      name &&
+      String(m?.name || "")
+        .trim()
+        .toLowerCase() === name
+    );
+  });
+}
+
+/**
+ * Attach role-matched client members onto one phase without removing existing people.
+ * Supervisor/Project Lead → supervisor field if empty; also added to team when role is lead.
+ */
+export function applyClientTeamToSinglePhase(phase, clientProject) {
+  if (!phase || !clientProject) return phase;
+  const stack = phase.stack || deriveStackFromPhase(phase.phase);
+  const clientMembers = Array.isArray(clientProject.teamMembers) ? clientProject.teamMembers : [];
+  const next = {
+    ...phase,
+    clientProjectId: clientProject.id || phase.clientProjectId || "",
+    teamMembers: Array.isArray(phase.teamMembers) ? [...phase.teamMembers] : [],
+    supervisor: phase.supervisor || "",
+    membersRaw: phase.membersRaw || "",
+  };
+
+  if (!String(next.supervisor || "").trim() && String(clientProject.supervisor || "").trim()) {
+    next.supervisor = String(clientProject.supervisor).trim();
+  }
+
+  let added = 0;
+  for (const m of clientMembers) {
+    if (!m?.name) continue;
+    const role = m.role || "";
+    const isLead =
+      /supervisor|project lead|^lead$/i.test(String(role)) ||
+      String(role).toLowerCase() === "supervisor";
+
+    if (isLead && !String(next.supervisor || "").trim()) {
+      next.supervisor = m.name;
+    }
+
+    if (!roleMatchesPhaseStack(role, stack)) continue;
+    if (phaseHasMember(next, m)) continue;
+
+    next.teamMembers.push({
+      id: m.id || m.userId || `mem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      userId: m.userId ? String(m.userId) : undefined,
+      name: String(m.name).trim(),
+      role: String(role || "").trim() || "Member",
+    });
+    added += 1;
+  }
+
+  next._membersAdded = added;
+  return next;
+}
+
+/**
+ * Apply client team to all matching phases by role/stack.
+ * Existing phase members are kept; missing role matches are added.
+ */
+export function applyClientTeamToEmptyPhases(phases, clientProject) {
+  return applyClientTeamToPhases(phases, clientProject);
+}
+
+export function applyClientTeamToPhases(phases, clientProject) {
+  if (!clientProjectHasTeam(clientProject)) return { phases, changed: 0 };
+  const key = clientProject.projectNameKey || projectNameKey(clientProject.projectName);
+  let changed = 0;
+  const next = (phases || []).map((p) => {
+    if (projectNameKey(p.projectName) !== key) return p;
+    const before = JSON.stringify({
+      supervisor: p.supervisor || "",
+      teamMembers: p.teamMembers || [],
+      clientProjectId: p.clientProjectId || "",
+    });
+    const updated = applyClientTeamToSinglePhase(p, clientProject);
+    delete updated._membersAdded;
+    const after = JSON.stringify({
+      supervisor: updated.supervisor || "",
+      teamMembers: updated.teamMembers || [],
+      clientProjectId: updated.clientProjectId || "",
+    });
+    if (before !== after) changed += 1;
+    return updated;
+  });
+  return { phases: next, changed };
+}
+
+function memberKey(m) {
+  if (m?.userId) return `uid:${String(m.userId)}`;
+  return `name:${String(m?.name || "")
+    .trim()
+    .toLowerCase()}`;
+}
+
+/** Merge unique team members + first supervisor / membersRaw from phase rows. */
+export function aggregateTeamFromPhases(phases) {
+  const members = new Map();
+  let supervisor = "";
+  const rawParts = [];
+
+  for (const phase of phases || []) {
+    if (!supervisor && String(phase?.supervisor || "").trim()) {
+      supervisor = String(phase.supervisor).trim();
+    }
+    if (String(phase?.membersRaw || "").trim()) {
+      rawParts.push(String(phase.membersRaw).trim());
+    }
+    for (const m of Array.isArray(phase?.teamMembers) ? phase.teamMembers : []) {
+      if (!m?.name && !m?.userId) continue;
+      const key = memberKey(m);
+      if (!key || key === "name:" || members.has(key)) continue;
+      members.set(key, {
+        id: m.id || m.userId || `mem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        userId: m.userId ? String(m.userId) : undefined,
+        name: String(m.name || "").trim(),
+        role: String(m.role || "").trim() || "Member",
+      });
+    }
+  }
+
+  const membersRaw = [
+    ...new Set(
+      rawParts
+        .join(",")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    ),
+  ].join(", ");
+  return {
+    supervisor,
+    teamMembers: [...members.values()].filter((m) => m.name),
+    membersRaw,
+  };
+}
+
+function groupPhasesByNameKey(phases) {
+  const map = new Map();
+  for (const phase of phases || []) {
+    const name = String(phase?.projectName || "").trim();
+    if (!name) continue;
+    const key = projectNameKey(name);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(phase);
+  }
+  return map;
+}
+
+/**
+ * Ensure a client project exists for every distinct projectName in phase rows.
+ * If a client project has no team yet, seed it from phase-level teams in projects.json.
+ * Stamps clientProjectId on phase objects (mutates in place). Returns client list.
+ */
+export function ensureClientProjectsFromPhases(phases) {
+  const data = readClientProjectsFile();
+  const byKey = new Map(
+    data.clientProjects.map((cp) => [cp.projectNameKey || projectNameKey(cp.projectName), { ...cp }])
+  );
+  const phasesByKey = groupPhasesByNameKey(phases);
+
+  for (const [key, group] of phasesByKey) {
+    const name = String(group[0]?.projectName || "").trim() || key;
+    if (!byKey.has(key)) {
+      byKey.set(key, makeClientProject(name));
+    }
+    const existing = byKey.get(key);
+    if (!existing.projectName) existing.projectName = name;
+
+    // Seed client team from phases when client team is empty
+    if (!clientProjectHasTeam(existing)) {
+      const rolled = aggregateTeamFromPhases(group);
+      if (rolled.teamMembers.length || rolled.supervisor || rolled.membersRaw) {
+        existing.supervisor = rolled.supervisor;
+        existing.teamMembers = rolled.teamMembers;
+        existing.membersRaw = rolled.membersRaw;
+      }
+    }
+
+    // Link phases → client project
+    for (const phase of group) {
+      phase.clientProjectId = existing.id;
+    }
+  }
+
+  const next = [...byKey.values()].sort((a, b) =>
+    String(a.projectName).localeCompare(String(b.projectName))
+  );
+  writeClientProjectsFile({ clientProjects: next });
+  return next;
+}
+
+/** Write phase rows to projects.json (+ dist). */
+export function writePhasesJson(projects) {
+  const pretty = JSON.stringify(projects, null, 2) + "\n";
+  fs.mkdirSync(path.dirname(PROJECTS_PATH), { recursive: true });
+  fs.writeFileSync(PROJECTS_PATH, pretty, "utf8");
+  try {
+    fs.mkdirSync(path.dirname(DIST_PROJECTS_PATH), { recursive: true });
+    fs.writeFileSync(DIST_PROJECTS_PATH, pretty, "utf8");
+  } catch {
+    /* dist may be missing */
+  }
+}
+
+/**
+ * Full interconnect: ensure parents, seed empty client teams from phases,
+ * stamp clientProjectId, push role-matched client members onto phases,
+ * optionally write phases back if anything changed.
+ */
+export function interconnectClientAndPhases(phases, { writePhases = false } = {}) {
+  const list = Array.isArray(phases) ? phases.map((p) => ({ ...p })) : [];
+  const before = JSON.stringify(
+    list.map((p) => ({
+      id: p.id,
+      clientProjectId: p.clientProjectId || "",
+      supervisor: p.supervisor || "",
+      teamMembers: p.teamMembers || [],
+      orderId: p.orderId || "",
+    }))
+  );
+
+  // Normalize order ids (#FO… → FO…)
+  for (const p of list) {
+    const oid = String(p.orderId || "")
+      .trim()
+      .replace(/^#+/, "");
+    if (oid && oid !== p.orderId) p.orderId = oid;
+  }
+
+  const clientProjects = ensureClientProjectsFromPhases(list);
+
+  let next = list;
+  let teamPushes = 0;
+  for (const cp of clientProjects) {
+    if (!clientProjectHasTeam(cp)) continue;
+    const result = applyClientTeamToPhases(next, cp);
+    next = result.phases;
+    teamPushes += result.changed;
+  }
+
+  const after = JSON.stringify(
+    next.map((p) => ({
+      id: p.id,
+      clientProjectId: p.clientProjectId || "",
+      supervisor: p.supervisor || "",
+      teamMembers: p.teamMembers || [],
+      orderId: p.orderId || "",
+    }))
+  );
+  const linksChanged = before !== after;
+  if (writePhases && linksChanged) {
+    writePhasesJson(next);
+  }
+  return { clientProjects, phases: next, linksChanged, teamPushes };
+}
+
+export function findClientProjectById(id) {
+  return listClientProjects().find((cp) => String(cp.id) === String(id)) || null;
+}
+
+export function findClientProjectByNameKey(key) {
+  const k = projectNameKey(key);
+  return listClientProjects().find((cp) => cp.projectNameKey === k) || null;
+}
+
+export function updateClientProject(id, patch) {
+  const data = readClientProjectsFile();
+  const idx = data.clientProjects.findIndex((cp) => String(cp.id) === String(id));
+  if (idx < 0) throw new Error("Client project not found");
+
+  const prev = data.clientProjects[idx];
+  const next = { ...prev };
+
+  if (patch.supervisor !== undefined) next.supervisor = String(patch.supervisor || "");
+  if (patch.membersRaw !== undefined) next.membersRaw = String(patch.membersRaw || "");
+  if (patch.notes !== undefined) next.notes = String(patch.notes || "");
+  if (Array.isArray(patch.teamMembers)) {
+    next.teamMembers = patch.teamMembers
+      .map((m) => ({
+        id: m.id || `mem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        name: String(m.name || "").trim(),
+        role: String(m.role || "").trim() || "Member",
+        userId: m.userId ? String(m.userId) : undefined,
+      }))
+      .filter((m) => m.name);
+  }
+
+  data.clientProjects[idx] = next;
+  writeClientProjectsFile(data);
+  return next;
+}
+
+export function getClientProjectMap() {
+  const map = new Map();
+  for (const cp of listClientProjects()) {
+    map.set(cp.projectNameKey || projectNameKey(cp.projectName), cp);
+  }
+  return map;
+}

@@ -61,3 +61,30 @@ export async function syncFromSheets() {
     sheetTitles: Array.isArray(data.sheetTitles) ? data.sheetTitles : [],
   };
 }
+
+export async function loadClientProjects() {
+  const res = await fetch("/api/client-projects", opts);
+  if (res.status === 401) {
+    const err = new Error("Unauthorized");
+    err.code = 401;
+    throw err;
+  }
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || "Could not load client projects");
+  }
+  const data = await res.json();
+  return Array.isArray(data.clientProjects) ? data.clientProjects : [];
+}
+
+export async function patchClientProject(id, payload) {
+  const res = await fetch(`/api/client-projects/${encodeURIComponent(id)}`, {
+    ...opts,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Failed to update client project");
+  return data.clientProject;
+}

@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { handleSheetsApi } from "./server/sheetsApiMiddleware.js";
 import { handleAuthApi } from "./server/authApiMiddleware.js";
 import { handleProjectsApi } from "./server/projectsApiMiddleware.js";
+import { handleClientProjectsApi } from "./server/clientProjectsApiMiddleware.js";
 import { sendJson } from "./server/httpHelpers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -77,6 +78,7 @@ const server = http.createServer(async (req, res) => {
     if (await handleAuthApi(req, res)) return;
     if (await handleSheetsApi(req, res)) return;
     if (await handleProjectsApi(req, res)) return;
+    if (await handleClientProjectsApi(req, res)) return;
   } catch (err) {
     sendJson(res, 500, { error: err.message || "API error" });
     return;

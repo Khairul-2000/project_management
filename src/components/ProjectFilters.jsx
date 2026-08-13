@@ -41,7 +41,6 @@ export default function ProjectFilters({
           ["All", "All"],
           ["delivered", "Delivered"],
           ["wip", "WIP"],
-          ["late", "Late"],
         ].map(([key, label]) => (
           <button key={key} className="chip" onClick={() => onStatusChange(key)} style={chip(statusFilter === key)}>
             {label}

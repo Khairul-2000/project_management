@@ -120,10 +120,13 @@ export function normalizeProjects(list) {
 }
 
 export function extractOrderId(urlOrId) {
-  const value = String(urlOrId || "").trim();
+  let value = String(urlOrId || "").trim();
   if (!value) return "";
-  const match = value.match(/\/orders\/([^/]+)/i);
-  return match ? match[1] : value;
+  const match = value.match(/\/orders\/([^/?#]+)/i);
+  if (match) value = match[1];
+  // Sheets sometimes prefix Fiverr ids with "#"
+  value = value.replace(/^#+/, "").trim();
+  return value;
 }
 
 /** Parse Initial Date strings (M/D/YYYY or YYYY-MM-DD) into a local Date at midnight. */
@@ -320,9 +323,7 @@ export function formatDaysLeft(daysLeft) {
 export function statusOf(p) {
   const lead = String(p.teamLeadStatus || "").trim().toLowerCase();
   if (lead === "delivered") return "delivered";
-  if (lead === "cancelled") return "wip";
-  const daysLeft = getDaysLeft(p);
-  if (daysLeft != null && daysLeft < 0) return "late";
+  // Order Late / overdue = still in process → WIP (schedule urgency stays on dateline / days left)
   return "wip";
 }
 

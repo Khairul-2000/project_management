@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { getRequestUser } from "./authApiMiddleware.js";
 import { pathnameOf, readJsonBody, sendJson } from "./httpHelpers.js";
 import { syncAssignmentsFromProjects } from "./usersStore.js";
+import { interconnectClientAndPhases } from "./clientProjectsStore.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -18,7 +19,9 @@ function readProjects() {
 }
 
 function writeProjects(projects) {
-  const pretty = JSON.stringify(projects, null, 2) + "\n";
+  // Keep client-projects.json in sync; push role-matched teams onto phases
+  const { phases: linked } = interconnectClientAndPhases(projects, { writePhases: false });
+  const pretty = JSON.stringify(linked, null, 2) + "\n";
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
   fs.writeFileSync(DB_PATH, pretty, "utf8");
   try {
@@ -28,7 +31,7 @@ function writeProjects(projects) {
     /* dist may be missing */
   }
   try {
-    syncAssignmentsFromProjects(projects);
+    syncAssignmentsFromProjects(linked);
   } catch (err) {
     console.error("[projects-api] assignment sync failed:", err.message);
   }

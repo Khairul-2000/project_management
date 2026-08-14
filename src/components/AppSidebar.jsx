@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  BarChart3,
   FolderKanban,
   Users,
   RefreshCw,
@@ -78,6 +79,7 @@ export default function AppSidebar({
   googleStatus,
   syncing,
   onGoDashboard,
+  onOpenAnalytics,
   onOpenClientProjects,
   onOpenUsers,
   onSync,
@@ -189,6 +191,13 @@ export default function AppSidebar({
           showLabel={showLabel}
           active={activeView === "dashboard"}
           onClick={() => go(onGoDashboard)}
+        />
+        <NavButton
+          icon={BarChart3}
+          label="Analytics"
+          showLabel={showLabel}
+          active={activeView === "analytics"}
+          onClick={() => go(onOpenAnalytics)}
         />
         <NavButton
           icon={FolderKanban}

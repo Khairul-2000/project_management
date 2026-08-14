@@ -101,7 +101,7 @@ export function normalizeProjects(list) {
   return list.map((p) => ({
     ...p,
     stack: getProjectStack(p),
-    teamMembers: p.teamMembers || [
+    teamMembers: Array.isArray(p.teamMembers) ? p.teamMembers.map(normalizeTeamMember) : [
       { id: "m1", name: "Alex Chen", role: "Project Lead" },
       { id: "m2", name: "Elena Rostova", role: "UI/UX Designer" },
     ],
@@ -113,7 +113,7 @@ export function normalizeProjects(list) {
       { id: "5", text: "Client review & revisions", completed: false },
       { id: "6", text: "Final deployment & delivery", completed: false },
     ],
-    notes: p.notes || "",
+    notes: normalizeNotes(p.notes),
     extensions: Array.isArray(p.extensions) ? p.extensions : [],
     deliveryDate: p.deliveryDate || "",
   }));
@@ -330,3 +330,4 @@ export function statusOf(p) {
 export function fmtMoney(n) {
   return "$" + Number(n).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
+import { normalizeNotes, normalizeTeamMember } from "./projectMetadata";

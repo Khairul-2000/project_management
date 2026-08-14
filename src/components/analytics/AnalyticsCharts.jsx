@@ -25,6 +25,18 @@ export function MonthlyPerformanceChart({ data }) {
   </ResponsiveContainer></AnalyticsCard>;
 }
 
+export function ProjectTimelineChart({ data }) {
+  const { colors, tooltip, axis } = useChartStyle();
+  return <AnalyticsCard title="Project intake and delivery over time"><ResponsiveContainer width="100%" height={270}>
+    <LineChart data={data} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
+      <CartesianGrid stroke={colors.border} vertical={false} /><XAxis dataKey="month" tick={axis} tickLine={false} axisLine={false} /><YAxis allowDecimals={false} tick={axis} tickLine={false} axisLine={false} />
+      <Tooltip contentStyle={tooltip} /><Legend wrapperStyle={{ fontSize: 12 }} />
+      <Line type="monotone" dataKey="projects" name="Projects received" stroke="#4F7CFF" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+      <Line type="monotone" dataKey="delivered" name="Projects delivered" stroke={colors.delivered} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+    </LineChart>
+  </ResponsiveContainer></AnalyticsCard>;
+}
+
 export function StatusChart({ data }) {
   const { colors, tooltip } = useChartStyle();
   return <AnalyticsCard title="Workflow status"><ResponsiveContainer width="100%" height={270}><PieChart>

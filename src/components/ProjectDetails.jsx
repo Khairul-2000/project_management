@@ -24,6 +24,8 @@ import {
   toInputDate,
   diffCalendarDays,
 } from "../lib/utils";
+import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeNotes, normalizeTeamMember } from "../lib/projectMetadata";
+import RoleMultiSelect from "./RoleMultiSelect";
 
 function getInitials(name) {
   return name
@@ -50,26 +52,18 @@ function getAvatarBg(name) {
   return colors[Math.abs(hash) % colors.length];
 }
 
-const ROLES = [
-  "Backend Developer",
-  "Frontend Developer",
-  "App Developer",
-  "AI Engineer",
-  "UI/UX Designer",
-  "DevOps Engineer",
-  "QA Engineer",
-  "Project Lead",
-];
+const ROLES = PROJECT_ROLES;
 
 export default function ProjectDetails({ project, onBack, onUpdate, onDelete, isAdmin = false }) {
   const { colors, isDark } = useTheme();
   const COLORS = colors;
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [newMemberRole, setNewMemberRole] = useState(ROLES[0]);
+  const [newMemberRoles, setNewMemberRoles] = useState([ROLES[0]]);
   const [directory, setDirectory] = useState([]);
   const [teamError, setTeamError] = useState("");
-  const [notesText, setNotesText] = useState(project.notes || "");
+  const [notes, setNotes] = useState(() => normalizeNotes(project.notes));
+  const [noteDraft, setNoteDraft] = useState("");
   const [saveStatus, setSaveStatus] = useState("");
   const [deliveryInput, setDeliveryInput] = useState("");
   const [extendInput, setExtendInput] = useState("");
@@ -77,7 +71,8 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
 
   // Sync notes / schedule inputs when project changes
   useEffect(() => {
-    setNotesText(project.notes || "");
+    setNotes(normalizeNotes(project.notes));
+    setNoteDraft("");
     setSaveStatus("");
     setScheduleError("");
     const suggested = getSuggestedDeliveryDate(project);
@@ -134,17 +129,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
     );
   }, [team]);
 
-  const availableUsers = useMemo(() => {
-    return directory.filter((u) => {
-      if (assignedUserIds.has(String(u.id))) return false;
-      const name = String(u.name || "").trim().toLowerCase();
-      if (name && assignedNames.has(name)) return false;
-      // Also hide if short first name already on team (sheet-style "Arman")
-      const first = name.split(/\s+/)[0];
-      if (first && assignedNames.has(first)) return false;
-      return true;
-    });
-  }, [directory, assignedUserIds, assignedNames]);
+  const availableUsers = directory;
 
   const handleToggleSubtask = (subtaskId) => {
     const updatedSubtasks = subtasks.map(t =>
@@ -187,19 +172,20 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
       setTeamError("Select a team member from the list.");
       return;
     }
-    if (assignedUserIds.has(String(user.id))) {
-      setTeamError("That user is already on this project.");
+    if (!newMemberRoles.length) {
+      setTeamError("Select at least one role.");
       return;
     }
-    const newMember = {
+    const existingIndex = team.findIndex((member) => String(member.userId || member.id) === String(user.id) || String(member.name || "").trim().toLowerCase() === String(user.name || "").trim().toLowerCase());
+    const newMember = normalizeTeamMember({
       id: user.id,
       userId: user.id,
       name: user.name,
-      role: newMemberRole,
-    };
+      roles: newMemberRoles,
+    });
     onUpdate({
       ...project,
-      teamMembers: [...team, newMember],
+      teamMembers: existingIndex >= 0 ? team.map((member, index) => index === existingIndex ? mergeMemberRoles(member, newMemberRoles) : member) : [...team, newMember],
     });
     setSelectedUserId("");
   };
@@ -212,13 +198,24 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
     });
   };
 
-  const handleSaveNotes = () => {
+  const handleAddNote = () => {
+    const note = createNote(noteDraft);
+    if (!note.text) return;
+    const nextNotes = [...notes, note];
+    setNotes(nextNotes);
+    setNoteDraft("");
     onUpdate({
       ...project,
-      notes: notesText
+      notes: nextNotes
     });
     setSaveStatus("Saved!");
     setTimeout(() => setSaveStatus(""), 2000);
+  };
+
+  const handleDeleteNote = (noteId) => {
+    const nextNotes = notes.filter((note) => note.id !== noteId);
+    setNotes(nextNotes);
+    onUpdate({ ...project, notes: nextNotes });
   };
 
   const handleStatusChange = (field, val) => {
@@ -757,7 +754,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
                     </div>
                     <div>
                       <div style={{ fontSize: 13.5, fontWeight: 600 }}>{m.name}</div>
-                      <div style={{ fontSize: 11, color: COLORS.muted, marginTop: 1 }}>{m.role}</div>
+                      <div style={{ fontSize: 11, color: COLORS.muted, marginTop: 1 }}>{memberRoleLabel(m)}</div>
                     </div>
                   </div>
                   <button 
@@ -809,28 +806,13 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
                 <div style={{ fontSize: 12, color: COLORS.late }}>{teamError}</div>
               )}
               <div style={{ display: "flex", gap: 8 }}>
-                <select 
-                  value={newMemberRole}
-                  onChange={(e) => setNewMemberRole(e.target.value)}
-                  style={{ 
-                    flex: 1,
-                    background: COLORS.panel2, 
-                    border: `1px solid ${COLORS.border}`, 
-                    borderRadius: 8, 
-                    padding: "8px 10px", 
-                    color: COLORS.text, 
-                    fontSize: 13,
-                    cursor: "pointer"
-                  }}
-                >
-                  {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
+                <RoleMultiSelect roles={ROLES} value={newMemberRoles} onChange={setNewMemberRoles} />
                 <button type="submit" disabled={!selectedUserId} style={{ 
                   background: selectedUserId ? COLORS.accent : COLORS.border, 
                   color: selectedUserId ? "#fff" : COLORS.muted, 
                   border: "none", 
                   borderRadius: 8, 
-                  padding: "0 14px", 
+                  padding: "0 14px", height: 40,
                   fontWeight: 600, 
                   fontSize: 13, 
                   display: "flex", 
@@ -1048,47 +1030,11 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
               )}
             </div>
 
-            <textarea 
-              value={notesText} 
-              onChange={(e) => setNotesText(e.target.value)}
-              placeholder="Type meeting notes, deployment requirements, credentials structure, or general logs for the delivery team..."
-              style={{ 
-                width: "100%", 
-                height: 120, 
-                background: COLORS.panel2, 
-                border: `1px solid ${COLORS.border}`, 
-                borderRadius: 10, 
-                padding: 12, 
-                color: COLORS.text, 
-                fontFamily: "Manrope, sans-serif", 
-                fontSize: 13.5, 
-                resize: "vertical", 
-                boxSizing: "border-box",
-                marginBottom: 12
-              }} 
-            />
-
-            <button 
-              onClick={handleSaveNotes} 
-              style={{ 
-                background: COLORS.panel2, 
-                color: COLORS.text, 
-                border: `1px solid ${COLORS.border}`, 
-                borderRadius: 8, 
-                padding: "9px 16px", 
-                fontWeight: 600, 
-                fontSize: 13.5,
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: 6
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = COLORS.border}
-              onMouseLeave={(e) => e.currentTarget.style.background = COLORS.panel2}
-            >
-              <FileText size={15} /> Save Notes
-            </button>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+              {notes.map((note) => <div key={note.id} style={{ display: "flex", alignItems: "flex-start", gap: 10, background: COLORS.panel2, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: "10px 12px" }}><span style={{ flex: 1, fontSize: 13, whiteSpace: "pre-wrap" }}>{note.text}</span><button type="button" onClick={() => handleDeleteNote(note.id)} style={{ border: 0, background: "none", color: COLORS.muted, padding: 0 }}><Trash2 size={14} /></button></div>)}
+            </div>
+            <textarea value={noteDraft} onChange={(e) => setNoteDraft(e.target.value)} placeholder="Add a developer note…" style={{ width: "100%", height: 90, background: COLORS.panel2, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: 12, color: COLORS.text, fontFamily: "Manrope, sans-serif", fontSize: 13.5, resize: "vertical", boxSizing: "border-box", marginBottom: 12 }} />
+            <button onClick={handleAddNote} style={{ background: COLORS.panel2, color: COLORS.text, border: `1px solid ${COLORS.border}`, borderRadius: 8, padding: "9px 16px", fontWeight: 600, fontSize: 13.5, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><FileText size={15} /> Add note</button>
           </div>
 
         </div>

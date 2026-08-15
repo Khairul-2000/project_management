@@ -160,6 +160,7 @@ function roleMatchesPhaseStack(roles, stack) {
 }
 
 function phaseStack(phase) {
+  if (phase?.stackLocked && phase?.stack) return phase.stack;
   return deriveStackFromPhase(phase?.phase) || phase?.stack || "Other";
 }
 
@@ -404,10 +405,15 @@ export function ensureClientProjectsFromPhases(phases) {
       existing.membersRaw = [...new Set(parts)].join(", ");
     }
 
-    // Link phases → client project + normalize stack from phase title
+    // Link phases → client project; keep admin-locked department, else derive from phase title
     for (const phase of group) {
       phase.clientProjectId = existing.id;
-      phase.stack = phaseStack(phase);
+      if (phase.stackLocked && phase.stack) {
+        phase.stack = phase.stack;
+      } else {
+        phase.stack = phaseStack(phase);
+        phase.stackLocked = false;
+      }
     }
   }
 

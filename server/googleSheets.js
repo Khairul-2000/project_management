@@ -50,6 +50,7 @@ const LOCAL_ONLY_KEYS = [
   "membersRaw",
   "extensions",
   "deliveryDate",
+  "stackLocked",
 ];
 
 function env(name, fallback = "") {
@@ -494,6 +495,12 @@ function mergeProjects(sheetRows, existing) {
 
     for (const k of LOCAL_ONLY_KEYS) {
       if (prev?.[k] !== undefined) next[k] = prev[k];
+    }
+
+    // Keep admin-corrected department across sheet sync
+    if (prev?.stackLocked && prev?.stack) {
+      next.stack = prev.stack;
+      next.stackLocked = true;
     }
 
     // Attach role-matched members from client project (keeps existing phase members)

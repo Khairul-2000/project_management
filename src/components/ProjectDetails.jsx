@@ -3,7 +3,7 @@ import {
   ArrowLeft, Calendar, User, DollarSign, Tag, CheckSquare, 
   Trash2, Plus, Clock, Clock3, FileText, CheckCircle2, AlertTriangle, Users, ExternalLink
 } from "lucide-react";
-import { STACK_COLOR, PROFILE_SHORT } from "../lib/constants";
+import { STACK_COLOR, PROFILE_SHORT, STACKS } from "../lib/constants";
 import { useTheme } from "../lib/theme";
 import { listTeamDirectory } from "../lib/auth";
 import {
@@ -25,6 +25,7 @@ import {
   diffCalendarDays,
   getDeveloperRole,
   getProjectStack,
+  deriveStack,
 } from "../lib/utils";
 import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeNotes, normalizeTeamMember } from "../lib/projectMetadata";
 import RoleMultiSelect from "./RoleMultiSelect";
@@ -75,6 +76,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
   const [deliveryInput, setDeliveryInput] = useState("");
   const [extendInput, setExtendInput] = useState("");
   const [scheduleError, setScheduleError] = useState("");
+  const [phaseDraft, setPhaseDraft] = useState(project.phase || "");
 
   // Sync notes / schedule inputs when project changes
   useEffect(() => {
@@ -83,6 +85,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
     setSaveStatus("");
     setScheduleError("");
     setNewMemberRoles(defaultRoleForProject(project));
+    setPhaseDraft(project.phase || "");
     const suggested = getSuggestedDeliveryDate(project);
     const original = getOriginalDeliveryDate(project);
     setDeliveryInput(toInputDate(original || suggested || ""));
@@ -116,9 +119,10 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
   const completedCount = subtasks.filter(t => t.completed).length;
   const totalCount = subtasks.length;
   const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-  const stackColor = STACK_COLOR[project.stack] || STACK_COLOR.Other;
 
   const team = Array.isArray(project.teamMembers) ? project.teamMembers : [];
+  const currentStack = getProjectStack(project);
+  const stackColor = STACK_COLOR[currentStack] || STACK_COLOR.Other;
 
   const assignedUserIds = useMemo(() => {
     const ids = new Set();
@@ -423,25 +427,118 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
       }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
-            <span style={{ 
-              background: stackColor + "22", 
-              color: stackColor, 
-              border: `1px solid ${stackColor}33`, 
-              borderRadius: 6, 
-              padding: "2px 8px", 
-              fontSize: 11, 
-              fontWeight: 600,
-              textTransform: "uppercase" 
-            }}>
-              {project.stack}
-            </span>
+            {isAdmin ? (
+              <select
+                value={STACKS.includes(currentStack) ? currentStack : "Other"}
+                onChange={(e) =>
+                  onUpdate({
+                    ...project,
+                    stack: e.target.value,
+                    stackLocked: true,
+                  })
+                }
+                aria-label="Department"
+                style={{
+                  background: stackColor + "22",
+                  color: stackColor,
+                  border: `1px solid ${stackColor}55`,
+                  borderRadius: 6,
+                  padding: "4px 8px",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                }}
+              >
+                {STACKS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span style={{ 
+                background: stackColor + "22", 
+                color: stackColor, 
+                border: `1px solid ${stackColor}33`, 
+                borderRadius: 6, 
+                padding: "2px 8px", 
+                fontSize: 11, 
+                fontWeight: 600,
+                textTransform: "uppercase" 
+              }}>
+                {currentStack}
+              </span>
+            )}
             {badge(statusOf(project))}
+            {isAdmin && project.stackLocked ? (
+              <button
+                type="button"
+                onClick={() =>
+                  onUpdate({
+                    ...project,
+                    stackLocked: false,
+                    stack: deriveStack(project.phase),
+                  })
+                }
+                style={{
+                  background: "transparent",
+                  border: `1px solid ${COLORS.border}`,
+                  borderRadius: 6,
+                  color: COLORS.muted,
+                  fontSize: 11,
+                  fontWeight: 650,
+                  padding: "3px 8px",
+                  cursor: "pointer",
+                }}
+                title="Reset department from phase name"
+              >
+                Auto department
+              </button>
+            ) : null}
           </div>
           <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, fontFamily: "Manrope, sans-serif" }}>
             {project.projectName}
           </h1>
-          <p style={{ color: COLORS.muted, fontSize: 13.5, margin: "6px 0 0" }}>
-            ID: <span className="mono" style={{ color: COLORS.accent }}>{project.id}</span> &middot; Phase: {project.phase || "—"}
+          <p style={{ color: COLORS.muted, fontSize: 13.5, margin: "6px 0 0", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span>
+              ID: <span className="mono" style={{ color: COLORS.accent }}>{project.id}</span>
+            </span>
+            <span>·</span>
+            {isAdmin ? (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                Phase:
+                <input
+                  value={phaseDraft}
+                  onChange={(e) => setPhaseDraft(e.target.value)}
+                  onBlur={() => {
+                    const phase = phaseDraft.trim();
+                    if (phase === (project.phase || "")) return;
+                    if (project.stackLocked) {
+                      onUpdate({ ...project, phase });
+                      return;
+                    }
+                    onUpdate({
+                      ...project,
+                      phase,
+                      stack: deriveStack(phase),
+                    });
+                  }}
+                  placeholder="e.g. Mobile App Frontend"
+                  style={{
+                    background: COLORS.panel2,
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: 8,
+                    padding: "4px 8px",
+                    color: COLORS.text,
+                    fontSize: 13,
+                    minWidth: 180,
+                  }}
+                />
+              </span>
+            ) : (
+              <span>Phase: {project.phase || "—"}</span>
+            )}
           </p>
         </div>
         <div style={{ textAlign: "right" }}>

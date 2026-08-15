@@ -25,8 +25,10 @@ export function deriveStack(phase) {
   return "Other";
 }
 
-/** Prefer phase-derived department so taxonomy updates apply to synced projects. */
+/** Prefer phase-derived department so taxonomy updates apply to synced projects.
+ *  Admin lock (`stackLocked`) keeps a manually corrected department. */
 export function getProjectStack(project) {
+  if (project?.stackLocked && project?.stack) return project.stack;
   if (project?.phase) return deriveStack(project.phase);
   return project?.stack || "Other";
 }
@@ -115,6 +117,7 @@ export function normalizeProjects(list) {
   if (!Array.isArray(list)) return [];
   return list.map((p) => ({
     ...p,
+    stackLocked: Boolean(p.stackLocked),
     stack: getProjectStack(p),
     teamMembers: Array.isArray(p.teamMembers) ? p.teamMembers.map(normalizeTeamMember) : [
       { id: "m1", name: "Alex Chen", role: "Project Lead" },

@@ -3,7 +3,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "jinvalex",
     "price": 1600,
     "phase": "Mobile App Backend",
@@ -61,7 +61,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "ferrifim",
     "price": 959,
     "phase": "AI Automation",
@@ -70,7 +70,7 @@
     "orderUrl": "https://www.fiverr.com/orders/FO730A665FA47/activities",
     "dateline": "Order Done",
     "salesStatus": "Delivered",
-    "teamLeadStatus": "Delivered",
+    "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
     "clientProjectId": "cp-ferrifim",
     "id": "sheet-FO730A665FA47",
@@ -119,7 +119,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "aschlenvoigt",
     "price": 1000,
     "phase": "AI Automation",
@@ -177,7 +177,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "stefansmall89",
     "price": 240,
     "phase": "Publish Deploy",
@@ -235,7 +235,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "mothirahman",
     "price": 200,
     "phase": "Mobile App Backend",
@@ -293,7 +293,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "tongugeofrey",
     "price": 400,
     "phase": "Publish Deploy",
@@ -361,7 +361,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "mustafafly",
     "price": 1040,
     "phase": "AI App Backend",
@@ -370,7 +370,7 @@
     "orderUrl": "https://www.fiverr.com/orders/FO2DEBCDCA42/activities",
     "dateline": "Order Late",
     "salesStatus": "WIP",
-    "teamLeadStatus": "WIP",
+    "teamLeadStatus": "Delivered",
     "sheetTab": "STA Aug 2026",
     "clientProjectId": "cp-mustafafly",
     "id": "seed-6",
@@ -428,7 +428,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "lexi_comb",
     "price": 1280,
     "phase": "Mobile App Backend",
@@ -511,7 +511,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "blu_yonder",
     "price": 160,
     "phase": "Publish Deploy",
@@ -578,14 +578,14 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "ahomesllc",
     "price": 2800,
     "phase": "Mobile App Backend",
     "stack": "Backend",
     "orderId": "FO822DC487982",
     "orderUrl": "https://www.fiverr.com/orders/FO822DC487982/activities",
-    "dateline": "9H 27M 54S",
+    "dateline": "Order Late",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -664,7 +664,7 @@
     "date": "7/2/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "charismaexpert",
     "price": 400,
     "phase": "Publish Deploy",
@@ -713,16 +713,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/2/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "amurgai3",
     "price": 1440,
     "phase": "AI Website Frontend",
@@ -771,16 +769,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/13/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "ahmedhadhrami",
     "price": 400,
     "phase": "AI Automation",
@@ -829,16 +825,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/14/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "caesar370",
     "price": 400,
     "phase": "AI Automation",
@@ -887,23 +881,21 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/22/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "steveb_81",
     "price": 800,
     "phase": "AI Website Backend",
     "stack": "Backend",
     "orderId": "FO1DFABAEC43",
     "orderUrl": "https://www.fiverr.com/orders/FO1DFABAEC43/activities",
-    "dateline": "12 Days",
+    "dateline": "10 Days",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -945,16 +937,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/23/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "autockr989",
     "price": 880,
     "phase": "AI Automation",
@@ -1003,16 +993,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/25/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "travis_account",
     "price": 80,
     "phase": "AI Automation",
@@ -1061,16 +1049,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "millerbuilder",
     "price": 1200,
     "phase": "Mobile App Frontend",
@@ -1088,22 +1074,13 @@
     "possibility": "No",
     "teamMembers": [
       {
-        "id": "u-mslo41o8-93a57a",
-        "name": "Ovie Rahaman Sheikh",
-        "role": "UI/UX Designer",
-        "userId": "u-mslo41o8-93a57a",
-        "roles": [
-          "UI/UX Designer"
-        ]
-      },
-      {
         "id": "u-mslo41o8-c41716",
         "userId": "u-mslo41o8-c41716",
         "name": "Miraz Or Rashid Alvee",
-        "role": "Frontend Developer",
         "roles": [
           "Frontend Developer"
-        ]
+        ],
+        "role": "Frontend Developer"
       }
     ],
     "subtasks": [
@@ -1138,23 +1115,21 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "neonsaidi",
     "price": 800,
     "phase": "Mobile App UI/UX",
     "stack": "UI/UX",
     "orderId": "FO71BFB501381",
     "orderUrl": "https://www.fiverr.com/orders/FO71BFB501381/activities",
-    "dateline": "1D 9H 27M 54S",
+    "dateline": "Order Late",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -1196,28 +1171,21 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [
-      {
-        "date": "2026-08-22",
-        "createdAt": "2026-08-12T08:21:28.401Z"
-      }
-    ],
-    "deliveryDate": "2026-08-14"
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "affultim",
     "price": 640,
     "phase": "Mobile App Backend",
     "stack": "Backend",
     "orderId": "FO429F99F8BC8",
     "orderUrl": "https://www.fiverr.com/orders/FO429F99F8BC8/activities",
-    "dateline": "10 Days",
+    "dateline": "8 Days",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -1259,23 +1227,21 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "mannyibay",
     "price": 960,
     "phase": "AI App UI/UX",
     "stack": "UI/UX",
     "orderId": "FO11BFBC2D587",
     "orderUrl": "https://www.fiverr.com/orders/FO11BFBC2D587/activities",
-    "dateline": "6 Days",
+    "dateline": "4 Days",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -1317,16 +1283,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "8/1/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "vincenoroyan",
     "price": 40,
     "phase": "",
@@ -1375,23 +1339,21 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "8/2/2026",
     "salesPerson": "Munna",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "amurgai3",
     "price": 1440,
     "phase": "Mobile App Backend",
     "stack": "Backend",
     "orderId": "FO830FA6A02C6",
     "orderUrl": "https://www.fiverr.com/orders/FO830FA6A02C6/activities",
-    "dateline": "28 Days",
+    "dateline": "26 Days",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -1433,23 +1395,21 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "8/3/2026",
     "salesPerson": "Redwan",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "robertomassa887",
     "price": 960,
     "phase": "Mobile App Backend",
     "stack": "Backend",
     "orderId": "FO429FBE966C8",
     "orderUrl": "https://www.fiverr.com/orders/FO429FBE966C8/activities",
-    "dateline": "10 Days",
+    "dateline": "8 Days",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -1491,16 +1451,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "8/6/2026",
     "salesPerson": "Nadim",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "plifplifplif",
     "price": 320,
     "phase": "AI Automation",
@@ -1549,23 +1507,21 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "8/7/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "demiangoldstraj",
     "price": 640,
     "phase": "Mobile App Backend",
     "stack": "Backend",
     "orderId": "FO1700014501",
     "orderUrl": "https://www.fiverr.com/orders/FO1700014501/activities",
-    "dateline": "18 Days",
+    "dateline": "16 Days",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -1607,23 +1563,21 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "8/11/2026",
     "salesPerson": "Ibrahim",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "chris_feist1",
     "price": 560,
     "phase": "AI Automation",
     "stack": "Automation",
     "orderId": "FO52A03AFE9C7",
     "orderUrl": "https://www.fiverr.com/orders/FO52A03AFE9C7/activities",
-    "dateline": "12 Days",
+    "dateline": "10 Days",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -1637,10 +1591,10 @@
         "id": "u-mslo41o8-2e868e",
         "userId": "u-mslo41o8-2e868e",
         "name": "Riaz Mahmood",
-        "role": "AI Engineer",
         "roles": [
           "AI Engineer"
-        ]
+        ],
+        "role": "AI Engineer"
       }
     ],
     "subtasks": [
@@ -1675,23 +1629,21 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "8/12/2026",
     "salesPerson": "Munna",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "erwin_rent",
     "price": 560,
     "phase": "AI Automation",
     "stack": "Automation",
     "orderId": "FO423044CAA06",
     "orderUrl": "https://www.fiverr.com/orders/FO423044CAA06/activities",
-    "dateline": "13 Days",
+    "dateline": "11 Days",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -1733,23 +1685,21 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "8/12/2026",
     "salesPerson": "Munna",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "millerbuilder",
     "price": 1200,
     "phase": "Mobile App Backend",
     "stack": "Backend",
     "orderId": "FO1700E34901",
     "orderUrl": "https://www.fiverr.com/orders/FO1700E34901/activities",
-    "dateline": "28 Days",
+    "dateline": "26 Days",
     "salesStatus": "WIP",
     "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
@@ -1760,22 +1710,13 @@
     "possibility": "No",
     "teamMembers": [
       {
-        "id": "u-mslo41o8-93a57a",
-        "name": "Ovie Rahaman Sheikh",
-        "role": "UI/UX Designer",
-        "userId": "u-mslo41o8-93a57a",
-        "roles": [
-          "UI/UX Designer"
-        ]
-      },
-      {
         "id": "u-mslo41o8-487104",
         "userId": "u-mslo41o8-487104",
         "name": "Md. Arman Hosen",
-        "role": "Backend Developer",
         "roles": [
           "Backend Developer"
-        ]
+        ],
+        "role": "Backend Developer"
       }
     ],
     "subtasks": [
@@ -1810,16 +1751,126 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
+  },
+  {
+    "date": "8/14/2026",
+    "salesPerson": "Toki",
+    "profile": "Ui_verse_Fiverr",
+    "teamName": "Pritom",
+    "projectName": "earnmoney247",
+    "price": 320,
+    "phase": "AI Automation",
+    "stack": "Automation",
+    "orderId": "FO71C047DA381",
+    "orderUrl": "https://www.fiverr.com/orders/FO71C047DA381/activities",
+    "dateline": "2 Days",
+    "salesStatus": "WIP",
+    "teamLeadStatus": "WIP",
+    "sheetTab": "STA Aug 2026",
+    "clientProjectId": "cp-earnmoney247",
+    "id": "sheet-FO71C047DA381",
+    "supervisor": "",
+    "shift": "Day",
+    "possibility": "No",
+    "teamMembers": [],
+    "subtasks": [
+      {
+        "id": "1",
+        "text": "Requirements gathering & analysis",
+        "completed": false
+      },
+      {
+        "id": "2",
+        "text": "UI/UX Mockup design",
+        "completed": false
+      },
+      {
+        "id": "3",
+        "text": "Core API development",
+        "completed": false
+      },
+      {
+        "id": "4",
+        "text": "Frontend integration & testing",
+        "completed": false
+      },
+      {
+        "id": "5",
+        "text": "Client review & revisions",
+        "completed": false
+      },
+      {
+        "id": "6",
+        "text": "Final deployment & delivery",
+        "completed": false
+      }
+    ],
+    "notes": "",
+    "membersRaw": ""
+  },
+  {
+    "date": "8/15/2026",
+    "salesPerson": "Sajib",
+    "profile": "Ui_verse_Fiverr",
+    "teamName": "Pritom",
+    "projectName": "cbrownaz",
+    "price": 2400,
+    "phase": "Mobile App Frontend",
+    "stack": "Frontend",
+    "orderId": "FO82A07EBFDC4",
+    "orderUrl": "https://www.fiverr.com/orders/FO82A07EBFDC4/activities",
+    "dateline": "34 Days",
+    "salesStatus": "WIP",
+    "teamLeadStatus": "WIP",
+    "sheetTab": "STA Aug 2026",
+    "clientProjectId": "cp-cbrownaz",
+    "id": "sheet-FO82A07EBFDC4",
+    "supervisor": "",
+    "shift": "Day",
+    "possibility": "No",
+    "teamMembers": [],
+    "subtasks": [
+      {
+        "id": "1",
+        "text": "Requirements gathering & analysis",
+        "completed": false
+      },
+      {
+        "id": "2",
+        "text": "UI/UX Mockup design",
+        "completed": false
+      },
+      {
+        "id": "3",
+        "text": "Core API development",
+        "completed": false
+      },
+      {
+        "id": "4",
+        "text": "Frontend integration & testing",
+        "completed": false
+      },
+      {
+        "id": "5",
+        "text": "Client review & revisions",
+        "completed": false
+      },
+      {
+        "id": "6",
+        "text": "Final deployment & delivery",
+        "completed": false
+      }
+    ],
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "tyronerosales",
     "price": 240,
     "phase": "Publish Deploy",
@@ -1877,7 +1928,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "lalaneeds",
     "price": 1600,
     "phase": "Mobile App Backend",
@@ -1935,7 +1986,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "derickotoo",
     "price": 2400,
     "phase": "Mobile App Frontend",
@@ -1993,7 +2044,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "richardgraney",
     "price": 1200,
     "phase": "AI Automation",
@@ -2051,7 +2102,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "steveb_81",
     "price": 800,
     "phase": "Mobile App UI/UX",
@@ -2109,7 +2160,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "joedor999",
     "price": 200,
     "phase": "AI Automation",
@@ -2167,7 +2218,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "charismaexpert",
     "price": 1200,
     "phase": "AI Website Backend",
@@ -2225,7 +2276,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "simonsabir606",
     "price": 160,
     "phase": "AI Automation",
@@ -2283,7 +2334,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "lasharra",
     "price": 1200,
     "phase": "AI App UI/UX",
@@ -2341,7 +2392,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "steveb_81",
     "price": 480,
     "phase": "AI Website Frontend",
@@ -2399,7 +2450,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "affultim",
     "price": 960,
     "phase": "Mobile App UI/UX",
@@ -2457,7 +2508,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "robertomassa887",
     "price": 640,
     "phase": "Mobile App Frontend",
@@ -2515,7 +2566,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "sleepee",
     "price": 800,
     "phase": "Publish Deploy",
@@ -2564,16 +2615,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/1/2026",
     "salesPerson": "Ariful",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "kierantait159",
     "price": 800,
     "phase": "Mobile App UI/UX",
@@ -2622,16 +2671,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/8/2026",
     "salesPerson": "Toki",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "jinvalex",
     "price": 520,
     "phase": "Custom Website UI/UX",
@@ -2690,16 +2737,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/10/2026",
     "salesPerson": "Elio",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "joedor999",
     "price": 1000,
     "phase": "AI Website Backend",
@@ -2748,16 +2793,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/13/2026",
     "salesPerson": "Tashiba",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "steveb_81",
     "price": 800,
     "phase": "Mobile App Frontend",
@@ -2806,16 +2849,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/14/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "demiangoldstraj",
     "price": 800,
     "phase": "AI App UI/UX",
@@ -2864,16 +2905,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/14/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "kanaryyoung",
     "price": 640,
     "phase": "AI Automation",
@@ -2922,16 +2961,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/14/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "cbrownaz",
     "price": 800,
     "phase": "Mobile App UI/UX",
@@ -2980,16 +3017,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/14/2026",
     "salesPerson": "Munna",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "millerbuilder",
     "price": 1200,
     "phase": "Custom Website UI/UX",
@@ -3008,12 +3043,12 @@
     "teamMembers": [
       {
         "id": "u-mslo41o8-93a57a",
-        "name": "Ovie Rahaman Sheikh",
-        "role": "UI/UX Designer",
         "userId": "u-mslo41o8-93a57a",
+        "name": "Ovie Rahaman Sheikh",
         "roles": [
           "UI/UX Designer"
-        ]
+        ],
+        "role": "UI/UX Designer"
       }
     ],
     "subtasks": [
@@ -3048,16 +3083,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/14/2026",
     "salesPerson": "Munna",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "erwin_rent",
     "price": 800,
     "phase": "AI Automation",
@@ -3106,16 +3139,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/17/2026",
     "salesPerson": "Ariful",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "spethy39",
     "price": 240,
     "phase": "Mobile App Frontend",
@@ -3164,16 +3195,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/20/2026",
     "salesPerson": "Ibrahim",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "simonsabir606",
     "price": 160,
     "phase": "",
@@ -3222,16 +3251,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/22/2026",
     "salesPerson": "Ariful",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "kierantait159",
     "price": 800,
     "phase": "Mobile App Frontend",
@@ -3280,16 +3307,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "7/23/2026",
     "salesPerson": "Toki",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "jennitheboss",
     "price": 640,
     "phase": "Mobile App Backend",
@@ -3338,16 +3363,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "chrishammack1",
     "price": 1200,
     "phase": "AI Automation",
@@ -3405,7 +3428,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "lukevanacker",
     "price": 800,
     "phase": "Custom Website Frontend",
@@ -3463,7 +3486,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "blu_yonder",
     "price": 1040,
     "phase": "Custom Website Backend",
@@ -3530,7 +3553,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "ai_nachos_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "myriamsaaid",
     "price": 200,
     "phase": "AI Automation",
@@ -3588,7 +3611,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_wafels_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "jaquis_br",
     "price": 600,
     "phase": "Custom Website UI/UX",
@@ -3646,7 +3669,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "elnatan123",
     "price": 1200,
     "phase": "Mobile App Backend",
@@ -3704,7 +3727,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "spethy39",
     "price": 160,
     "phase": "Mobile App UI/UX",
@@ -3762,7 +3785,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "chris_k401",
     "price": 560,
     "phase": "AI Automation",
@@ -3820,7 +3843,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "jennitheboss",
     "price": 800,
     "phase": "AI App UI/UX",
@@ -3878,7 +3901,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "derickotoo",
     "price": 2400,
     "phase": "Mobile App Frontend",
@@ -3936,7 +3959,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "charismaexpert",
     "price": 1200,
     "phase": "AI Website UI/UX",
@@ -3994,7 +4017,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "sam_adams_pet",
     "price": 1600,
     "phase": "AI Automation",
@@ -4052,7 +4075,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "mustafafly",
     "price": 1040,
     "phase": "Mobile App Frontend",
@@ -4119,7 +4142,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "lexi_comb",
     "price": 1200,
     "phase": "Mobile App Frontend",
@@ -4186,7 +4209,7 @@
     "date": "5/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "r1chardh",
     "price": 144,
     "phase": "Publish Deploy",
@@ -4244,7 +4267,7 @@
     "date": "6/2/2026",
     "salesPerson": "Rohan",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "sleepee",
     "price": 800,
     "phase": "Mobile App Frontend",
@@ -4302,7 +4325,7 @@
     "date": "6/4/2026",
     "salesPerson": "Munna",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "amurgai3",
     "price": 1440,
     "phase": "AI Website UI/UX",
@@ -4360,7 +4383,7 @@
     "date": "6/7/2026",
     "salesPerson": "Yafi",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "derikgodeaux",
     "price": 480,
     "phase": "AI Automation",
@@ -4418,7 +4441,7 @@
     "date": "6/9/2026",
     "salesPerson": "Sharna",
     "profile": "ai_nachos_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "casi67",
     "price": 680,
     "phase": "AI Automation",
@@ -4476,7 +4499,7 @@
     "date": "6/10/2026",
     "salesPerson": "Toki",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "jennitheboss",
     "price": 880,
     "phase": "Mobile App Frontend",
@@ -4534,7 +4557,7 @@
     "date": "6/12/2026",
     "salesPerson": "Shad",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "charismaexpert",
     "price": 800,
     "phase": "AI Website Frontend",
@@ -4592,7 +4615,7 @@
     "date": "6/13/2026",
     "salesPerson": "Ibrahim",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "simonsabir606",
     "price": 240,
     "phase": "AI Automation",
@@ -4650,7 +4673,7 @@
     "date": "6/15/2026",
     "salesPerson": "Redwan",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "robertomassa887",
     "price": 640,
     "phase": "Mobile App UI/UX",
@@ -4708,7 +4731,7 @@
     "date": "6/15/2026",
     "salesPerson": "Al Zabin",
     "profile": "Web_wafels_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "jaquis_br",
     "price": 600,
     "phase": "",
@@ -4766,7 +4789,7 @@
     "date": "6/15/2026",
     "salesPerson": "Munna",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "stefansmall89",
     "price": 400,
     "phase": "Mobile App Backend",
@@ -4824,7 +4847,7 @@
     "date": "6/16/2026",
     "salesPerson": "Ariful",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "spethy39",
     "price": 640,
     "phase": "Mobile App UI/UX",
@@ -4882,7 +4905,7 @@
     "date": "6/17/2026",
     "salesPerson": "Rohan",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "sleepee",
     "price": 800,
     "phase": "AI App Frontend",
@@ -4940,7 +4963,7 @@
     "date": "6/17/2026",
     "salesPerson": "Yafi",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "derikgodeaux",
     "price": 120,
     "phase": "AI Automation",
@@ -4998,7 +5021,7 @@
     "date": "6/24/2026",
     "salesPerson": "Suporna",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "simonsabir606",
     "price": 160,
     "phase": "AI Automation",
@@ -5056,7 +5079,7 @@
     "date": "6/24/2026",
     "salesPerson": "Suporna",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "simonsabir606",
     "price": 32,
     "phase": "AI Automation",
@@ -5114,7 +5137,7 @@
     "date": "6/30/2026",
     "salesPerson": "Showrab",
     "profile": "app_donut_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "",
     "projectName": "domiragroup",
     "price": 160,
     "phase": "Custom Website Frontend",
@@ -5169,10 +5192,66 @@
     "deliveryDate": ""
   },
   {
+    "date": "7/6/2026",
+    "salesPerson": "Mahfuzur",
+    "profile": "app_ninjas_fiverr",
+    "teamName": "",
+    "projectName": "facep123",
+    "price": 200,
+    "phase": "Game Visual",
+    "stack": "Other",
+    "orderId": "FO82306AE7302",
+    "orderUrl": "https://www.fiverr.com/orders/FO82306AE7302/activities",
+    "dateline": "19 Days",
+    "salesStatus": "WIP",
+    "teamLeadStatus": "WIP",
+    "sheetTab": "STA June 2026",
+    "clientProjectId": "cp-facep123",
+    "id": "sheet-FO82306AE7302",
+    "supervisor": "",
+    "shift": "Day",
+    "possibility": "No",
+    "teamMembers": [],
+    "subtasks": [
+      {
+        "id": "1",
+        "text": "Requirements gathering & analysis",
+        "completed": false
+      },
+      {
+        "id": "2",
+        "text": "UI/UX Mockup design",
+        "completed": false
+      },
+      {
+        "id": "3",
+        "text": "Core API development",
+        "completed": false
+      },
+      {
+        "id": "4",
+        "text": "Frontend integration & testing",
+        "completed": false
+      },
+      {
+        "id": "5",
+        "text": "Client review & revisions",
+        "completed": false
+      },
+      {
+        "id": "6",
+        "text": "Final deployment & delivery",
+        "completed": false
+      }
+    ],
+    "notes": "",
+    "membersRaw": ""
+  },
+  {
     "date": "4/19/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "derickotoo",
     "price": 2400,
     "phase": "Mobile App UI/UX",
@@ -5230,7 +5309,7 @@
     "date": "4/19/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "derickotoo",
     "price": 2400,
     "phase": "Mobile App UI/UX",
@@ -5288,7 +5367,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "mconstantin",
     "price": 1040,
     "phase": "Mobile App Backend",
@@ -5346,7 +5425,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "lino1998",
     "price": 1600,
     "phase": "Mobile App Backend",
@@ -5404,7 +5483,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "brandonli560",
     "price": 240,
     "phase": "AI Automation",
@@ -5462,7 +5541,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "nelsontan321",
     "price": 2160,
     "phase": "Mobile App Frontend",
@@ -5520,7 +5599,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "ahomesllc",
     "price": 2800,
     "phase": "Mobile App Backend",
@@ -5606,7 +5685,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "davidedeki",
     "price": 1200,
     "phase": "Mobile App Backend",
@@ -5664,7 +5743,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "tonicanog",
     "price": 320,
     "phase": "",
@@ -5722,7 +5801,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "mothirahman",
     "price": 760,
     "phase": "Mobile App Backend",
@@ -5780,7 +5859,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "elnatan123",
     "price": 1600,
     "phase": "Mobile App UI/UX",
@@ -5838,7 +5917,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "tongugeofrey",
     "price": 1600,
     "phase": "Mobile App Frontend",
@@ -5896,7 +5975,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "stefansmall89",
     "price": 1360,
     "phase": "Mobile App Backend",
@@ -5954,7 +6033,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "lalaneeds",
     "price": 800,
     "phase": "Custom Website UI/UX",
@@ -6012,7 +6091,7 @@
     "date": "4/30/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "tmmoone1",
     "price": 560,
     "phase": "AI Automation",
@@ -6070,7 +6149,7 @@
     "date": "5/5/2026",
     "salesPerson": "Imran",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "lalaneeds",
     "price": 800,
     "phase": "Custom Website Frontend",
@@ -6128,7 +6207,7 @@
     "date": "5/6/2026",
     "salesPerson": "Ibrahim",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "elnatan123",
     "price": 1600,
     "phase": "Mobile App Frontend",
@@ -6186,7 +6265,7 @@
     "date": "5/8/2026",
     "salesPerson": "Shahariar",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "tongugeofrey",
     "price": 1600,
     "phase": "Mobile App Backend",
@@ -6244,7 +6323,7 @@
     "date": "5/12/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "demiangoldstraj",
     "price": 800,
     "phase": "Publish Deploy",
@@ -6302,7 +6381,7 @@
     "date": "5/12/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "mustafafly",
     "price": 1040,
     "phase": "Mobile App UI/UX",
@@ -6369,7 +6448,7 @@
     "date": "5/13/2026",
     "salesPerson": "Shahariar",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Pritom",
     "projectName": "lexi_comb",
     "price": 1200,
     "phase": "",
@@ -6436,7 +6515,7 @@
     "date": "3/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "sathyasai642",
     "price": 2000,
     "phase": "UI Frontend Backend",
@@ -6494,7 +6573,7 @@
     "date": "3/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "bharatjoshi393",
     "price": 560,
     "phase": "Custom Website Backend",
@@ -6552,7 +6631,7 @@
     "date": "3/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "tyronerosales",
     "price": 2640,
     "phase": "Mobile App Backend",
@@ -6610,7 +6689,7 @@
     "date": "3/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "davidedeki",
     "price": 800,
     "phase": "AI Website Frontend",
@@ -6668,7 +6747,7 @@
     "date": "3/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "david_cortesm",
     "price": 800,
     "phase": "AI Automation",
@@ -6726,7 +6805,7 @@
     "date": "3/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "chloetsw514",
     "price": 100,
     "phase": "Publish Deploy",
@@ -6784,7 +6863,7 @@
     "date": "4/1/2026",
     "salesPerson": "Rohan",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "lukevanacker",
     "price": 960,
     "phase": "AI App UI/UX",
@@ -6842,7 +6921,7 @@
     "date": "4/1/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "demiangoldstraj",
     "price": 1000,
     "phase": "AI App Frontend",
@@ -6900,7 +6979,7 @@
     "date": "4/2/2026",
     "salesPerson": "Rohan",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "mothirahman",
     "price": 720,
     "phase": "Mobile App Frontend",
@@ -6958,7 +7037,7 @@
     "date": "4/3/2026",
     "salesPerson": "Redwan",
     "profile": "twinkle_tales_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "soficor1111",
     "price": 240,
     "phase": "Mobile App Backend",
@@ -7016,7 +7095,7 @@
     "date": "4/6/2026",
     "salesPerson": "Toki",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "aprilmariee",
     "price": 300,
     "phase": "AI App UI/UX",
@@ -7074,7 +7153,7 @@
     "date": "4/7/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "demiangoldstraj",
     "price": 240,
     "phase": "Publish Deploy",
@@ -7132,7 +7211,7 @@
     "date": "4/8/2026",
     "salesPerson": "Ibrahim",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "wendallgarth982",
     "price": 1200,
     "phase": "Mobile App Frontend",
@@ -7190,7 +7269,7 @@
     "date": "4/9/2026",
     "salesPerson": "Ibrahim",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "elnatan123",
     "price": 1200,
     "phase": "Custom Website UI/UX",
@@ -7248,7 +7327,7 @@
     "date": "4/16/2026",
     "salesPerson": "Munna",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "stefansmall89",
     "price": 1200,
     "phase": "Mobile App UI/UX",
@@ -7306,7 +7385,7 @@
     "date": "4/17/2026",
     "salesPerson": "Shahariar",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "tongugeofrey",
     "price": 1600,
     "phase": "Mobile App UI/UX",
@@ -7364,7 +7443,7 @@
     "date": "4/19/2026",
     "salesPerson": "Ibrahim",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "elnatan123",
     "price": 800,
     "phase": "Custom Website Backend",
@@ -7422,7 +7501,7 @@
     "date": "4/19/2026",
     "salesPerson": "Ibrahim",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "wendallgarth982",
     "price": 1200,
     "phase": "Custom Website Backend",
@@ -7480,7 +7559,7 @@
     "date": "4/23/2026",
     "salesPerson": "Munna",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "stefansmall89",
     "price": 1200,
     "phase": "Mobile App Frontend",
@@ -7538,7 +7617,7 @@
     "date": "3/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "r1chardh",
     "price": 400,
     "phase": "Mobile App Backend",
@@ -7596,7 +7675,7 @@
     "date": "3/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "r1chardh",
     "price": 720,
     "phase": "",
@@ -7654,7 +7733,7 @@
     "date": "4/18/2026",
     "salesPerson": "Shourov",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "r1chardh",
     "price": 100,
     "phase": "UI Frontend Backend",
@@ -7712,7 +7791,7 @@
     "date": "4/20/2026",
     "salesPerson": "Shovon",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "knowlsey01",
     "price": 1280,
     "phase": "Mobile App Backend",
@@ -7770,7 +7849,7 @@
     "date": "2/28/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "max_andreotti",
     "price": 800,
     "phase": "Mobile App Backend",
@@ -7828,7 +7907,7 @@
     "date": "2/28/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_wafels_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "amathew22",
     "price": 4560,
     "phase": "Custom Website Frontend",
@@ -7886,7 +7965,7 @@
     "date": "2/28/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "murcin",
     "price": 1200,
     "phase": "AI App Backend",
@@ -7944,7 +8023,7 @@
     "date": "2/28/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "blu_yonder",
     "price": 800,
     "phase": "Custom Website UI/UX",
@@ -8011,7 +8090,7 @@
     "date": "2/28/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "robinjohn515",
     "price": 16,
     "phase": "Consultation",
@@ -8069,7 +8148,7 @@
     "date": "2/28/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "alchemistan99",
     "price": 960,
     "phase": "Custom Website Backend",
@@ -8127,7 +8206,7 @@
     "date": "2/28/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "chloetsw514",
     "price": 1200,
     "phase": "AI App Backend",
@@ -8185,7 +8264,7 @@
     "date": "2/28/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "huma_logan",
     "price": 2200,
     "phase": "AI Automation",
@@ -8243,7 +8322,7 @@
     "date": "2/27/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "anjapepito",
     "price": 800,
     "phase": "AI App Frontend",
@@ -8301,7 +8380,7 @@
     "date": "3/1/2026",
     "salesPerson": "Shahariar",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "ahomesllc",
     "price": 2800,
     "phase": "Mobile App Frontend",
@@ -8387,7 +8466,7 @@
     "date": "3/2/2026",
     "salesPerson": "Rohan",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "mothirahman",
     "price": 960,
     "phase": "Mobile App UI/UX",
@@ -8445,7 +8524,7 @@
     "date": "3/2/2026",
     "salesPerson": "Rohan",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "lukevanacker",
     "price": 40,
     "phase": "Mobile App UI/UX",
@@ -8503,7 +8582,7 @@
     "date": "3/2/2026",
     "salesPerson": "Sumon",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "lino1998",
     "price": 800,
     "phase": "Custom Website UI/UX",
@@ -8561,7 +8640,7 @@
     "date": "3/3/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "svetlinboris221",
     "price": 800,
     "phase": "Mobile App Frontend",
@@ -8619,7 +8698,7 @@
     "date": "3/6/2026",
     "salesPerson": "Suporna",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "davidedeki",
     "price": 1200,
     "phase": "AI App UI/UX",
@@ -8677,7 +8756,7 @@
     "date": "3/7/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "demiangoldstraj",
     "price": 1000,
     "phase": "AI Website Backend",
@@ -8735,7 +8814,7 @@
     "date": "3/11/2026",
     "salesPerson": "Shahariar",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "hussein531",
     "price": 1200,
     "phase": "Mobile App Backend",
@@ -8793,7 +8872,7 @@
     "date": "3/12/2026",
     "salesPerson": "Ibrahim",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "blu_yonder",
     "price": 800,
     "phase": "Mobile App UI/UX",
@@ -8860,7 +8939,7 @@
     "date": "3/15/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "demiangoldstraj",
     "price": 1000,
     "phase": "AI App Frontend",
@@ -8918,7 +8997,7 @@
     "date": "3/19/2026",
     "salesPerson": "Kaief",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "fredjulen",
     "price": 40,
     "phase": "",
@@ -8976,7 +9055,7 @@
     "date": "3/19/2026",
     "salesPerson": "Ibrahim",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "wendallgarth982",
     "price": 800,
     "phase": "Mobile App UI/UX",
@@ -9034,7 +9113,7 @@
     "date": "2/28/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "jocelynnicole27",
     "price": 800,
     "phase": "Mobile App Backend",
@@ -9092,7 +9171,7 @@
     "date": "2/28/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_bases_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "juist_12",
     "price": 300,
     "phase": "AI Website Backend",
@@ -9150,7 +9229,7 @@
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_wafels_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "serd67",
     "price": 2400,
     "phase": "Custom Website Backend",
@@ -9199,16 +9278,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "ahomesllc",
     "price": 2720,
     "phase": "Mobile App UI/UX",
@@ -9227,12 +9304,12 @@
     "teamMembers": [
       {
         "id": "u-mslo41o8-93a57a",
-        "name": "Ovie Rahaman Sheikh",
-        "role": "UI/UX Designer",
         "userId": "u-mslo41o8-93a57a",
+        "name": "Ovie Rahaman Sheikh",
         "roles": [
           "UI/UX Designer"
-        ]
+        ],
+        "role": "UI/UX Designer"
       }
     ],
     "subtasks": [
@@ -9267,16 +9344,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "nelsontan321",
     "price": 1600,
     "phase": "Custom Website UI/UX",
@@ -9325,16 +9400,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "bharatjoshi393",
     "price": 640,
     "phase": "Custom Website Frontend",
@@ -9383,16 +9456,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "hussein531",
     "price": 1360,
     "phase": "Mobile App UI/UX",
@@ -9441,16 +9512,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "srinivas667",
     "price": 600,
     "phase": "",
@@ -9499,16 +9568,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "navy_dxb",
     "price": 160,
     "phase": "AI Website Backend",
@@ -9557,16 +9624,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "chloetsw514",
     "price": 800,
     "phase": "Mobile App Frontend",
@@ -9615,16 +9680,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "alex_hawlkin",
     "price": 1200,
     "phase": "AI App UI/UX",
@@ -9673,16 +9736,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "alchemistan99",
     "price": 1600,
     "phase": "Mobile App UI/UX",
@@ -9731,16 +9792,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "ai_nachos_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "cboone12",
     "price": 800,
     "phase": "AI Website UI/UX",
@@ -9789,16 +9848,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/3/2026",
     "salesPerson": "#N/A",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "plifplifplif",
     "price": 1200,
     "phase": "AI Automation",
@@ -9847,16 +9904,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/3/2026",
     "salesPerson": "Sajib",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "svetlinboris221",
     "price": 800,
     "phase": "Mobile App UI/UX",
@@ -9905,16 +9960,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/4/2026",
     "salesPerson": "Kaief",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "tyronerosales",
     "price": 1760,
     "phase": "AI Website UI/UX",
@@ -9963,16 +10016,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/6/2026",
     "salesPerson": "Sumon",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "lino1998",
     "price": 1600,
     "phase": "AI App UI/UX",
@@ -10021,16 +10072,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/6/2026",
     "salesPerson": "Nadim",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "shakslens",
     "price": 1200,
     "phase": "AI Automation",
@@ -10079,16 +10128,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/6/2026",
     "salesPerson": "Suporna",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "awufiverr",
     "price": 400,
     "phase": "Mobile App UI/UX",
@@ -10137,16 +10184,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/8/2026",
     "salesPerson": "Shahariar",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "hussein531",
     "price": 1200,
     "phase": "Mobile App Frontend",
@@ -10195,16 +10240,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/10/2026",
     "salesPerson": "Shahariar",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "huma_logan",
     "price": 2200,
     "phase": "AI Automation",
@@ -10253,16 +10296,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/14/2026",
     "salesPerson": "Toki",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "nelsontan321",
     "price": 1720,
     "phase": "Mobile App Frontend",
@@ -10311,16 +10352,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/16/2026",
     "salesPerson": "#N/A",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "plifplifplif",
     "price": 180,
     "phase": "",
@@ -10369,16 +10408,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/16/2026",
     "salesPerson": "#N/A",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "plifplifplif",
     "price": 400,
     "phase": "Mobile App Frontend",
@@ -10427,16 +10464,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/16/2026",
     "salesPerson": "#N/A",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "plifplifplif",
     "price": 60,
     "phase": "Mobile App Frontend",
@@ -10485,16 +10520,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/17/2026",
     "salesPerson": "Kaief",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "tyronerosales",
     "price": 2240,
     "phase": "Custom Website Frontend",
@@ -10543,16 +10576,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/18/2026",
     "salesPerson": "Sumon",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "anjapepito",
     "price": 800,
     "phase": "Mobile App UI/UX",
@@ -10601,16 +10632,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/19/2026",
     "salesPerson": "Shahariar",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "alex_hawlkin",
     "price": 1200,
     "phase": "Mobile App Frontend",
@@ -10659,16 +10688,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "app_lexus_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "isarkoetje",
     "price": 320,
     "phase": "Custom Website Backend",
@@ -10717,16 +10744,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/31/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "omarfayedddd",
     "price": 1440,
     "phase": "Mobile App Backend",
@@ -10775,16 +10800,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "2/7/2026",
     "salesPerson": "Arif",
     "profile": "code_minds_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "joe_stumble",
     "price": 80,
     "phase": "Publish Deploy",
@@ -10833,16 +10856,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "mariakampli",
     "price": 1120,
     "phase": "Mobile App Backend",
@@ -10891,16 +10912,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_wafels_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "amathew22",
     "price": 4800,
     "phase": "Custom Website UI/UX",
@@ -10949,16 +10968,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "getright92",
     "price": 1120,
     "phase": "AI App UI/UX",
@@ -11007,16 +11024,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "navy_dxb",
     "price": 240,
     "phase": "Service Line",
@@ -11065,16 +11080,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "bharatjoshi393",
     "price": 400,
     "phase": "AI Website UI/UX",
@@ -11123,16 +11136,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/3/2026",
     "salesPerson": "Rohan",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "harry01642",
     "price": 400,
     "phase": "Mobile App Frontend",
@@ -11181,16 +11192,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/4/2026",
     "salesPerson": "Shahariar",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "ni_colie",
     "price": 2000,
     "phase": "AI App Frontend",
@@ -11239,16 +11248,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/13/2026",
     "salesPerson": "Rohan",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "harry01642",
     "price": 400,
     "phase": "",
@@ -11297,16 +11304,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/14/2026",
     "salesPerson": "Rohan",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "mconstantin",
     "price": 1200,
     "phase": "Mobile App UI/UX",
@@ -11355,16 +11360,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/16/2026",
     "salesPerson": "Ibrahim",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "chloetsw514",
     "price": 800,
     "phase": "AI App UI/UX",
@@ -11413,16 +11416,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/16/2026",
     "salesPerson": "Azharul",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "murcin",
     "price": 1120,
     "phase": "AI App UI/UX",
@@ -11471,16 +11472,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/19/2026",
     "salesPerson": "Rohan",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "mconstantin",
     "price": 800,
     "phase": "Mobile App Frontend",
@@ -11529,16 +11528,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "",
     "salesPerson": "",
     "profile": "Mahmud_Upwork",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "Eric Promm",
     "price": 1800,
     "phase": "AI App Backend",
@@ -11587,16 +11584,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/23/2026",
     "salesPerson": "Azharul",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "murcin",
     "price": 1280,
     "phase": "Mobile App Frontend",
@@ -11645,16 +11640,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/28/2026",
     "salesPerson": "Saiful",
     "profile": "Web_wafels_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "",
     "projectName": "johnsgregory01",
     "price": 280,
     "phase": "AI Website Frontend",
@@ -11703,16 +11696,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_bases_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "juist_12",
     "price": 800,
     "phase": "Mobile App Backend",
@@ -11761,16 +11752,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "r1chardh",
     "price": 1680,
     "phase": "Mobile App Backend",
@@ -11819,16 +11808,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "1/15/2026",
     "salesPerson": "Mahfuzur",
     "profile": "app_mickey_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "davidsamadi799",
     "price": 1280,
     "phase": "Mobile App Backend",
@@ -11877,16 +11864,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/30/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "twinkle_tales_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "soficor1111",
     "price": 1680,
     "phase": "Mobile App UI/UX",
@@ -11935,16 +11920,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/30/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "BUIT_upwork",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "Eric Promm",
     "price": 900,
     "phase": "Mobile App UI/UX",
@@ -11993,16 +11976,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/1/2025",
     "salesPerson": "Mubarok",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "pierre_csh",
     "price": 1480,
     "phase": "AI Website Backend",
@@ -12051,16 +12032,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/5/2025",
     "salesPerson": "#N/A",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "joe_stumble",
     "price": 1200,
     "phase": "AI App Backend",
@@ -12109,16 +12088,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/5/2025",
     "salesPerson": "Toki",
     "profile": "code_muse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "eitansela1",
     "price": 1140,
     "phase": "AI App UI/UX",
@@ -12167,16 +12144,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/9/2025",
     "salesPerson": "#N/A",
     "profile": "twinkle_tales_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "soficor1111",
     "price": 1680,
     "phase": "Mobile App Backend",
@@ -12225,16 +12200,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/10/2025",
     "salesPerson": "Imran",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "paradise1917",
     "price": 1600,
     "phase": "Custom Website Backend",
@@ -12283,16 +12256,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/11/2025",
     "salesPerson": "Suporna",
     "profile": "croco_app_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "pauls91",
     "price": 160,
     "phase": "Mobile App UI/UX",
@@ -12341,16 +12312,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "",
     "salesPerson": "",
     "profile": "Mahmud_Upwork",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "Eric Promm",
     "price": 1350,
     "phase": "AI App Frontend",
@@ -12399,16 +12368,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/21/2025",
     "salesPerson": "Shahariar",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "ni_colie",
     "price": 2400,
     "phase": "AI App UI/UX",
@@ -12457,16 +12424,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/23/2025",
     "salesPerson": "#N/A",
     "profile": "pixel_forces_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "",
     "projectName": "jmunsayac",
     "price": 80,
     "phase": "Mobile App UI/UX",
@@ -12515,16 +12480,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/30/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "knowlsey01",
     "price": 1200,
     "phase": "Mobile App UI/UX",
@@ -12573,16 +12536,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/30/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "r1chardh",
     "price": 1600,
     "phase": "AI App Frontend",
@@ -12631,16 +12592,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/3/2025",
     "salesPerson": "#N/A",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "knowlsey01",
     "price": 1600,
     "phase": "Mobile App Backend",
@@ -12689,16 +12648,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/17/2025",
     "salesPerson": "#N/A",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "knowlsey01",
     "price": 2240,
     "phase": "AI App Frontend",
@@ -12747,16 +12704,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/20/2025",
     "salesPerson": "Alvi",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Game Rangers",
     "projectName": "vasi1ias",
     "price": 800,
     "phase": "Mobile App UI/UX",
@@ -12805,16 +12760,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "12/30/2025",
     "salesPerson": "Shuvo",
     "profile": "app_ninjas_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "",
     "projectName": "gijs_afk",
     "price": 1200,
     "phase": "Game Backend Development & Integration",
@@ -12863,16 +12816,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "primozrejec",
     "price": 1600,
     "phase": "AI App Frontend",
@@ -12921,16 +12872,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "yedeld",
     "price": 720,
     "phase": "Publish Deploy",
@@ -12979,16 +12928,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "tonicanog",
     "price": 640,
     "phase": "AI App Frontend",
@@ -13037,16 +12984,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "joe_stumble",
     "price": 1440,
     "phase": "Mobile App Backend",
@@ -13095,16 +13040,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "yedeld",
     "price": 800,
     "phase": "AI App Backend",
@@ -13153,16 +13096,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Web_Chrome_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "terryalbert",
     "price": 1440,
     "phase": "AI Website UI/UX",
@@ -13211,16 +13152,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "code_bases_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "ronygermon",
     "price": 800,
     "phase": "Mobile App Backend",
@@ -13269,16 +13208,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "max_andreotti",
     "price": 800,
     "phase": "Mobile App UI/UX",
@@ -13327,16 +13264,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "tonicanog",
     "price": 400,
     "phase": "AI App Backend",
@@ -13385,16 +13320,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "knowlsey01",
     "price": 1120,
     "phase": "AI App Backend",
@@ -13443,16 +13376,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "paradise1917",
     "price": 1680,
     "phase": "Custom Website UI/UX",
@@ -13501,16 +13432,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "nestorc",
     "price": 400,
     "phase": "Mobile App Backend",
@@ -13559,16 +13488,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/12/2025",
     "salesPerson": "Azharul",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "pierre_csh",
     "price": 1680,
     "phase": "Custom Website UI/UX",
@@ -13617,16 +13544,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/13/2025",
     "salesPerson": "Majed",
     "profile": "web_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "marianrezeanu",
     "price": 960,
     "phase": "Custom Website Frontend",
@@ -13675,16 +13600,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/17/2025",
     "salesPerson": "Suporna",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "max_andreotti",
     "price": 800,
     "phase": "Mobile App Frontend",
@@ -13733,16 +13656,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/18/2025",
     "salesPerson": "#N/A",
     "profile": "app_lexus_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "isarkoetje",
     "price": 800,
     "phase": "AI Website UI/UX",
@@ -13791,16 +13712,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/19/2025",
     "salesPerson": "Rohan",
     "profile": "Ui_verse_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "harry01642",
     "price": 1040,
     "phase": "AI App UI/UX",
@@ -13849,16 +13768,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/21/2025",
     "salesPerson": "Imran",
     "profile": "SparkFlow_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "paradise1917",
     "price": 1120,
     "phase": "Custom Website Frontend",
@@ -13907,16 +13824,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/21/2025",
     "salesPerson": "Mubarok",
     "profile": "binary_bards_fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "pierre_csh",
     "price": 1360,
     "phase": "Mobile App Frontend",
@@ -13965,16 +13880,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "10/31/2025",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "App_cake_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "designhouse2018",
     "price": 2400,
     "phase": "Mobile App Backend",
@@ -14023,16 +13936,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/3/2025",
     "salesPerson": "#N/A",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "knowlsey01",
     "price": 240,
     "phase": "Mobile App Backend",
@@ -14081,16 +13992,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/6/2025",
     "salesPerson": "Rafsan",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "tsinclair0113",
     "price": 1600,
     "phase": "Custom Website Backend",
@@ -14139,16 +14048,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/11/2025",
     "salesPerson": "Rafsan",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "r1chardh",
     "price": 1120,
     "phase": "AI App UI/UX",
@@ -14197,16 +14104,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/12/2025",
     "salesPerson": "Eva",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "stellamaris96",
     "price": 628,
     "phase": "AI App UI/UX",
@@ -14255,16 +14160,14 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "11/19/2025",
     "salesPerson": "#N/A",
     "profile": "farvez_hossen_Fiverr",
-    "teamName": "Neural Nexus",
+    "teamName": "Neural Nexas",
     "projectName": "knowlsey01",
     "price": 224,
     "phase": "AI App Backend",
@@ -14313,9 +14216,7 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   }
 ]

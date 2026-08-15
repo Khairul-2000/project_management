@@ -8,7 +8,7 @@ function projectNameKey(name) {
   return String(name || "").trim().toLowerCase();
 }
 
-export default function ClientProjects({ clientProjects, phases, onOpen }) {
+export default function ClientProjects({ clientProjects, phases, onOpen, isAdmin = true }) {
   const { colors, card } = useTheme();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -98,7 +98,9 @@ export default function ClientProjects({ clientProjects, phases, onOpen }) {
               Projects
             </h1>
             <div style={{ color: colors.muted, fontSize: 13 }}>
-              Client-level tracking by sheet project name. Assign a team once; new phases inherit it on sync.
+              {isAdmin
+                ? "Client-level tracking by sheet project name. Assign a team once; new phases inherit it on sync."
+                : "Projects assigned to you. Open a project to view its phases and details."}
             </div>
           </div>
           <div style={{ position: "relative", minWidth: 220 }}>

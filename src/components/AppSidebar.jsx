@@ -185,25 +185,33 @@ export default function AppSidebar({
           ) : null}
         </div>
 
-        <NavButton
-          icon={LayoutDashboard}
-          label="Dashboard"
-          showLabel={showLabel}
-          active={activeView === "dashboard"}
-          onClick={() => go(onGoDashboard)}
-        />
-        <NavButton
-          icon={BarChart3}
-          label="Analytics"
-          showLabel={showLabel}
-          active={activeView === "analytics"}
-          onClick={() => go(onOpenAnalytics)}
-        />
+        {isAdmin ? (
+          <NavButton
+            icon={LayoutDashboard}
+            label="Dashboard"
+            showLabel={showLabel}
+            active={activeView === "dashboard"}
+            onClick={() => go(onGoDashboard)}
+          />
+        ) : null}
+        {isAdmin ? (
+          <NavButton
+            icon={BarChart3}
+            label="Analytics"
+            showLabel={showLabel}
+            active={activeView === "analytics"}
+            onClick={() => go(onOpenAnalytics)}
+          />
+        ) : null}
         <NavButton
           icon={FolderKanban}
           label="Projects"
           showLabel={showLabel}
-          active={activeView === "clientProjects" || activeView === "clientProjectDetail"}
+          active={
+            activeView === "clientProjects" ||
+            activeView === "clientProjectDetail" ||
+            (!isAdmin && activeView === "dashboard")
+          }
           onClick={() => go(onOpenClientProjects)}
         />
         {isAdmin ? (

@@ -1,19 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Save } from "lucide-react";
+import { Eye, Plus, X } from "lucide-react";
 import { useTheme } from "../lib/theme";
 import { createUser, listUsers, patchUser, syncAssignmentsFromProjects } from "../lib/auth";
 
 export default function UsersAdmin({ projects, clientProjects = [] }) {
-  const { colors, card, isDark } = useTheme();
+  const { colors, card } = useTheme();
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ name: "", username: "", password: "", role: "member" });
-  const [assignUserId, setAssignUserId] = useState(null);
-  const [assignQuery, setAssignQuery] = useState("");
-  const [assignSelected, setAssignSelected] = useState([]);
+  const [viewUserId, setViewUserId] = useState(null);
+  const [projectQuery, setProjectQuery] = useState("");
   const [resetPassword, setResetPassword] = useState({});
   const [syncingAssignments, setSyncingAssignments] = useState(false);
 
@@ -38,7 +37,6 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
       projectName: cp.projectName,
       projectNameKey: cp.projectNameKey || projectNameKey(cp.projectName),
     }));
-    // Include any phase names missing from registry
     const seen = new Set(fromRegistry.map((c) => c.projectNameKey));
     for (const [key, phases] of phasesByClientKey) {
       if (seen.has(key)) continue;
@@ -52,31 +50,18 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
     return fromRegistry.sort((a, b) => a.projectName.localeCompare(b.projectName));
   }, [clientProjects, phasesByClientKey]);
 
-  function clientIdsFromPhaseIds(phaseIds) {
-    const allowed = new Set((phaseIds || []).map(String));
-    const selected = [];
-    for (const cp of clientOptions) {
-      const phases = phasesByClientKey.get(cp.projectNameKey) || [];
-      if (phases.some((p) => allowed.has(String(p.id)))) selected.push(cp.id);
-    }
-    return selected;
-  }
-
-  function phaseIdsFromClientIds(clientIds) {
-    const selected = new Set((clientIds || []).map(String));
-    const ids = [];
-    for (const cp of clientOptions) {
-      if (!selected.has(String(cp.id))) continue;
-      for (const p of phasesByClientKey.get(cp.projectNameKey) || []) {
-        ids.push(String(p.id));
-      }
-    }
-    return [...new Set(ids)];
-  }
-
-  function countClientProjectsForUser(user) {
-    if (user.role === "admin") return null;
-    return clientIdsFromPhaseIds(user.assignedProjectIds || []).length;
+  function clientProjectsForUser(user) {
+    if (!user || user.role === "admin") return [];
+    const allowed = new Set((user.assignedProjectIds || []).map(String));
+    return clientOptions
+      .map((cp) => {
+        const phases = phasesByClientKey.get(cp.projectNameKey) || [];
+        const linked = phases.filter((p) => allowed.has(String(p.id)));
+        if (!linked.length) return null;
+        return { ...cp, phases: linked };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.projectName.localeCompare(b.projectName));
   }
 
   async function syncFromProjects() {
@@ -115,38 +100,25 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
     refresh();
   }, []);
 
-  const assignUser = useMemo(
-    () => users.find((u) => u.id === assignUserId) || null,
-    [users, assignUserId]
+  const viewUser = useMemo(
+    () => users.find((u) => u.id === viewUserId) || null,
+    [users, viewUserId]
   );
 
-  const filteredClientProjects = useMemo(() => {
-    const q = assignQuery.trim().toLowerCase();
-    return clientOptions.filter((cp) => {
-      if (!q) return true;
-      return cp.projectName.toLowerCase().includes(q);
-    });
-  }, [clientOptions, assignQuery]);
+  const linkedProjects = useMemo(
+    () => (viewUser ? clientProjectsForUser(viewUser) : []),
+    [viewUser, clientOptions, phasesByClientKey]
+  );
 
-  function openAssign(user) {
-    setAssignUserId(user.id);
-    setAssignSelected(clientIdsFromPhaseIds(user.assignedProjectIds || []));
-    setAssignQuery("");
-  }
+  const viewProjects = useMemo(() => {
+    const q = projectQuery.trim().toLowerCase();
+    if (!q) return linkedProjects;
+    return linkedProjects.filter((cp) => cp.projectName.toLowerCase().includes(q));
+  }, [linkedProjects, projectQuery]);
 
-  async function saveAssign() {
-    if (!assignUserId) return;
-    setStatus("Saving assignments…");
-    try {
-      const phaseIds = phaseIdsFromClientIds(assignSelected);
-      const updated = await patchUser(assignUserId, { assignedProjectIds: phaseIds });
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
-      setStatus(`Saved ${assignSelected.length} client project(s) for ${updated.name}`);
-      setAssignUserId(null);
-    } catch (err) {
-      setError(err.message || "Save failed");
-      setStatus("");
-    }
+  function openProjects(user) {
+    setViewUserId(user.id);
+    setProjectQuery("");
   }
 
   async function onCreate(e) {
@@ -181,8 +153,8 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
       const updated = await patchUser(user.id, { role });
       setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
       setStatus(`Updated ${user.username} to ${updated.role}`);
-      if (assignUserId === user.id && updated.role === "admin") {
-        setAssignUserId(null);
+      if (viewUserId === user.id && updated.role === "admin") {
+        setViewUserId(null);
       }
     } catch (err) {
       setError(err.message || "Failed to update role");
@@ -200,12 +172,6 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
     } catch (err) {
       setError(err.message);
     }
-  }
-
-  function toggleProject(id) {
-    setAssignSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
   }
 
   const field = {
@@ -226,9 +192,9 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
           User management
         </h1>
         <div style={{ color: colors.muted, fontSize: 13 }}>
-          Create accounts, change roles (member ↔ admin), and assign which client projects each member can see.
-          Project team names (client + phase teams) can also auto-link via{" "}
-          <strong>Sync from projects</strong>.
+          Create accounts and change roles (member ↔ admin). Member project access comes from team
+          names on projects — use <strong>Sync from projects</strong>, then open a member to see
+          their associated client projects.
         </div>
         <div style={{ marginTop: 12 }}>
           <button
@@ -328,96 +294,102 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
                 </tr>
               )}
               {!loading &&
-                users.map((u) => (
-                  <tr key={u.id} style={{ borderTop: `1px solid ${colors.border}` }}>
-                    <td style={{ padding: "10px 12px", fontWeight: 650 }}>{u.name}</td>
-                    <td className="mono" style={{ padding: "10px 12px" }}>{u.username}</td>
-                    <td style={{ padding: "10px 12px" }}>
-                      <select
-                        value={u.role}
-                        onChange={(e) => changeRole(u, e.target.value)}
-                        aria-label={`Role for ${u.username}`}
-                        style={{ ...field, width: "auto", minWidth: 110, padding: "7px 8px" }}
-                      >
-                        <option value="member">Member</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                    </td>
-                    <td style={{ padding: "10px 12px", color: u.active ? colors.delivered : colors.late }}>
-                      {u.active ? "Yes" : "No"}
-                    </td>
-                    <td style={{ padding: "10px 12px" }}>
-                      {u.role === "admin" ? "All" : countClientProjectsForUser(u)}
-                    </td>
-                    <td style={{ padding: "10px 12px" }}>
-                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                        <input
-                          type="password"
-                          placeholder={u.hasPassword ? "Reset…" : "Set…"}
-                          value={resetPassword[u.id] || ""}
-                          onChange={(e) => setResetPassword((prev) => ({ ...prev, [u.id]: e.target.value }))}
-                          style={{ ...field, width: 110, padding: "7px 8px" }}
-                        />
+                users.map((u) => {
+                  const linkedCount = u.role === "admin" ? null : clientProjectsForUser(u).length;
+                  return (
+                    <tr key={u.id} style={{ borderTop: `1px solid ${colors.border}` }}>
+                      <td style={{ padding: "10px 12px", fontWeight: 650 }}>{u.name}</td>
+                      <td className="mono" style={{ padding: "10px 12px" }}>{u.username}</td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <select
+                          value={u.role}
+                          onChange={(e) => changeRole(u, e.target.value)}
+                          aria-label={`Role for ${u.username}`}
+                          style={{ ...field, width: "auto", minWidth: 110, padding: "7px 8px" }}
+                        >
+                          <option value="member">Member</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </td>
+                      <td style={{ padding: "10px 12px", color: u.active ? colors.delivered : colors.late }}>
+                        {u.active ? "Yes" : "No"}
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        {u.role === "admin" ? "All" : linkedCount}
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                          <input
+                            type="password"
+                            placeholder={u.hasPassword ? "Reset…" : "Set…"}
+                            value={resetPassword[u.id] || ""}
+                            onChange={(e) => setResetPassword((prev) => ({ ...prev, [u.id]: e.target.value }))}
+                            style={{ ...field, width: 110, padding: "7px 8px" }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => applyResetPassword(u)}
+                            style={{
+                              background: colors.panel2,
+                              border: `1px solid ${colors.border}`,
+                              borderRadius: 8,
+                              color: colors.text,
+                              padding: "7px 8px",
+                              fontWeight: 650,
+                              fontSize: 12,
+                            }}
+                          >
+                            Set
+                          </button>
+                        </div>
+                      </td>
+                      <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>
+                        {u.role === "member" && (
+                          <button
+                            type="button"
+                            onClick={() => openProjects(u)}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 5,
+                              background: colors.panel2,
+                              border: `1px solid ${colors.border}`,
+                              borderRadius: 8,
+                              color: colors.text,
+                              padding: "7px 10px",
+                              fontWeight: 700,
+                              fontSize: 12,
+                              marginRight: 6,
+                            }}
+                          >
+                            <Eye size={13} /> Projects
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={() => applyResetPassword(u)}
+                          onClick={() => toggleActive(u)}
                           style={{
                             background: colors.panel2,
                             border: `1px solid ${colors.border}`,
                             borderRadius: 8,
                             color: colors.text,
-                            padding: "7px 8px",
+                            padding: "7px 10px",
                             fontWeight: 650,
                             fontSize: 12,
                           }}
                         >
-                          Set
+                          {u.active ? "Disable" : "Enable"}
                         </button>
-                      </div>
-                    </td>
-                    <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>
-                      {u.role === "member" && (
-                        <button
-                          type="button"
-                          onClick={() => openAssign(u)}
-                          style={{
-                            background: colors.accentSoft,
-                            border: "none",
-                            borderRadius: 8,
-                            color: isDark ? colors.onAccent : colors.accent,
-                            padding: "7px 10px",
-                            fontWeight: 700,
-                            fontSize: 12,
-                            marginRight: 6,
-                          }}
-                        >
-                          Assign
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => toggleActive(u)}
-                        style={{
-                          background: colors.panel2,
-                          border: `1px solid ${colors.border}`,
-                          borderRadius: 8,
-                          color: colors.text,
-                          padding: "7px 10px",
-                          fontWeight: 650,
-                          fontSize: 12,
-                        }}
-                      >
-                        {u.active ? "Disable" : "Enable"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </div>
       </div>
 
-      {assignUser && (
+      {viewUser && (
         <div
           style={{
             position: "fixed",
@@ -428,7 +400,7 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
             zIndex: 60,
             padding: 16,
           }}
-          onClick={() => setAssignUserId(null)}
+          onClick={() => setViewUserId(null)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -440,84 +412,77 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
               padding: 20,
             }}
           >
-            <div className="disp" style={{ fontWeight: 800, fontSize: 18, marginBottom: 6 }}>
-              Assign client projects · {assignUser.name}
-            </div>
-            <div style={{ color: colors.muted, fontSize: 13, marginBottom: 12 }}>
-              Selected: {assignSelected.length} · grants access to all phases under each client name
-            </div>
-            <input
-              value={assignQuery}
-              onChange={(e) => setAssignQuery(e.target.value)}
-              placeholder="Search client projects…"
-              style={{ ...field, marginBottom: 12 }}
-            />
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 360, overflow: "auto" }}>
-              {filteredClientProjects.map((cp) => {
-                const checked = assignSelected.includes(cp.id);
-                const phaseCount = (phasesByClientKey.get(cp.projectNameKey) || []).length;
-                return (
-                  <label
-                    key={cp.id}
-                    style={{
-                      display: "flex",
-                      gap: 10,
-                      alignItems: "flex-start",
-                      padding: "8px 10px",
-                      borderRadius: 10,
-                      border: `1px solid ${colors.border}`,
-                      background: checked ? colors.panel2 : colors.panel,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleProject(cp.id)}
-                      style={{ marginTop: 3 }}
-                    />
-                    <span>
-                      <div style={{ fontWeight: 700 }}>{cp.projectName}</div>
-                      <div style={{ fontSize: 12, color: colors.muted }}>
-                        {phaseCount} phase{phaseCount === 1 ? "" : "s"}
-                      </div>
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-            <div style={{ display: "flex", gap: 8, marginTop: 14, justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 6 }}>
+              <div>
+                <div className="disp" style={{ fontWeight: 800, fontSize: 18 }}>
+                  Assigned projects · {viewUser.name}
+                </div>
+                <div style={{ color: colors.muted, fontSize: 13, marginTop: 4 }}>
+                  {linkedProjects.length} client project
+                  {linkedProjects.length === 1 ? "" : "s"} linked via sync / team membership
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => setAssignUserId(null)}
+                onClick={() => setViewUserId(null)}
+                aria-label="Close"
                 style={{
                   background: colors.panel2,
                   border: `1px solid ${colors.border}`,
-                  borderRadius: 10,
-                  color: colors.text,
-                  padding: "10px 14px",
-                  fontWeight: 650,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={saveAssign}
-                style={{
+                  borderRadius: 8,
+                  color: colors.muted,
+                  padding: 8,
                   display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: colors.accent,
-                  border: "none",
-                  borderRadius: 10,
-                  color: colors.onAccent,
-                  padding: "10px 14px",
-                  fontWeight: 750,
                 }}
               >
-                <Save size={15} /> Save assignments
+                <X size={16} />
               </button>
+            </div>
+            <input
+              value={projectQuery}
+              onChange={(e) => setProjectQuery(e.target.value)}
+              placeholder="Search assigned projects…"
+              style={{ ...field, margin: "12px 0" }}
+            />
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 420, overflow: "auto" }}>
+              {viewProjects.length === 0 ? (
+                <div
+                  style={{
+                    padding: "18px 12px",
+                    textAlign: "center",
+                    color: colors.muted,
+                    fontSize: 13,
+                    border: `1px dashed ${colors.border}`,
+                    borderRadius: 10,
+                  }}
+                >
+                  No projects linked to this member yet. Run <strong>Sync from projects</strong> after
+                  they appear on project teams.
+                </div>
+              ) : (
+                viewProjects.map((cp) => (
+                  <div
+                    key={cp.id}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 10,
+                      border: `1px solid ${colors.border}`,
+                      background: colors.panel2,
+                    }}
+                  >
+                    <div style={{ fontWeight: 700 }}>{cp.projectName}</div>
+                    <div style={{ fontSize: 12, color: colors.muted, marginTop: 2 }}>
+                      {cp.phases.length} phase{cp.phases.length === 1 ? "" : "s"}
+                      {cp.phases.length
+                        ? ` · ${cp.phases
+                            .map((p) => p.phase || p.stack || "Phase")
+                            .slice(0, 4)
+                            .join(", ")}${cp.phases.length > 4 ? "…" : ""}`
+                        : ""}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

@@ -92,6 +92,15 @@ export default function Dashboard() {
 
   const isAdmin = currentUser?.role === "admin";
 
+  // Members only use the Projects workspace — never dashboard/analytics/users.
+  useEffect(() => {
+    if (!currentUser || isAdmin) return;
+    if (view === "dashboard" || view === "analytics" || view === "users") {
+      setView("clientProjects");
+      setActiveClientProjectId(null);
+    }
+  }, [currentUser, isAdmin, view]);
+
   useEffect(() => {
     try {
       localStorage.setItem(SIDEBAR_STORAGE_KEY, sidebarCollapsed ? "collapsed" : "expanded");
@@ -254,6 +263,10 @@ export default function Dashboard() {
         if (cancelled) return;
         setProjects(rows);
         setCanWriteDb(canWrite);
+        if (currentUser.role !== "admin") {
+          setView("clientProjects");
+          setActiveClientProjectId(null);
+        }
         try {
           const cps = await loadClientProjects();
           if (!cancelled) setClientProjects(cps);
@@ -686,22 +699,29 @@ export default function Dashboard() {
           activeView={
             view === "users" && isAdmin
               ? "users"
-              : view === "analytics"
+              : view === "analytics" && isAdmin
                 ? "analytics"
-              : view === "clientProjectDetail"
-                ? "clientProjectDetail"
-                : view === "clientProjects"
-                  ? "clientProjects"
-                  : "dashboard"
+                : view === "clientProjectDetail" || activeProject
+                  ? "clientProjectDetail"
+                  : view === "clientProjects" || !isAdmin
+                    ? "clientProjects"
+                    : "dashboard"
           }
           googleStatus={googleStatus}
           syncing={syncing}
           onGoDashboard={() => {
+            if (!isAdmin) {
+              setView("clientProjects");
+              setActiveClientProjectId(null);
+              window.location.hash = "";
+              return;
+            }
             setView("dashboard");
             setActiveClientProjectId(null);
             window.location.hash = "";
           }}
           onOpenAnalytics={() => {
+            if (!isAdmin) return;
             setView("analytics");
             setActiveClientProjectId(null);
             window.location.hash = "";
@@ -713,6 +733,7 @@ export default function Dashboard() {
             refreshClientProjects();
           }}
           onOpenUsers={() => {
+            if (!isAdmin) return;
             setView("users");
             setActiveClientProjectId(null);
             window.location.hash = "";
@@ -730,23 +751,23 @@ export default function Dashboard() {
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
           <DashboardHeader
             title={
-              view === "users" && isAdmin
-                ? "User management"
-                : view === "analytics"
-                  ? "Analytics"
-                : view === "clientProjectDetail" && activeClientProject
-                  ? activeClientProject.projectName
-                  : view === "clientProjects"
-                    ? "Projects"
-                    : activeProject
-                      ? activeProject.projectName
-                      : "Projects Ops Console"
+              activeProject
+                ? activeProject.projectName
+                : view === "users" && isAdmin
+                  ? "User management"
+                  : view === "analytics" && isAdmin
+                    ? "Analytics"
+                    : view === "clientProjectDetail" && activeClientProject
+                      ? activeClientProject.projectName
+                      : view === "clientProjects" || !isAdmin
+                        ? "Projects"
+                        : "Projects Ops Console"
             }
             saveState={saveState}
             canWriteDb={canWriteDb}
             currentUser={currentUser}
             isAdmin={isAdmin}
-            showNewProject={view === "dashboard" && !activeProject}
+            showNewProject={isAdmin && view === "dashboard" && !activeProject}
             collapsed={sidebarCollapsed}
             isMobile={isMobile}
             mobileOpen={mobileOpen}
@@ -759,8 +780,25 @@ export default function Dashboard() {
 
           {view === "users" && isAdmin ? (
             <UsersAdmin projects={projects} clientProjects={clientProjects} />
-          ) : view === "analytics" ? (
+          ) : view === "analytics" && isAdmin ? (
             <AnalyticsDashboard projects={projects} />
+          ) : activeProject ? (
+            <ProjectDetails
+              project={activeProject}
+              isAdmin={isAdmin}
+              onBack={() => {
+                window.location.hash = "";
+                if (!isAdmin) {
+                  setView(activeClientProjectId ? "clientProjectDetail" : "clientProjects");
+                }
+              }}
+              onUpdate={(updated) => persistProjects(projects.map((p) => (p.id === updated.id ? updated : p)))}
+              onDelete={(id) => {
+                if (!isAdmin) return;
+                persistProjects(projects.filter((p) => p.id !== id));
+                window.location.hash = "";
+              }}
+            />
           ) : view === "clientProjectDetail" && activeClientProject ? (
             <ClientProjectDetail
               clientProject={activeClientProject}
@@ -785,31 +823,18 @@ export default function Dashboard() {
                 }
               }}
               onOpenPhase={(phaseId) => {
-                setView("dashboard");
+                if (isAdmin) setView("dashboard");
                 window.location.hash = `#/project/${phaseId}`;
               }}
             />
-          ) : view === "clientProjects" ? (
+          ) : view === "clientProjects" || !isAdmin ? (
             <ClientProjects
               clientProjects={clientProjects}
               phases={projects}
+              isAdmin={isAdmin}
               onOpen={(cp) => {
                 setActiveClientProjectId(cp.id);
                 setView("clientProjectDetail");
-              }}
-            />
-          ) : activeProject ? (
-            <ProjectDetails
-              project={activeProject}
-              isAdmin={isAdmin}
-              onBack={() => {
-                window.location.hash = "";
-              }}
-              onUpdate={(updated) => persistProjects(projects.map((p) => (p.id === updated.id ? updated : p)))}
-              onDelete={(id) => {
-                if (!isAdmin) return;
-                persistProjects(projects.filter((p) => p.id !== id));
-                window.location.hash = "";
               }}
             />
           ) : (

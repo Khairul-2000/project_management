@@ -359,6 +359,16 @@
       "createdAt": "2026-08-12T10:36:10.383Z"
     },
     {
+      "id": "cp-earnmoney247",
+      "projectName": "earnmoney247",
+      "projectNameKey": "earnmoney247",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-15T02:48:59.902Z"
+    },
+    {
       "id": "cp-eitansela1",
       "projectName": "eitansela1",
       "projectNameKey": "eitansela1",
@@ -397,6 +407,16 @@
       "membersRaw": "",
       "notes": "",
       "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-facep123",
+      "projectName": "facep123",
+      "projectNameKey": "facep123",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-15T06:24:06.075Z"
     },
     {
       "id": "cp-ferrifim",
@@ -503,7 +523,17 @@
       "projectName": "jinvalex",
       "projectNameKey": "jinvalex",
       "supervisor": "",
-      "teamMembers": [],
+      "teamMembers": [
+        {
+          "id": "u-msos5z7q-d68a83",
+          "userId": "u-msos5z7q-d68a83",
+          "name": "Md. Arman Hosen",
+          "roles": [
+            "UI/UX Designer"
+          ],
+          "role": "UI/UX Designer"
+        }
+      ],
       "membersRaw": "",
       "notes": "",
       "createdAt": "2026-08-12T10:36:10.382Z"

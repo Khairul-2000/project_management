@@ -18,6 +18,7 @@ import UsersAdmin from "./components/UsersAdmin";
 import ClientProjects from "./components/ClientProjects";
 import ClientProjectDetail from "./components/ClientProjectDetail";
 import DueSoonBanner from "./components/DueSoonBanner";
+import AnalyticsDashboard from "./components/AnalyticsDashboard";
 import {
   FONTS,
   PROFILES,
@@ -54,7 +55,7 @@ export default function Dashboard() {
   const { colors, isDark } = useTheme();
   const [sessionChecked, setSessionChecked] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [view, setView] = useState("dashboard"); // dashboard | users | clientProjects | clientProjectDetail
+  const [view, setView] = useState("dashboard"); // dashboard | analytics | users | clientProjects | clientProjectDetail
   const [projects, setProjects] = useState([]);
   const [clientProjects, setClientProjects] = useState([]);
   const [activeClientProjectId, setActiveClientProjectId] = useState(null);
@@ -646,8 +647,14 @@ export default function Dashboard() {
         .spin { animation: spin 0.9s linear infinite; }
         .table-row { transition: background .12s ease; }
         .table-row:hover td { background: ${colors.rowHover} !important; }
+        .analytics-kpis { display: grid; grid-template-columns: repeat(6, minmax(150px, 1fr)); gap: 12px; }
+        .analytics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
         @media (max-width: 900px) {
           .charts-grid { grid-template-columns: 1fr !important; }
+          .analytics-kpis { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
+        }
+        @media (max-width: 640px) {
+          .analytics-kpis, .analytics-grid { grid-template-columns: 1fr; }
         }
       `}</style>
 
@@ -673,6 +680,8 @@ export default function Dashboard() {
           activeView={
             view === "users" && isAdmin
               ? "users"
+              : view === "analytics"
+                ? "analytics"
               : view === "clientProjectDetail"
                 ? "clientProjectDetail"
                 : view === "clientProjects"
@@ -683,6 +692,11 @@ export default function Dashboard() {
           syncing={syncing}
           onGoDashboard={() => {
             setView("dashboard");
+            setActiveClientProjectId(null);
+            window.location.hash = "";
+          }}
+          onOpenAnalytics={() => {
+            setView("analytics");
             setActiveClientProjectId(null);
             window.location.hash = "";
           }}
@@ -712,6 +726,8 @@ export default function Dashboard() {
             title={
               view === "users" && isAdmin
                 ? "User management"
+                : view === "analytics"
+                  ? "Analytics"
                 : view === "clientProjectDetail" && activeClientProject
                   ? activeClientProject.projectName
                   : view === "clientProjects"
@@ -737,6 +753,8 @@ export default function Dashboard() {
 
           {view === "users" && isAdmin ? (
             <UsersAdmin projects={projects} clientProjects={clientProjects} />
+          ) : view === "analytics" ? (
+            <AnalyticsDashboard projects={projects} />
           ) : view === "clientProjectDetail" && activeClientProject ? (
             <ClientProjectDetail
               clientProject={activeClientProject}

@@ -4,18 +4,10 @@ import { useTheme } from "../lib/theme";
 import { listTeamDirectory } from "../lib/auth";
 import { fmtMoney, statusOf, getProjectStack } from "../lib/utils";
 import StatusBadge from "./StatusBadge";
+import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeNotes, normalizeTeamMember } from "../lib/projectMetadata";
+import RoleMultiSelect from "./RoleMultiSelect";
 
-const ROLES = [
-  "Backend Developer",
-  "Frontend Developer",
-  "App Developer",
-  "AI Engineer",
-  "UI/UX Designer",
-  "DevOps Engineer",
-  "QA Engineer",
-  "Project Lead",
-  "Supervisor",
-];
+const ROLES = PROJECT_ROLES;
 
 function projectNameKey(name) {
   return String(name || "").trim().toLowerCase();
@@ -32,13 +24,15 @@ export default function ClientProjectDetail({
   const { colors, card, isDark } = useTheme();
   const [directory, setDirectory] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [newMemberRole, setNewMemberRole] = useState(ROLES[0]);
+  const [newMemberRoles, setNewMemberRoles] = useState([ROLES[0]]);
   const [teamError, setTeamError] = useState("");
-  const [notesText, setNotesText] = useState(clientProject.notes || "");
+  const [notes, setNotes] = useState(() => normalizeNotes(clientProject.notes));
+  const [noteDraft, setNoteDraft] = useState("");
   const [saveStatus, setSaveStatus] = useState("");
 
   useEffect(() => {
-    setNotesText(clientProject.notes || "");
+    setNotes(normalizeNotes(clientProject.notes));
+    setNoteDraft("");
   }, [clientProject.id, clientProject.notes]);
 
   useEffect(() => {
@@ -64,15 +58,8 @@ export default function ClientProjectDetail({
     () => new Set(team.map((m) => String(m.name || "").trim().toLowerCase()).filter(Boolean)),
     [team]
   );
-  const availableUsers = useMemo(
-    () =>
-      directory.filter((u) => {
-        if (assignedUserIds.has(String(u.id))) return false;
-        if (assignedNames.has(String(u.name || "").trim().toLowerCase())) return false;
-        return true;
-      }),
-    [directory, assignedUserIds, assignedNames]
-  );
+  // Existing assignees stay selectable so additional roles can be attached to one person.
+  const availableUsers = directory;
 
   const phaseRows = useMemo(() => {
     const key = clientProject.projectNameKey || projectNameKey(clientProject.projectName);
@@ -98,13 +85,18 @@ export default function ClientProjectDetail({
       setTeamError("Select a team member from the list.");
       return;
     }
-    const newMember = {
+    if (!newMemberRoles.length) {
+      setTeamError("Select at least one role.");
+      return;
+    }
+    const existingIndex = team.findIndex((member) => String(member.userId || member.id) === String(user.id) || String(member.name || "").trim().toLowerCase() === String(user.name || "").trim().toLowerCase());
+    const newMember = normalizeTeamMember({
       id: user.id,
       userId: user.id,
       name: user.name,
-      role: newMemberRole,
-    };
-    persist({ teamMembers: [...team, newMember] });
+      roles: newMemberRoles,
+    });
+    persist({ teamMembers: existingIndex >= 0 ? team.map((member, index) => index === existingIndex ? mergeMemberRoles(member, newMemberRoles) : member) : [...team, newMember] });
     setSelectedUserId("");
     setSaveStatus("Team updated");
   }
@@ -115,9 +107,21 @@ export default function ClientProjectDetail({
     setSaveStatus("Team updated");
   }
 
-  function handleSaveNotes() {
+  function handleAddNote() {
     if (!isAdmin) return;
-    persist({ notes: notesText });
+    const note = createNote(noteDraft);
+    if (!note.text) return;
+    const nextNotes = [...notes, note];
+    setNotes(nextNotes);
+    setNoteDraft("");
+    persist({ notes: nextNotes });
+    setSaveStatus("Notes saved");
+  }
+
+  function handleDeleteNote(noteId) {
+    const nextNotes = notes.filter((note) => note.id !== noteId);
+    setNotes(nextNotes);
+    persist({ notes: nextNotes });
     setSaveStatus("Notes saved");
   }
 
@@ -203,7 +207,7 @@ export default function ClientProjectDetail({
               >
                 <div>
                   <div style={{ fontSize: 13.5, fontWeight: 650 }}>{m.name}</div>
-                  <div style={{ fontSize: 11, color: colors.muted }}>{m.role}</div>
+                  <div style={{ fontSize: 11, color: colors.muted }}>{memberRoleLabel(m)}</div>
                 </div>
                 {isAdmin ? (
                   <button
@@ -234,13 +238,7 @@ export default function ClientProjectDetail({
                 ))}
               </select>
               <div style={{ display: "flex", gap: 8 }}>
-                <select value={newMemberRole} onChange={(e) => setNewMemberRole(e.target.value)} style={{ ...field, flex: 1 }}>
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
+                <RoleMultiSelect roles={ROLES} value={newMemberRoles} onChange={setNewMemberRoles} />
                 <button
                   type="submit"
                   style={{
@@ -251,7 +249,7 @@ export default function ClientProjectDetail({
                     color: colors.onAccent,
                     border: "none",
                     borderRadius: 10,
-                    padding: "0 14px",
+                    padding: "0 14px", height: 40,
                     fontWeight: 700,
                     whiteSpace: "nowrap",
                   }}
@@ -264,32 +262,9 @@ export default function ClientProjectDetail({
           ) : null}
 
           <div style={{ marginTop: 16, borderTop: `1px solid ${colors.border}`, paddingTop: 12 }}>
-            <div style={{ fontSize: 12, fontWeight: 650, color: colors.muted, marginBottom: 6 }}>Notes</div>
-            <textarea
-              value={notesText}
-              onChange={(e) => setNotesText(e.target.value)}
-              disabled={!isAdmin}
-              rows={4}
-              style={{ ...field, width: "100%", boxSizing: "border-box", resize: "vertical", fontFamily: "inherit" }}
-            />
-            {isAdmin ? (
-              <button
-                type="button"
-                onClick={handleSaveNotes}
-                style={{
-                  marginTop: 8,
-                  background: isDark ? colors.accentSoft : colors.accent,
-                  color: colors.onAccent,
-                  border: "none",
-                  borderRadius: 10,
-                  padding: "8px 12px",
-                  fontWeight: 700,
-                  fontSize: 12.5,
-                }}
-              >
-                Save notes
-              </button>
-            ) : null}
+            <div style={{ fontSize: 12, fontWeight: 650, color: colors.muted, marginBottom: 6 }}>Developer notes</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 9 }}>{notes.map((note) => <div key={note.id} style={{ display: "flex", gap: 8, alignItems: "start", background: colors.panel2, borderRadius: 8, padding: "8px 10px", fontSize: 12.5 }}><span style={{ flex: 1, whiteSpace: "pre-wrap" }}>{note.text}</span>{isAdmin ? <button type="button" onClick={() => handleDeleteNote(note.id)} style={{ border: 0, background: "none", color: colors.muted, padding: 0 }}><Trash2 size={13} /></button> : null}</div>)}</div>
+            {isAdmin ? <><textarea value={noteDraft} onChange={(e) => setNoteDraft(e.target.value)} rows={3} placeholder="Add a developer note…" style={{ ...field, width: "100%", boxSizing: "border-box", resize: "vertical", fontFamily: "inherit" }} /><button type="button" onClick={handleAddNote} style={{ marginTop: 8, background: isDark ? colors.accentSoft : colors.accent, color: colors.onAccent, border: "none", borderRadius: 10, padding: "8px 12px", fontWeight: 700, fontSize: 12.5 }}>Add note</button></> : null}
           </div>
         </div>
 

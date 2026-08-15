@@ -491,10 +491,16 @@ export default function Dashboard() {
       form.orderUrl?.trim() ||
       (orderId ? `https://www.fiverr.com/orders/${orderId}/activities` : "");
 
-    const teamMembers = [];
+    const existingTeamMembers = editingId
+      ? projects.find((project) => project.id === editingId)?.teamMembers || []
+      : [];
+    // The quick-edit modal has legacy single-role fields. Preserve richer role assignments
+    // created from the project detail screen instead of flattening them on save.
+    const preserveMultiRoleTeam = existingTeamMembers.some((member) => Array.isArray(member.roles) && member.roles.length > 1);
+    const teamMembers = preserveMultiRoleTeam ? existingTeamMembers : [];
     const seenNames = new Set();
     const supervisorVal = (form.supervisor || "").trim();
-    if (supervisorVal) {
+    if (!preserveMultiRoleTeam && supervisorVal) {
       teamMembers.push({
         id: `sup-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
         name: supervisorVal,
@@ -504,7 +510,7 @@ export default function Dashboard() {
     }
 
     const membersRawVal = (form.membersRaw || "").trim();
-    if (membersRawVal) {
+    if (!preserveMultiRoleTeam && membersRawVal) {
       const list = membersRawVal.split(",").map((m) => m.trim()).filter(Boolean);
       list.forEach((name) => {
         if (!seenNames.has(name.toLowerCase())) {

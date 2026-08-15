@@ -44,8 +44,9 @@ export function buildAnalytics(projects) {
     const { month, year } = getProjectMonthYear(project.date);
     if (!month || !year) return;
     const key = `${year}-${String(month).padStart(2, "0")}`;
-    const current = monthlyMap.get(key) || { key, date: new Date(year, month - 1, 1), projects: 0, value: 0 };
+    const current = monthlyMap.get(key) || { key, date: new Date(year, month - 1, 1), projects: 0, delivered: 0, value: 0 };
     current.projects += 1;
+    if (statusOf(project) === "delivered") current.delivered += 1;
     current.value += amount(project);
     monthlyMap.set(key, current);
   });
@@ -72,9 +73,10 @@ export function buildAnalytics(projects) {
     },
     monthly,
     statuses,
-    teams: grouped(rows, (project) => project.teamName).sort((a, b) => b.value - a.value),
     stacks: grouped(rows, getProjectStack).sort((a, b) => b.value - a.value),
     salesPeople: grouped(rows, (project) => project.salesPerson).sort((a, b) => b.value - a.value),
+    lateStacks: grouped(late, getProjectStack).sort((a, b) => b.value - a.value),
+    wipStacks: grouped(wip, getProjectStack).sort((a, b) => b.value - a.value),
     lateProjects: late.sort((a, b) => amount(b) - amount(a)),
     wipProjects: wip.sort((a, b) => amount(b) - amount(a)),
   };

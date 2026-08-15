@@ -124,10 +124,16 @@ export function stacksForRole(role) {
   return ["*"];
 }
 
-function roleMatchesPhaseStack(role, stack) {
-  const targets = stacksForRole(role);
-  if (targets.includes("*")) return true;
-  return targets.includes(stack);
+function memberRoles(member) {
+  const roles = Array.isArray(member?.roles) ? member.roles : [member?.role];
+  return [...new Set(roles.map((role) => String(role || "").trim()).filter(Boolean))];
+}
+
+function roleMatchesPhaseStack(roles, stack) {
+  return memberRoles({ roles }).some((role) => {
+    const targets = stacksForRole(role);
+    return targets.includes("*") || targets.includes(stack);
+  });
 }
 
 function phaseHasMember(phase, member) {
@@ -170,23 +176,27 @@ export function applyClientTeamToSinglePhase(phase, clientProject) {
   let added = 0;
   for (const m of clientMembers) {
     if (!m?.name) continue;
-    const role = m.role || "";
-    const isLead =
-      /supervisor|project lead|^lead$/i.test(String(role)) ||
-      String(role).toLowerCase() === "supervisor";
+    const roles = memberRoles(m);
+    const isLead = roles.some((role) => /supervisor|project lead|^lead$/i.test(role));
 
     if (isLead && !String(next.supervisor || "").trim()) {
       next.supervisor = m.name;
     }
 
-    if (!roleMatchesPhaseStack(role, stack)) continue;
-    if (phaseHasMember(next, m)) continue;
+    if (!roleMatchesPhaseStack(roles, stack)) continue;
+    const existingIndex = next.teamMembers.findIndex((member) => (m.userId && member?.userId && String(m.userId) === String(member.userId)) || String(member?.name || "").trim().toLowerCase() === String(m.name || "").trim().toLowerCase());
+    if (existingIndex >= 0) {
+      const mergedRoles = [...new Set([...memberRoles(next.teamMembers[existingIndex]), ...roles])];
+      next.teamMembers[existingIndex] = { ...next.teamMembers[existingIndex], roles: mergedRoles, role: mergedRoles[0] || "Member" };
+      continue;
+    }
 
     next.teamMembers.push({
       id: m.id || m.userId || `mem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       userId: m.userId ? String(m.userId) : undefined,
       name: String(m.name).trim(),
-      role: String(role || "").trim() || "Member",
+      roles,
+      role: roles[0] || "Member",
     });
     added += 1;
   }
@@ -255,7 +265,8 @@ export function aggregateTeamFromPhases(phases) {
         id: m.id || m.userId || `mem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         userId: m.userId ? String(m.userId) : undefined,
         name: String(m.name || "").trim(),
-        role: String(m.role || "").trim() || "Member",
+        roles: memberRoles(m),
+        role: memberRoles(m)[0] || "Member",
       });
     }
   }
@@ -415,13 +426,17 @@ export function updateClientProject(id, patch) {
 
   if (patch.supervisor !== undefined) next.supervisor = String(patch.supervisor || "");
   if (patch.membersRaw !== undefined) next.membersRaw = String(patch.membersRaw || "");
-  if (patch.notes !== undefined) next.notes = String(patch.notes || "");
+  if (patch.notes !== undefined) {
+    const incoming = Array.isArray(patch.notes) ? patch.notes : String(patch.notes || "").trim() ? [{ id: "legacy-note", text: String(patch.notes).trim(), createdAt: "" }] : [];
+    next.notes = incoming.map((note) => ({ id: String(note?.id || `note-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`), text: String(note?.text || "").trim(), createdAt: note?.createdAt || "" })).filter((note) => note.text);
+  }
   if (Array.isArray(patch.teamMembers)) {
     next.teamMembers = patch.teamMembers
       .map((m) => ({
         id: m.id || `mem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         name: String(m.name || "").trim(),
-        role: String(m.role || "").trim() || "Member",
+        roles: memberRoles(m),
+        role: memberRoles(m)[0] || "Member",
         userId: m.userId ? String(m.userId) : undefined,
       }))
       .filter((m) => m.name);

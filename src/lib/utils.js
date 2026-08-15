@@ -301,6 +301,33 @@ export function isDueSoon(project, options = {}) {
   return daysLeft <= threshold;
 }
 
+/** Calendar days since intake (`project.date`); null if unparseable or in the future. */
+export function getDaysSinceIntake(project, today = new Date()) {
+  const intake = parseProjectDate(project?.date);
+  if (!intake) return null;
+  const days = diffCalendarDays(intake, startOfToday(today));
+  if (days == null || days < 0) return null;
+  return days;
+}
+
+/**
+ * Intake date within the last N calendar days (inclusive of today).
+ * e.g. intake Aug 14 and today Aug 15 → new arrival (1 day ago).
+ */
+export function isNewArrival(project, options = {}) {
+  const threshold = Number.isFinite(options?.threshold) ? options.threshold : 3;
+  const daysSince = getDaysSinceIntake(project, options?.today);
+  if (daysSince == null) return false;
+  return daysSince <= threshold;
+}
+
+export function formatDaysSinceIntake(daysSince) {
+  if (daysSince == null) return "—";
+  if (daysSince === 0) return "Arrived today";
+  if (daysSince === 1) return "1 day ago";
+  return `${daysSince} days ago`;
+}
+
 export function formatDisplayDate(date) {
   if (!date) return "—";
   const d = date instanceof Date ? date : parseProjectDate(date);

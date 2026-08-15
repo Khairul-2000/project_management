@@ -17,7 +17,7 @@ import LoginPage from "./components/LoginPage";
 import UsersAdmin from "./components/UsersAdmin";
 import ClientProjects from "./components/ClientProjects";
 import ClientProjectDetail from "./components/ClientProjectDetail";
-import DueSoonBanner from "./components/DueSoonBanner";
+import DashboardAlerts from "./components/DashboardAlerts";
 import AnalyticsDashboard from "./components/AnalyticsDashboard";
 import {
   FONTS,
@@ -823,7 +823,7 @@ export default function Dashboard() {
                 mode={hasSheetTabs ? "sheetTab" : "date"}
               />
 
-              <DueSoonBanner projects={monthFilteredProjects} />
+              <DashboardAlerts projects={projects} />
 
               <KpiStrip kpis={kpis} />
               <StackWorkload byStack={byStack} projects={monthFilteredProjects} />

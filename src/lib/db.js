@@ -86,5 +86,8 @@ export async function patchClientProject(id, payload) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || "Failed to update client project");
-  return data.clientProject;
+  return {
+    clientProject: data.clientProject,
+    phasesUpdated: data.phasesUpdated ?? 0,
+  };
 }

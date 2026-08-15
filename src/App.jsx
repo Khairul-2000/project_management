@@ -355,6 +355,8 @@ export default function Dashboard() {
     try {
       setSaveState("Saving…");
       await saveProjectsToDb(nextProjects);
+      // Phase team edits roll up into client projects on the server
+      await refreshClientProjects().catch(() => {});
       setSaveState("Saved to projects.json");
     } catch (err) {
       console.error(err);
@@ -788,15 +790,32 @@ export default function Dashboard() {
               isAdmin={isAdmin}
               onBack={() => {
                 window.location.hash = "";
-                if (!isAdmin) {
-                  setView(activeClientProjectId ? "clientProjectDetail" : "clientProjects");
+                const fromId = activeClientProjectId;
+                if (fromId) {
+                  setView("clientProjectDetail");
+                  return;
                 }
+                const key = String(activeProject.projectName || "")
+                  .trim()
+                  .toLowerCase();
+                const match = clientProjects.find(
+                  (cp) =>
+                    (cp.projectNameKey || String(cp.projectName || "").trim().toLowerCase()) === key
+                );
+                if (match) {
+                  setActiveClientProjectId(match.id);
+                  setView("clientProjectDetail");
+                  return;
+                }
+                setView("clientProjects");
+                setActiveClientProjectId(null);
               }}
               onUpdate={(updated) => persistProjects(projects.map((p) => (p.id === updated.id ? updated : p)))}
               onDelete={(id) => {
                 if (!isAdmin) return;
                 persistProjects(projects.filter((p) => p.id !== id));
                 window.location.hash = "";
+                setView("clientProjects");
               }}
             />
           ) : view === "clientProjectDetail" && activeClientProject ? (
@@ -810,20 +829,24 @@ export default function Dashboard() {
               }}
               onUpdate={async (updated) => {
                 try {
-                  const saved = await patchClientProject(updated.id, {
+                  const { clientProject: saved } = await patchClientProject(updated.id, {
                     teamMembers: updated.teamMembers,
                     supervisor: updated.supervisor,
                     membersRaw: updated.membersRaw,
                     notes: updated.notes,
                   });
                   setClientProjects((prev) => prev.map((cp) => (cp.id === saved.id ? saved : cp)));
+                  // Reload phases so role-matched team push is visible immediately
+                  const { projects: rows } = await loadProjectsFromDb();
+                  setProjects(rows);
                   setSaveState("Client project saved");
                 } catch (err) {
                   setSaveState(err.message || "Failed to save client project");
                 }
               }}
               onOpenPhase={(phaseId) => {
-                if (isAdmin) setView("dashboard");
+                // Stay in Projects flow so Back returns to this client project
+                setView("clientProjectDetail");
                 window.location.hash = `#/project/${phaseId}`;
               }}
             />

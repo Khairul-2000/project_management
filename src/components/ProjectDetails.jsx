@@ -23,6 +23,8 @@ import {
   formatDaysLeft,
   toInputDate,
   diffCalendarDays,
+  getDeveloperRole,
+  getProjectStack,
 } from "../lib/utils";
 import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeNotes, normalizeTeamMember } from "../lib/projectMetadata";
 import RoleMultiSelect from "./RoleMultiSelect";
@@ -52,6 +54,11 @@ function getAvatarBg(name) {
   return colors[Math.abs(hash) % colors.length];
 }
 
+function defaultRoleForProject(project) {
+  const role = getDeveloperRole(getProjectStack(project));
+  return PROJECT_ROLES.includes(role) ? [role] : [PROJECT_ROLES[0]];
+}
+
 const ROLES = PROJECT_ROLES;
 
 export default function ProjectDetails({ project, onBack, onUpdate, onDelete, isAdmin = false }) {
@@ -59,7 +66,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
   const COLORS = colors;
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [newMemberRoles, setNewMemberRoles] = useState([ROLES[0]]);
+  const [newMemberRoles, setNewMemberRoles] = useState(() => defaultRoleForProject(project));
   const [directory, setDirectory] = useState([]);
   const [teamError, setTeamError] = useState("");
   const [notes, setNotes] = useState(() => normalizeNotes(project.notes));
@@ -75,11 +82,12 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
     setNoteDraft("");
     setSaveStatus("");
     setScheduleError("");
+    setNewMemberRoles(defaultRoleForProject(project));
     const suggested = getSuggestedDeliveryDate(project);
     const original = getOriginalDeliveryDate(project);
     setDeliveryInput(toInputDate(original || suggested || ""));
     setExtendInput("");
-  }, [project.id, project.notes, project.deliveryDate, project.date, project.dateline, project.extensions]);
+  }, [project.id, project.notes, project.deliveryDate, project.date, project.dateline, project.extensions, project.phase, project.stack]);
 
   useEffect(() => {
     let cancelled = false;
@@ -392,7 +400,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
         onMouseEnter={(e) => { e.currentTarget.style.background = COLORS.panel2; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = COLORS.panel; }}
         >
-          <ArrowLeft size={16} /> Back to Console
+          <ArrowLeft size={16} /> Back to Projects
         </button>
         <div style={{ color: COLORS.muted, fontSize: 13 }}>
           Console &nbsp;/&nbsp; Projects &nbsp;/&nbsp; <span style={{ color: COLORS.text, fontWeight: 500 }}>{project.projectName}</span>

@@ -1,11 +1,26 @@
 export function deriveStack(phase) {
   const p = (phase || "").toLowerCase();
-  // Backend / Frontend / UI work is the same department whether mobile app, web, or AI
+  if (!p) return "Other";
+
+  // Backend always wins — "Mobile App Backend" / "AI App Backend" → Backend
   if (p.includes("backend")) return "Backend";
+
+  // App frontends (not website) → App Development, not generic Frontend
+  const isWebsite = p.includes("website") || p.includes("web site");
+  const isAppFrontend =
+    !isWebsite &&
+    p.includes("frontend") &&
+    (/\bmobile\s+app\b/.test(p) ||
+      /\bai\s+app\b/.test(p) ||
+      /\bapp\s+frontend\b/.test(p) ||
+      /\bapp\b/.test(p) ||
+      /\bmobile\b/.test(p));
+  if (isAppFrontend) return "App Development";
+
   if (p.includes("frontend")) return "Frontend";
-  if (p.includes("ui/ux")) return "UI/UX";
+  if (p.includes("ui/ux") || p.includes("ui ux") || (/\bui\b/.test(p) && /\bux\b/.test(p))) return "UI/UX";
   if (p.includes("automation")) return "Automation";
-  if (p.includes("deploy")) return "Deploy";
+  if (p.includes("deploy") || p.includes("publish")) return "Deploy";
   if (p.includes("app development")) return "App Development";
   return "Other";
 }
@@ -23,7 +38,7 @@ export function getDeveloperRole(stack) {
   if (s.includes("frontend")) return "Frontend Developer";
   if (s.includes("ai") || s.includes("ml")) return "AI Engineer";
   if (s.includes("ui") || s.includes("ux")) return "UI/UX Designer";
-  if (s.includes("automation")) return "QA/Automation Engineer";
+  if (s.includes("automation")) return "QA Engineer";
   if (s.includes("deploy")) return "DevOps Engineer";
   return "Developer";
 }

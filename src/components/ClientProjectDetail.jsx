@@ -187,8 +187,8 @@ export default function ClientProjectDetail({
             </h3>
           </div>
           <div style={{ fontSize: 12, color: colors.muted, marginBottom: 12 }}>
-            Members are linked to phases by role (e.g. Backend → Backend phases, UI/UX → UI/UX).
-            Existing phase assignments are kept; missing matches are added on save/sync.
+            Roles map to matching phase types: App Developer → Mobile/AI App phases, Frontend → website
+            frontend, Backend → backend, UI/UX → UI/UX. Assign here to update those phases automatically.
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>

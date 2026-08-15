@@ -773,6 +773,62 @@
     "membersRaw": ""
   },
   {
+    "date": "7/6/2026",
+    "salesPerson": "Mahfuzur",
+    "profile": "app_ninjas_fiverr",
+    "teamName": "",
+    "projectName": "",
+    "price": 200,
+    "phase": "Game Visual",
+    "stack": "Other",
+    "orderId": "FO82306AE7302",
+    "orderUrl": "https://www.fiverr.com/orders/FO82306AE7302/activities",
+    "dateline": "19 Days",
+    "salesStatus": "WIP",
+    "teamLeadStatus": "WIP",
+    "sheetTab": "STA Aug 2026",
+    "id": "sheet-FO82306AE7302",
+    "clientProjectId": "",
+    "supervisor": "",
+    "shift": "Day",
+    "possibility": "No",
+    "teamMembers": [],
+    "subtasks": [
+      {
+        "id": "1",
+        "text": "Requirements gathering & analysis",
+        "completed": false
+      },
+      {
+        "id": "2",
+        "text": "UI/UX Mockup design",
+        "completed": false
+      },
+      {
+        "id": "3",
+        "text": "Core API development",
+        "completed": false
+      },
+      {
+        "id": "4",
+        "text": "Frontend integration & testing",
+        "completed": false
+      },
+      {
+        "id": "5",
+        "text": "Client review & revisions",
+        "completed": false
+      },
+      {
+        "id": "6",
+        "text": "Final deployment & delivery",
+        "completed": false
+      }
+    ],
+    "notes": "",
+    "membersRaw": ""
+  },
+  {
     "date": "7/13/2026",
     "salesPerson": "C_Forward_STA Sales",
     "profile": "Ui_verse_Fiverr",
@@ -897,7 +953,7 @@
     "orderUrl": "https://www.fiverr.com/orders/FO1DFABAEC43/activities",
     "dateline": "10 Days",
     "salesStatus": "WIP",
-    "teamLeadStatus": "WIP",
+    "teamLeadStatus": "Delivered",
     "sheetTab": "STA Aug 2026",
     "clientProjectId": "cp-steveb-81",
     "id": "sheet-FO1DFABAEC43",
@@ -953,7 +1009,7 @@
     "orderUrl": "https://www.fiverr.com/orders/FO3DFB210741/activities",
     "dateline": "Order Done",
     "salesStatus": "Delivered",
-    "teamLeadStatus": "Delivered",
+    "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
     "clientProjectId": "cp-autockr989",
     "id": "sheet-FO3DFB210741",
@@ -1009,7 +1065,7 @@
     "orderUrl": "https://www.fiverr.com/orders/FO3DFBAF7141/activities",
     "dateline": "Order Late",
     "salesStatus": "NRA",
-    "teamLeadStatus": "WIP",
+    "teamLeadStatus": "Delivered",
     "sheetTab": "STA Aug 2026",
     "clientProjectId": "cp-travis-account",
     "id": "sheet-FO3DFBAF7141",
@@ -1060,12 +1116,12 @@
     "projectName": "millerbuilder",
     "price": 1200,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO830F6D1B3C6",
     "orderUrl": "https://www.fiverr.com/orders/FO830F6D1B3C6/activities",
     "dateline": "Order Done",
     "salesStatus": "Delivered",
-    "teamLeadStatus": "Delivered",
+    "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
     "clientProjectId": "cp-millerbuilder",
     "id": "sheet-FO830F6D1B3C6",
@@ -1243,7 +1299,7 @@
     "orderUrl": "https://www.fiverr.com/orders/FO11BFBC2D587/activities",
     "dateline": "4 Days",
     "salesStatus": "WIP",
-    "teamLeadStatus": "WIP",
+    "teamLeadStatus": "Delivered",
     "sheetTab": "STA Aug 2026",
     "clientProjectId": "cp-mannyibay",
     "id": "sheet-FO11BFBC2D587",
@@ -1299,7 +1355,7 @@
     "orderUrl": "https://www.fiverr.com/orders/FO422FB60A686/activities",
     "dateline": "Order Done",
     "salesStatus": "Delivered",
-    "teamLeadStatus": "Delivered",
+    "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
     "clientProjectId": "cp-vincenoroyan",
     "id": "sheet-FO422FB60A686",
@@ -1411,7 +1467,7 @@
     "orderUrl": "https://www.fiverr.com/orders/FO429FBE966C8/activities",
     "dateline": "8 Days",
     "salesStatus": "WIP",
-    "teamLeadStatus": "WIP",
+    "teamLeadStatus": "Delivered",
     "sheetTab": "STA Aug 2026",
     "clientProjectId": "cp-robertomassa887",
     "id": "sheet-FO429FBE966C8",
@@ -1467,7 +1523,7 @@
     "orderUrl": "https://www.fiverr.com/orders/FO514FFB7C641/activities",
     "dateline": "Order Done",
     "salesStatus": "Delivered",
-    "teamLeadStatus": "Delivered",
+    "teamLeadStatus": "WIP",
     "sheetTab": "STA Aug 2026",
     "clientProjectId": "cp-plifplifplif",
     "id": "sheet-FO514FFB7C641",
@@ -1818,7 +1874,7 @@
     "projectName": "cbrownaz",
     "price": 2400,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO82A07EBFDC4",
     "orderUrl": "https://www.fiverr.com/orders/FO82A07EBFDC4/activities",
     "dateline": "34 Days",
@@ -1990,7 +2046,7 @@
     "projectName": "derickotoo",
     "price": 2400,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO61BCEFD6982",
     "orderUrl": "https://www.fiverr.com/orders/FO61BCEFD6982/activities",
     "dateline": "Order Done",
@@ -2093,10 +2149,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/31/2026",
@@ -2151,10 +2205,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/31/2026",
@@ -2209,10 +2261,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/31/2026",
@@ -2267,10 +2317,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/31/2026",
@@ -2325,10 +2373,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/31/2026",
@@ -2383,10 +2429,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/31/2026",
@@ -2441,10 +2485,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/31/2026",
@@ -2499,10 +2541,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/31/2026",
@@ -2512,7 +2552,7 @@
     "projectName": "robertomassa887",
     "price": 640,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO414EBC708C2",
     "orderUrl": "https://www.fiverr.com/orders/FO414EBC708C2/activities",
     "dateline": "Order Done",
@@ -2557,10 +2597,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/31/2026",
@@ -2804,7 +2842,7 @@
     "projectName": "steveb_81",
     "price": 800,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO514F35E78C1",
     "orderUrl": "https://www.fiverr.com/orders/FO514F35E78C1/activities",
     "dateline": "Order Done",
@@ -3150,7 +3188,7 @@
     "projectName": "spethy39",
     "price": 240,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO822EE7D0582",
     "orderUrl": "https://www.fiverr.com/orders/FO822EE7D0582/activities",
     "dateline": "Order Done",
@@ -3262,7 +3300,7 @@
     "projectName": "kierantait159",
     "price": 800,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO11BF50BB387",
     "orderUrl": "https://www.fiverr.com/orders/FO11BF50BB387/activities",
     "dateline": "Order Done",
@@ -3905,7 +3943,7 @@
     "projectName": "derickotoo",
     "price": 2400,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO822C2BD0582",
     "orderUrl": "https://www.fiverr.com/orders/FO822C2BD0582/activities",
     "dateline": "Order Done",
@@ -4079,7 +4117,7 @@
     "projectName": "mustafafly",
     "price": 1040,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO21BD10E0D86",
     "orderUrl": "https://www.fiverr.com/orders/FO21BD10E0D86/activities",
     "dateline": "Order Done",
@@ -4146,7 +4184,7 @@
     "projectName": "lexi_comb",
     "price": 1200,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO822C55C8182",
     "orderUrl": "https://www.fiverr.com/orders/FO822C55C8182/activities",
     "dateline": "Order Done",
@@ -4271,7 +4309,7 @@
     "projectName": "sleepee",
     "price": 800,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO61BD3562182",
     "orderUrl": "https://www.fiverr.com/orders/FO61BD3562182/activities",
     "dateline": "Order Done",
@@ -4316,10 +4354,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/4/2026",
@@ -4374,10 +4410,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/7/2026",
@@ -4432,10 +4466,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/9/2026",
@@ -4490,10 +4522,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/10/2026",
@@ -4503,7 +4533,7 @@
     "projectName": "jennitheboss",
     "price": 880,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO522CF956185",
     "orderUrl": "https://www.fiverr.com/orders/FO522CF956185/activities",
     "dateline": "Order Done",
@@ -4548,10 +4578,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/12/2026",
@@ -4606,10 +4634,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/13/2026",
@@ -4664,10 +4690,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/15/2026",
@@ -4722,10 +4746,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/15/2026",
@@ -4780,10 +4802,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/15/2026",
@@ -4838,10 +4858,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/16/2026",
@@ -4896,10 +4914,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/17/2026",
@@ -4909,7 +4925,7 @@
     "projectName": "sleepee",
     "price": 800,
     "phase": "AI App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO722D5AEFB83",
     "orderUrl": "https://www.fiverr.com/orders/FO722D5AEFB83/activities",
     "dateline": "Order Done",
@@ -4954,10 +4970,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/17/2026",
@@ -5012,10 +5026,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/24/2026",
@@ -5070,10 +5082,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/24/2026",
@@ -5128,10 +5138,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "6/30/2026",
@@ -5150,64 +5158,6 @@
     "sheetTab": "STA June 2026",
     "clientProjectId": "cp-domiragroup",
     "id": "sheet-FO71BE6D05181",
-    "supervisor": "",
-    "shift": "Day",
-    "possibility": "No",
-    "teamMembers": [],
-    "subtasks": [
-      {
-        "id": "1",
-        "text": "Requirements gathering & analysis",
-        "completed": false
-      },
-      {
-        "id": "2",
-        "text": "UI/UX Mockup design",
-        "completed": false
-      },
-      {
-        "id": "3",
-        "text": "Core API development",
-        "completed": false
-      },
-      {
-        "id": "4",
-        "text": "Frontend integration & testing",
-        "completed": false
-      },
-      {
-        "id": "5",
-        "text": "Client review & revisions",
-        "completed": false
-      },
-      {
-        "id": "6",
-        "text": "Final deployment & delivery",
-        "completed": false
-      }
-    ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
-  },
-  {
-    "date": "7/6/2026",
-    "salesPerson": "Mahfuzur",
-    "profile": "app_ninjas_fiverr",
-    "teamName": "",
-    "projectName": "facep123",
-    "price": 200,
-    "phase": "Game Visual",
-    "stack": "Other",
-    "orderId": "FO82306AE7302",
-    "orderUrl": "https://www.fiverr.com/orders/FO82306AE7302/activities",
-    "dateline": "19 Days",
-    "salesStatus": "WIP",
-    "teamLeadStatus": "WIP",
-    "sheetTab": "STA June 2026",
-    "clientProjectId": "cp-facep123",
-    "id": "sheet-FO82306AE7302",
     "supervisor": "",
     "shift": "Day",
     "possibility": "No",
@@ -5545,7 +5495,7 @@
     "projectName": "nelsontan321",
     "price": 2160,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO214B37A27C4",
     "orderUrl": "https://www.fiverr.com/orders/FO214B37A27C4/activities",
     "dateline": "Order Done",
@@ -5921,7 +5871,7 @@
     "projectName": "tongugeofrey",
     "price": 1600,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO722A50FD803",
     "orderUrl": "https://www.fiverr.com/orders/FO722A50FD803/activities",
     "dateline": "Order Done",
@@ -6198,10 +6148,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/6/2026",
@@ -6211,7 +6159,7 @@
     "projectName": "elnatan123",
     "price": 1600,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO2DDF772842",
     "orderUrl": "https://www.fiverr.com/orders/FO2DDF772842/activities",
     "dateline": "Order Done",
@@ -6256,10 +6204,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/8/2026",
@@ -6314,10 +6260,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/12/2026",
@@ -6372,10 +6316,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/12/2026",
@@ -6401,10 +6343,10 @@
       {
         "id": "sup-1786167679869-gu40",
         "name": "Sifat",
-        "role": "Supervisor",
         "roles": [
           "Supervisor"
-        ]
+        ],
+        "role": "Supervisor"
       }
     ],
     "subtasks": [
@@ -6439,10 +6381,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "5/13/2026",
@@ -6468,10 +6408,10 @@
       {
         "id": "sup-1786167679869-cgb0",
         "name": "Khairul",
-        "role": "Supervisor",
         "roles": [
           "Supervisor"
-        ]
+        ],
+        "role": "Supervisor"
       }
     ],
     "subtasks": [
@@ -6506,10 +6446,8 @@
         "completed": false
       }
     ],
-    "notes": [],
-    "membersRaw": "",
-    "extensions": [],
-    "deliveryDate": ""
+    "notes": "",
+    "membersRaw": ""
   },
   {
     "date": "3/31/2026",
@@ -6925,7 +6863,7 @@
     "projectName": "demiangoldstraj",
     "price": 1000,
     "phase": "AI App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO61BA380A182",
     "orderUrl": "https://www.fiverr.com/orders/FO61BA380A182/activities",
     "dateline": "",
@@ -6983,7 +6921,7 @@
     "projectName": "mothirahman",
     "price": 720,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO829758BE4C4",
     "orderUrl": "https://www.fiverr.com/orders/FO829758BE4C4/activities",
     "dateline": "",
@@ -7215,7 +7153,7 @@
     "projectName": "wendallgarth982",
     "price": 1200,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO32292E53087",
     "orderUrl": "https://www.fiverr.com/orders/FO32292E53087/activities",
     "dateline": "",
@@ -7563,7 +7501,7 @@
     "projectName": "stefansmall89",
     "price": 1200,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO16ED49FB81",
     "orderUrl": "https://www.fiverr.com/orders/FO16ED49FB81/activities",
     "dateline": "",
@@ -8326,7 +8264,7 @@
     "projectName": "anjapepito",
     "price": 800,
     "phase": "AI App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO16E180CC01",
     "orderUrl": "https://www.fiverr.com/orders/FO16E180CC01/activities",
     "dateline": "",
@@ -8384,7 +8322,7 @@
     "projectName": "ahomesllc",
     "price": 2800,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO62269E5ED04",
     "orderUrl": "https://www.fiverr.com/orders/FO62269E5ED04/activities",
     "dateline": "",
@@ -8644,7 +8582,7 @@
     "projectName": "svetlinboris221",
     "price": 800,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO11B89D67187",
     "orderUrl": "https://www.fiverr.com/orders/FO11B89D67187/activities",
     "dateline": "",
@@ -8943,7 +8881,7 @@
     "projectName": "demiangoldstraj",
     "price": 1000,
     "phase": "AI App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO11B94493D87",
     "orderUrl": "https://www.fiverr.com/orders/FO11B94493D87/activities",
     "dateline": "",
@@ -9310,6 +9248,15 @@
           "UI/UX Designer"
         ],
         "role": "UI/UX Designer"
+      },
+      {
+        "id": "u-mslo41o8-e02250",
+        "userId": "u-mslo41o8-e02250",
+        "name": "Bayajit Islam",
+        "roles": [
+          "App Developer"
+        ],
+        "role": "App Developer"
       }
     ],
     "subtasks": [
@@ -9635,7 +9582,7 @@
     "projectName": "chloetsw514",
     "price": 800,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO82923711BC4",
     "orderUrl": "https://www.fiverr.com/orders/FO82923711BC4/activities",
     "dateline": "",
@@ -10195,7 +10142,7 @@
     "projectName": "hussein531",
     "price": 1200,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO82252083D02",
     "orderUrl": "https://www.fiverr.com/orders/FO82252083D02/activities",
     "dateline": "",
@@ -10307,7 +10254,7 @@
     "projectName": "nelsontan321",
     "price": 1720,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO42259978086",
     "orderUrl": "https://www.fiverr.com/orders/FO42259978086/activities",
     "dateline": "",
@@ -10419,7 +10366,7 @@
     "projectName": "plifplifplif",
     "price": 400,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO5225B084085",
     "orderUrl": "https://www.fiverr.com/orders/FO5225B084085/activities",
     "dateline": "",
@@ -10475,7 +10422,7 @@
     "projectName": "plifplifplif",
     "price": 60,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO5225B084085_1",
     "orderUrl": "https://www.fiverr.com/orders/FO5225B084085_1/activities",
     "dateline": "",
@@ -10643,7 +10590,7 @@
     "projectName": "alex_hawlkin",
     "price": 1200,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO7225F371283",
     "orderUrl": "https://www.fiverr.com/orders/FO7225F371283/activities",
     "dateline": "",
@@ -11147,7 +11094,7 @@
     "projectName": "harry01642",
     "price": 400,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO1DAA07EF43",
     "orderUrl": "https://www.fiverr.com/orders/FO1DAA07EF43/activities",
     "dateline": "",
@@ -11203,7 +11150,7 @@
     "projectName": "ni_colie",
     "price": 2000,
     "phase": "AI App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO828FFDD36C4",
     "orderUrl": "https://www.fiverr.com/orders/FO828FFDD36C4/activities",
     "dateline": "",
@@ -11483,7 +11430,7 @@
     "projectName": "mconstantin",
     "price": 800,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO6223AF81904",
     "orderUrl": "https://www.fiverr.com/orders/FO6223AF81904/activities",
     "dateline": "",
@@ -11595,7 +11542,7 @@
     "projectName": "murcin",
     "price": 1280,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO82FF387D1C6",
     "orderUrl": "https://www.fiverr.com/orders/FO82FF387D1C6/activities",
     "dateline": "",
@@ -12323,7 +12270,7 @@
     "projectName": "Eric Promm",
     "price": 1350,
     "phase": "AI App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "42195417_2",
     "orderUrl": "https://www.fiverr.com/orders/42195417_2/activities",
     "dateline": "",
@@ -12547,7 +12494,7 @@
     "projectName": "r1chardh",
     "price": 1600,
     "phase": "AI App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO31468D40B43",
     "orderUrl": "https://www.fiverr.com/orders/FO31468D40B43/activities",
     "dateline": "",
@@ -12659,7 +12606,7 @@
     "projectName": "knowlsey01",
     "price": 2240,
     "phase": "AI App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO3DA41F8941",
     "orderUrl": "https://www.fiverr.com/orders/FO3DA41F8941/activities",
     "dateline": "",
@@ -12827,7 +12774,7 @@
     "projectName": "primozrejec",
     "price": 1600,
     "phase": "AI App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO5143879E441",
     "orderUrl": "https://www.fiverr.com/orders/FO5143879E441/activities",
     "dateline": "",
@@ -12939,7 +12886,7 @@
     "projectName": "tonicanog",
     "price": 640,
     "phase": "AI App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO31AF9762585",
     "orderUrl": "https://www.fiverr.com/orders/FO31AF9762585/activities",
     "dateline": "",
@@ -13611,7 +13558,7 @@
     "projectName": "max_andreotti",
     "price": 800,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO421F6CB1706",
     "orderUrl": "https://www.fiverr.com/orders/FO421F6CB1706/activities",
     "dateline": "",
@@ -13835,7 +13782,7 @@
     "projectName": "pierre_csh",
     "price": 1360,
     "phase": "Mobile App Frontend",
-    "stack": "Frontend",
+    "stack": "App Development",
     "orderId": "FO1D98787243",
     "orderUrl": "https://www.fiverr.com/orders/FO1D98787243/activities",
     "dateline": "",

@@ -226,7 +226,7 @@ export default function AppSidebar({
 
         <div style={{ flex: 1, minHeight: 12 }} />
 
-        {isAdmin && statusLabel ? (
+        {/* {isAdmin && statusLabel ? (
           <div
             title={[statusLabel, connected && lastSync ? `Last sync ${lastSync}` : null].filter(Boolean).join(" · ")}
             style={{
@@ -257,7 +257,7 @@ export default function AppSidebar({
               </span>
             ) : null}
           </div>
-        ) : null}
+        ) : null}*/}
 
         {isAdmin && configured && !connected ? (
           <div style={itemWrap}>

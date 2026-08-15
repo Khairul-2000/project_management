@@ -28,27 +28,39 @@
       "teamMembers": [
         {
           "id": "u-mslo41o8-93a57a",
+          "userId": "u-mslo41o8-93a57a",
           "name": "Ovie Rahaman Sheikh",
-          "role": "UI/UX Designer",
-          "userId": "u-mslo41o8-93a57a"
+          "roles": [
+            "UI/UX Designer"
+          ],
+          "role": "UI/UX Designer"
         },
         {
           "id": "u-mslo41o8-56048b",
+          "userId": "u-mslo41o8-56048b",
           "name": "Md Sawjal Sikder",
-          "role": "Backend Developer",
-          "userId": "u-mslo41o8-56048b"
+          "roles": [
+            "Backend Developer"
+          ],
+          "role": "Backend Developer"
         },
         {
           "id": "u-mslo41o8-c41716",
+          "userId": "u-mslo41o8-c41716",
           "name": "Miraz Or Rashid Alvee",
-          "role": "Frontend Developer",
-          "userId": "u-mslo41o8-c41716"
+          "roles": [
+            "Frontend Developer"
+          ],
+          "role": "Frontend Developer"
         },
         {
           "id": "u-mslo41o8-e02250",
+          "userId": "u-mslo41o8-e02250",
           "name": "Bayajit Islam",
-          "role": "App Developer",
-          "userId": "u-mslo41o8-e02250"
+          "roles": [
+            "App Developer"
+          ],
+          "role": "App Developer"
         }
       ],
       "membersRaw": "",
@@ -164,6 +176,9 @@
         {
           "id": "sup-1786167679869-rupm",
           "name": "Sishir",
+          "roles": [
+            "Supervisor"
+          ],
           "role": "Supervisor"
         }
       ],
@@ -249,9 +264,12 @@
       "teamMembers": [
         {
           "id": "u-mslo41o8-2e868e",
+          "userId": "u-mslo41o8-2e868e",
           "name": "Riaz Mahmood",
-          "role": "AI Engineer",
-          "userId": "u-mslo41o8-2e868e"
+          "roles": [
+            "AI Engineer"
+          ],
+          "role": "AI Engineer"
         }
       ],
       "membersRaw": "",
@@ -535,7 +553,7 @@
         }
       ],
       "membersRaw": "",
-      "notes": "",
+      "notes": [],
       "createdAt": "2026-08-12T10:36:10.382Z"
     },
     {
@@ -657,16 +675,25 @@
         {
           "id": "sup-1786167679869-cgb0",
           "name": "Khairul",
+          "roles": [
+            "Supervisor"
+          ],
           "role": "Supervisor"
         },
         {
           "id": "mem-1786167679869-uytb",
           "name": "Sawjal",
+          "roles": [
+            "Backend Developer"
+          ],
           "role": "Backend Developer"
         },
         {
           "id": "mem-1786167679869-a39g",
           "name": "Emon",
+          "roles": [
+            "Backend Developer"
+          ],
           "role": "Backend Developer"
         }
       ],
@@ -752,21 +779,30 @@
       "teamMembers": [
         {
           "id": "u-mslo41o8-93a57a",
+          "userId": "u-mslo41o8-93a57a",
           "name": "Ovie Rahaman Sheikh",
-          "role": "UI/UX Designer",
-          "userId": "u-mslo41o8-93a57a"
+          "roles": [
+            "UI/UX Designer"
+          ],
+          "role": "UI/UX Designer"
         },
         {
           "id": "u-mslo41o8-c41716",
+          "userId": "u-mslo41o8-c41716",
           "name": "Miraz Or Rashid Alvee",
-          "role": "Frontend Developer",
-          "userId": "u-mslo41o8-c41716"
+          "roles": [
+            "Frontend Developer"
+          ],
+          "role": "Frontend Developer"
         },
         {
           "id": "u-mslo41o8-487104",
+          "userId": "u-mslo41o8-487104",
           "name": "Md. Arman Hosen",
-          "role": "Backend Developer",
-          "userId": "u-mslo41o8-487104"
+          "roles": [
+            "Backend Developer"
+          ],
+          "role": "Backend Developer"
         }
       ],
       "membersRaw": "",
@@ -802,6 +838,9 @@
         {
           "id": "sup-1786167679869-gu40",
           "name": "Sifat",
+          "roles": [
+            "Supervisor"
+          ],
           "role": "Supervisor"
         }
       ],
@@ -1139,6 +1178,9 @@
           "id": "u-mslo41o8-b29e74",
           "userId": "u-mslo41o8-b29e74",
           "name": "Sifat Rahman",
+          "roles": [
+            "DevOps Engineer"
+          ],
           "role": "DevOps Engineer"
         }
       ],

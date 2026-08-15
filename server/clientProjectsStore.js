@@ -100,27 +100,44 @@ export function copyTeamFromClient(cp) {
 
 export function deriveStackFromPhase(phase) {
   const p = String(phase || "").toLowerCase();
+  if (!p) return "Other";
+
+  // Backend always wins — "Mobile App Backend" / "AI App Backend" → Backend
   if (p.includes("backend")) return "Backend";
+
+  // App frontends (not website) → App Development, not generic Frontend
+  const isWebsite = p.includes("website") || p.includes("web site");
+  const isAppFrontend =
+    !isWebsite &&
+    p.includes("frontend") &&
+    (/\bmobile\s+app\b/.test(p) ||
+      /\bai\s+app\b/.test(p) ||
+      /\bapp\s+frontend\b/.test(p) ||
+      /\bapp\b/.test(p) ||
+      /\bmobile\b/.test(p));
+  if (isAppFrontend) return "App Development";
+
   if (p.includes("frontend")) return "Frontend";
-  if (p.includes("ui/ux")) return "UI/UX";
+  if (p.includes("ui/ux") || p.includes("ui ux") || (/\bui\b/.test(p) && /\bux\b/.test(p))) return "UI/UX";
   if (p.includes("automation")) return "Automation";
-  if (p.includes("deploy")) return "Deploy";
+  if (p.includes("deploy") || p.includes("publish")) return "Deploy";
   if (p.includes("app development")) return "App Development";
   return "Other";
 }
 
 /** Which stacks a client-team role should attach to ("*" = every phase). */
 export function stacksForRole(role) {
-  const r = String(role || "").toLowerCase();
+  const r = String(role || "").toLowerCase().trim();
   if (!r) return ["*"];
   if (r.includes("supervisor") || r.includes("project lead") || r === "lead") return ["*"];
   if (r.includes("backend")) return ["Backend"];
+  // App before frontend — "App Developer" must not fall through to Frontend
+  if (r.includes("app")) return ["App Development"];
   if (r.includes("frontend")) return ["Frontend"];
   if (r.includes("ui") || r.includes("ux")) return ["UI/UX"];
   if (r.includes("devops") || r.includes("deploy")) return ["Deploy"];
   if (r.includes("automation") || r.includes("qa")) return ["Automation"];
-  if (r.includes("ai")) return ["Automation", "Backend", "Frontend", "Other"];
-  if (r.includes("app")) return ["App Development", "Frontend", "Backend"];
+  if (r.includes("ai")) return ["Automation", "App Development", "Backend", "Frontend", "UI/UX"];
   return ["*"];
 }
 
@@ -129,11 +146,21 @@ function memberRoles(member) {
   return [...new Set(roles.map((role) => String(role || "").trim()).filter(Boolean))];
 }
 
-function roleMatchesPhaseStack(roles, stack) {
-  return memberRoles({ roles }).some((role) => {
+function rolesForStack(roles, stack) {
+  const list = memberRoles({ roles });
+  const matching = list.filter((role) => {
     const targets = stacksForRole(role);
     return targets.includes("*") || targets.includes(stack);
   });
+  return matching.length ? matching : [];
+}
+
+function roleMatchesPhaseStack(roles, stack) {
+  return rolesForStack(roles, stack).length > 0;
+}
+
+function phaseStack(phase) {
+  return deriveStackFromPhase(phase?.phase) || phase?.stack || "Other";
 }
 
 function phaseHasMember(phase, member) {
@@ -156,13 +183,15 @@ function phaseHasMember(phase, member) {
 /**
  * Attach role-matched client members onto one phase without removing existing people.
  * Supervisor/Project Lead → supervisor field if empty; also added to team when role is lead.
+ * Only the roles that match this phase's stack are written onto the phase member.
  */
 export function applyClientTeamToSinglePhase(phase, clientProject) {
   if (!phase || !clientProject) return phase;
-  const stack = phase.stack || deriveStackFromPhase(phase.phase);
+  const stack = phaseStack(phase);
   const clientMembers = Array.isArray(clientProject.teamMembers) ? clientProject.teamMembers : [];
   const next = {
     ...phase,
+    stack,
     clientProjectId: clientProject.id || phase.clientProjectId || "",
     teamMembers: Array.isArray(phase.teamMembers) ? [...phase.teamMembers] : [],
     supervisor: phase.supervisor || "",
@@ -176,18 +205,34 @@ export function applyClientTeamToSinglePhase(phase, clientProject) {
   let added = 0;
   for (const m of clientMembers) {
     if (!m?.name) continue;
-    const roles = memberRoles(m);
-    const isLead = roles.some((role) => /supervisor|project lead|^lead$/i.test(role));
+    const allRoles = memberRoles(m);
+    const isLead = allRoles.some((role) => /supervisor|project lead|^lead$/i.test(role));
 
     if (isLead && !String(next.supervisor || "").trim()) {
       next.supervisor = m.name;
     }
 
-    if (!roleMatchesPhaseStack(roles, stack)) continue;
-    const existingIndex = next.teamMembers.findIndex((member) => (m.userId && member?.userId && String(m.userId) === String(member.userId)) || String(member?.name || "").trim().toLowerCase() === String(m.name || "").trim().toLowerCase());
+    const matchedRoles = rolesForStack(allRoles, stack);
+    if (!matchedRoles.length) continue;
+
+    const existingIndex = next.teamMembers.findIndex(
+      (member) =>
+        (m.userId && member?.userId && String(m.userId) === String(member.userId)) ||
+        String(member?.name || "")
+          .trim()
+          .toLowerCase() ===
+          String(m.name || "")
+            .trim()
+            .toLowerCase()
+    );
     if (existingIndex >= 0) {
-      const mergedRoles = [...new Set([...memberRoles(next.teamMembers[existingIndex]), ...roles])];
-      next.teamMembers[existingIndex] = { ...next.teamMembers[existingIndex], roles: mergedRoles, role: mergedRoles[0] || "Member" };
+      const mergedRoles = [...new Set([...memberRoles(next.teamMembers[existingIndex]), ...matchedRoles])];
+      next.teamMembers[existingIndex] = {
+        ...next.teamMembers[existingIndex],
+        roles: mergedRoles,
+        role: mergedRoles[0] || "Member",
+        userId: m.userId ? String(m.userId) : next.teamMembers[existingIndex].userId,
+      };
       continue;
     }
 
@@ -195,8 +240,8 @@ export function applyClientTeamToSinglePhase(phase, clientProject) {
       id: m.id || m.userId || `mem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       userId: m.userId ? String(m.userId) : undefined,
       name: String(m.name).trim(),
-      roles,
-      role: roles[0] || "Member",
+      roles: matchedRoles,
+      role: matchedRoles[0] || "Member",
     });
     added += 1;
   }
@@ -244,11 +289,48 @@ function memberKey(m) {
     .toLowerCase()}`;
 }
 
+function normalizeMemberRecord(m) {
+  const roles = memberRoles(m);
+  return {
+    id: m.id || m.userId || `mem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    userId: m.userId ? String(m.userId) : undefined,
+    name: String(m.name || "").trim(),
+    roles,
+    role: roles[0] || "Member",
+  };
+}
+
+/** Union two team lists by userId/name and merge roles. */
+export function mergeTeamMembers(base, incoming) {
+  const map = new Map();
+  for (const m of [...(base || []), ...(incoming || [])]) {
+    if (!m?.name && !m?.userId) continue;
+    const key = memberKey(m);
+    if (!key || key === "name:") continue;
+    if (!map.has(key)) {
+      map.set(key, normalizeMemberRecord(m));
+      continue;
+    }
+    const prev = map.get(key);
+    const roles = [...new Set([...memberRoles(prev), ...memberRoles(m)])];
+    map.set(key, {
+      ...prev,
+      ...normalizeMemberRecord(m),
+      id: prev.id || m.id,
+      userId: prev.userId || (m.userId ? String(m.userId) : undefined),
+      name: prev.name || String(m.name || "").trim(),
+      roles,
+      role: roles[0] || "Member",
+    });
+  }
+  return [...map.values()].filter((m) => m.name);
+}
+
 /** Merge unique team members + first supervisor / membersRaw from phase rows. */
 export function aggregateTeamFromPhases(phases) {
-  const members = new Map();
   let supervisor = "";
   const rawParts = [];
+  let teamMembers = [];
 
   for (const phase of phases || []) {
     if (!supervisor && String(phase?.supervisor || "").trim()) {
@@ -257,18 +339,7 @@ export function aggregateTeamFromPhases(phases) {
     if (String(phase?.membersRaw || "").trim()) {
       rawParts.push(String(phase.membersRaw).trim());
     }
-    for (const m of Array.isArray(phase?.teamMembers) ? phase.teamMembers : []) {
-      if (!m?.name && !m?.userId) continue;
-      const key = memberKey(m);
-      if (!key || key === "name:" || members.has(key)) continue;
-      members.set(key, {
-        id: m.id || m.userId || `mem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        userId: m.userId ? String(m.userId) : undefined,
-        name: String(m.name || "").trim(),
-        roles: memberRoles(m),
-        role: memberRoles(m)[0] || "Member",
-      });
-    }
+    teamMembers = mergeTeamMembers(teamMembers, phase?.teamMembers);
   }
 
   const membersRaw = [
@@ -282,7 +353,7 @@ export function aggregateTeamFromPhases(phases) {
   ].join(", ");
   return {
     supervisor,
-    teamMembers: [...members.values()].filter((m) => m.name),
+    teamMembers,
     membersRaw,
   };
 }
@@ -301,8 +372,8 @@ function groupPhasesByNameKey(phases) {
 
 /**
  * Ensure a client project exists for every distinct projectName in phase rows.
- * If a client project has no team yet, seed it from phase-level teams in projects.json.
- * Stamps clientProjectId on phase objects (mutates in place). Returns client list.
+ * Always merge phase-level teams up into the client project (union + role merge).
+ * Stamps clientProjectId and normalized stack on phase objects. Returns client list.
  */
 export function ensureClientProjectsFromPhases(phases) {
   const data = readClientProjectsFile();
@@ -319,19 +390,24 @@ export function ensureClientProjectsFromPhases(phases) {
     const existing = byKey.get(key);
     if (!existing.projectName) existing.projectName = name;
 
-    // Seed client team from phases when client team is empty
-    if (!clientProjectHasTeam(existing)) {
-      const rolled = aggregateTeamFromPhases(group);
-      if (rolled.teamMembers.length || rolled.supervisor || rolled.membersRaw) {
-        existing.supervisor = rolled.supervisor;
-        existing.teamMembers = rolled.teamMembers;
-        existing.membersRaw = rolled.membersRaw;
-      }
+    // Always roll phase teams into the client project so phase assigns appear at project level
+    const rolled = aggregateTeamFromPhases(group);
+    existing.teamMembers = mergeTeamMembers(existing.teamMembers, rolled.teamMembers);
+    if (!String(existing.supervisor || "").trim() && rolled.supervisor) {
+      existing.supervisor = rolled.supervisor;
+    }
+    if (rolled.membersRaw) {
+      const parts = `${existing.membersRaw || ""},${rolled.membersRaw}`
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      existing.membersRaw = [...new Set(parts)].join(", ");
     }
 
-    // Link phases → client project
+    // Link phases → client project + normalize stack from phase title
     for (const phase of group) {
       phase.clientProjectId = existing.id;
+      phase.stack = phaseStack(phase);
     }
   }
 

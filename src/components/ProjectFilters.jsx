@@ -5,9 +5,11 @@ export default function ProjectFilters({
   stackFilter,
   statusFilter,
   profileFilter,
+  possibilityFilter,
   onStackChange,
   onStatusChange,
   onProfileChange,
+  onPossibilityChange,
 }) {
   const { colors, card } = useTheme();
 
@@ -54,6 +56,23 @@ export default function ProjectFilters({
         {["All", ...PROFILES].map((pf) => (
           <button key={pf} className="chip" onClick={() => onProfileChange(pf)} style={chip(profileFilter === pf)}>
             {pf === "All" ? "All" : PROFILE_SHORT[pf]}
+          </button>
+        ))}
+        <span style={{ fontSize: 10.5, color: colors.muted, margin: "0 4px 0 10px", fontWeight: 700, letterSpacing: 0.4 }}>
+          POSSIBLE
+        </span>
+        {[
+          ["All", "All"],
+          ["Yes", "Yes"],
+          ["No", "No"],
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            className="chip"
+            onClick={() => onPossibilityChange(key)}
+            style={chip(possibilityFilter === key)}
+          >
+            {label}
           </button>
         ))}
       </div>

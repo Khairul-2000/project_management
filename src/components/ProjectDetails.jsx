@@ -575,7 +575,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
                 { label: "Sheet Dateline", value: project.dateline || "—", Icon: Clock },
                 { label: "Supervisor", value: project.supervisor || "—", Icon: User },
                 { label: "Shift", value: project.shift || "—", Icon: Clock3 },
-                { label: "Possibility", value: project.possibility || "—", Icon: AlertTriangle },
+                { label: "Possibility", value: project.possibility === "Yes" ? "Yes" : "No", Icon: AlertTriangle },
               ].map(({ label, value, Icon }) => (
                 <div key={label} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.muted }}>

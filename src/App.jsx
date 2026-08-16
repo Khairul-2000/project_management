@@ -33,6 +33,7 @@ import {
   getFilterMonthYear,
   getProjectStack,
   normalizeProjects,
+  normalizePossibility,
   extractOrderId,
   statusOf,
 } from "./lib/utils";
@@ -67,6 +68,7 @@ export default function Dashboard() {
   const [stackFilter, setStackFilter] = useState("All");
   const [profileFilter, setProfileFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [possibilityFilter, setPossibilityFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -121,7 +123,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [stackFilter, profileFilter, statusFilter, selectedMonth, selectedYear, pageSize, searchQuery]);
+  }, [stackFilter, profileFilter, statusFilter, possibilityFilter, selectedMonth, selectedYear, pageSize, searchQuery]);
 
   useEffect(() => {
     const handleHashChange = () => setCurrentHash(window.location.hash);
@@ -379,6 +381,9 @@ export default function Dashboard() {
       if (stackFilter !== "All" && getProjectStack(p) !== stackFilter) return false;
       if (profileFilter !== "All" && p.profile !== profileFilter) return false;
       if (statusFilter !== "All" && statusOf(p) !== statusFilter) return false;
+      if (possibilityFilter !== "All" && normalizePossibility(p.possibility) !== possibilityFilter) {
+        return false;
+      }
       if (q) {
         const haystack = [
           p.projectName,
@@ -393,6 +398,7 @@ export default function Dashboard() {
           p.salesStatus,
           p.teamLeadStatus,
           p.supervisor,
+          p.possibility,
           p.sheetTab,
           p.membersRaw,
         ]
@@ -403,13 +409,14 @@ export default function Dashboard() {
       }
       return true;
     });
-  }, [monthFilteredProjects, stackFilter, profileFilter, statusFilter, searchQuery]);
+  }, [monthFilteredProjects, stackFilter, profileFilter, statusFilter, possibilityFilter, searchQuery]);
 
   const kpis = useMemo(() => {
     const total = monthFilteredProjects.length;
     const totalValue = monthFilteredProjects.reduce((s, p) => s + Number(p.price || 0), 0);
     const delivered = monthFilteredProjects.filter((p) => statusOf(p) === "delivered");
     const wip = monthFilteredProjects.filter((p) => statusOf(p) === "wip");
+    const possible = monthFilteredProjects.filter((p) => normalizePossibility(p.possibility) === "Yes");
     return {
       total,
       totalValue,
@@ -417,6 +424,8 @@ export default function Dashboard() {
       deliveredValue: delivered.reduce((s, p) => s + Number(p.price || 0), 0),
       wipCount: wip.length,
       wipValue: wip.reduce((s, p) => s + Number(p.price || 0), 0),
+      possibleCount: possible.length,
+      possibleValue: possible.reduce((s, p) => s + Number(p.price || 0), 0),
     };
   }, [monthFilteredProjects]);
 
@@ -543,6 +552,7 @@ export default function Dashboard() {
       ...form,
       price: Number(form.price) || 0,
       stack: form.stack || deriveStack(form.phase),
+      possibility: normalizePossibility(form.possibility),
       orderId,
       orderUrl,
       teamMembers,
@@ -882,9 +892,11 @@ export default function Dashboard() {
                 stackFilter={stackFilter}
                 statusFilter={statusFilter}
                 profileFilter={profileFilter}
+                possibilityFilter={possibilityFilter}
                 onStackChange={setStackFilter}
                 onStatusChange={setStatusFilter}
                 onProfileChange={setProfileFilter}
+                onPossibilityChange={setPossibilityFilter}
               />
 
               <ProjectSearch
@@ -902,6 +914,13 @@ export default function Dashboard() {
                 onPageSizeChange={setPageSize}
                 onEdit={openEdit}
                 onDelete={setConfirmDelete}
+                onPossibilityChange={(project, value) => {
+                  const next = normalizePossibility(value);
+                  if (normalizePossibility(project.possibility) === next) return;
+                  persistProjects(
+                    projects.map((p) => (p.id === project.id ? { ...p, possibility: next } : p))
+                  );
+                }}
                 canManage={isAdmin}
               />
             </div>

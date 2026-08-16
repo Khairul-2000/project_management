@@ -1,4 +1,4 @@
-import { FolderKanban, CheckCircle2, Clock3, Percent } from "lucide-react";
+import { FolderKanban, CheckCircle2, Clock3, Percent, CircleCheck } from "lucide-react";
 import { fmtMoney } from "../lib/utils";
 import { useTheme } from "../lib/theme";
 
@@ -28,6 +28,14 @@ export default function KpiStrip({ kpis }) {
       color: colors.wip,
       Icon: Clock3,
       tint: "rgba(217, 161, 23, 0.14)",
+    },
+    {
+      label: "Possible",
+      value: fmtMoney(kpis.possibleValue ?? 0),
+      sub: `${kpis.possibleCount ?? 0} phase${(kpis.possibleCount ?? 0) === 1 ? "" : "s"} flagged Yes`,
+      color: colors.delivered,
+      Icon: CircleCheck,
+      tint: `${colors.delivered}22`,
     },
     {
       label: "Delivery rate",

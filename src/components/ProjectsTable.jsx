@@ -1,7 +1,7 @@
-import { useMemo } from "react";
-import { Pencil, Trash2, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Pencil, Trash2, ExternalLink, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { PROFILE_SHORT, STACK_COLOR, PAGE_SIZE_OPTIONS } from "../lib/constants";
-import { getProjectStack, statusOf, fmtMoney } from "../lib/utils";
+import { getProjectStack, statusOf, fmtMoney, normalizePossibility } from "../lib/utils";
 import { useTheme } from "../lib/theme";
 import StatusBadge from "./StatusBadge";
 
@@ -14,19 +14,39 @@ export default function ProjectsTable({
   onPageSizeChange,
   onEdit,
   onDelete,
+  onPossibilityChange,
   canManage = true,
 }) {
   const { colors, card } = useTheme();
-  const totalPages = Math.max(1, Math.ceil(projects.length / pageSize));
+  // null | "yes-first" | "no-first"
+  const [possibilitySort, setPossibilitySort] = useState(null);
+
+  const sortedProjects = useMemo(() => {
+    if (!possibilitySort) return projects;
+    const rank = (p) => (normalizePossibility(p.possibility) === "Yes" ? 1 : 0);
+    const dir = possibilitySort === "yes-first" ? -1 : 1;
+    return [...projects].sort((a, b) => (rank(a) - rank(b)) * dir);
+  }, [projects, possibilitySort]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedProjects.length / pageSize));
   const safePage = Math.min(currentPage, totalPages);
 
   const pageRows = useMemo(() => {
     const start = (safePage - 1) * pageSize;
-    return projects.slice(start, start + pageSize);
-  }, [projects, safePage, pageSize]);
+    return sortedProjects.slice(start, start + pageSize);
+  }, [sortedProjects, safePage, pageSize]);
 
-  const rangeStart = projects.length === 0 ? 0 : (safePage - 1) * pageSize + 1;
-  const rangeEnd = Math.min(safePage * pageSize, projects.length);
+  const rangeStart = sortedProjects.length === 0 ? 0 : (safePage - 1) * pageSize + 1;
+  const rangeEnd = Math.min(safePage * pageSize, sortedProjects.length);
+
+  function cyclePossibilitySort() {
+    setPossibilitySort((prev) => {
+      if (prev === null) return "yes-first";
+      if (prev === "yes-first") return "no-first";
+      return null;
+    });
+    onPageChange(1);
+  }
 
   function getPageNumbers() {
     if (totalPages <= 7) {
@@ -68,18 +88,38 @@ export default function ProjectsTable({
 
   const headers = [
     { label: "Date", style: { width: 78 } },
-    { label: "Sales", style: { width: "11%" } },
+    { label: "Sales", style: { width: "10%" } },
     { label: "Team", style: { width: "7%" } },
     { label: "Dept", style: { width: "8%" } },
-    { label: "Profile", style: { width: "8%" } },
-    { label: "Project", style: { width: "13%" } },
-    { label: "Phase", style: { width: "11%" } },
-    { label: "Order", style: { width: "10%" } },
+    { label: "Profile", style: { width: "7%" } },
+    { label: "Project", style: { width: "12%" } },
+    { label: "Phase", style: { width: "10%" } },
+    { label: "Possible", style: { width: 88 }, sortable: "possibility" },
+    { label: "Order", style: { width: "9%" } },
     { label: "Price", style: { width: 72 } },
     { label: "Dateline", style: { width: "8%" } },
     { label: "Status", style: { width: 78 } },
     ...(canManage ? [{ label: "Actions", style: { width: 84, textAlign: "right" } }] : []),
   ];
+
+  const SortIcon =
+    possibilitySort === "yes-first" ? ArrowDown : possibilitySort === "no-first" ? ArrowUp : ArrowUpDown;
+
+  function possibilityStyles(isYes) {
+    if (isYes) {
+      return {
+        background: `${colors.delivered}22`,
+        border: `1px solid ${colors.delivered}66`,
+        color: colors.delivered,
+      };
+    }
+    // No: neutral only — no second accent color
+    return {
+      background: colors.panel2,
+      border: `1px solid ${colors.border}`,
+      color: colors.muted,
+    };
+  }
 
   return (
     <>
@@ -88,7 +128,7 @@ export default function ProjectsTable({
           <table
             style={{
               width: "100%",
-              minWidth: 980,
+              minWidth: 1040,
               tableLayout: "fixed",
               borderCollapse: "collapse",
             }}
@@ -97,7 +137,40 @@ export default function ProjectsTable({
               <tr style={{ background: colors.panel2 }}>
                 {headers.map((h) => (
                   <th key={h.label} style={{ ...th, ...h.style }}>
-                    {h.label === "Actions" ? "" : h.label}
+                    {h.label === "Actions" ? (
+                      ""
+                    ) : h.sortable === "possibility" ? (
+                      <button
+                        type="button"
+                        onClick={cyclePossibilitySort}
+                        title={
+                          possibilitySort === "yes-first"
+                            ? "Sorted: Yes first (click for No first)"
+                            : possibilitySort === "no-first"
+                              ? "Sorted: No first (click to clear)"
+                              : "Sort by Possible (Yes / No)"
+                        }
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          background: "none",
+                          border: "none",
+                          padding: 0,
+                          color: possibilitySort ? colors.text : colors.muted,
+                          fontWeight: 700,
+                          fontSize: 10,
+                          textTransform: "uppercase",
+                          letterSpacing: 0.3,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Possible
+                        <SortIcon size={12} />
+                      </button>
+                    ) : (
+                      h.label
+                    )}
                   </th>
                 ))}
               </tr>
@@ -112,6 +185,8 @@ export default function ProjectsTable({
               )}
               {pageRows.map((p, i) => {
                 const stack = getProjectStack(p);
+                const possible = normalizePossibility(p.possibility);
+                const isYes = possible === "Yes";
                 return (
                   <tr
                     key={p.id}
@@ -154,6 +229,42 @@ export default function ProjectsTable({
                     </td>
                     <td style={{ ...td, ...ellipsis, color: colors.muted }} title={p.phase || ""}>
                       {p.phase || "—"}
+                    </td>
+                    <td style={td}>
+                      {canManage && onPossibilityChange ? (
+                        <select
+                          value={possible}
+                          onChange={(e) => onPossibilityChange(p, e.target.value)}
+                          aria-label={`Possible for ${p.phase || p.projectName}`}
+                          title="Flag whether this phase is possible"
+                          style={{
+                            ...possibilityStyles(isYes),
+                            borderRadius: 8,
+                            padding: "4px 6px",
+                            fontSize: 11.5,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            width: "100%",
+                            maxWidth: 72,
+                          }}
+                        >
+                          <option value="Yes">Yes</option>
+                          <option value="No">No</option>
+                        </select>
+                      ) : (
+                        <span
+                          style={{
+                            ...possibilityStyles(isYes),
+                            display: "inline-block",
+                            padding: "3px 8px",
+                            borderRadius: 8,
+                            fontSize: 11.5,
+                            fontWeight: 700,
+                          }}
+                        >
+                          {possible}
+                        </span>
+                      )}
                     </td>
                     <td style={td} title={p.orderId || ""}>
                       {p.orderUrl || p.orderId ? (
@@ -231,7 +342,7 @@ export default function ProjectsTable({
           </table>
         </div>
 
-        {projects.length > 0 && (
+        {sortedProjects.length > 0 && (
           <div
             style={{
               display: "flex",
@@ -246,7 +357,7 @@ export default function ProjectsTable({
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               <span style={{ fontSize: 11.5, color: colors.muted, fontWeight: 500 }}>
-                Showing {rangeStart}–{rangeEnd} of {projects.length}
+                Showing {rangeStart}–{rangeEnd} of {sortedProjects.length}
               </span>
               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: colors.muted, fontWeight: 500 }}>
                 Rows
@@ -339,7 +450,7 @@ export default function ProjectsTable({
         )}
       </div>
       <div style={{ marginTop: 8, fontSize: 11.5, color: colors.muted, fontWeight: 500 }}>
-        {projects.length} of {totalCount} projects match filters · page {safePage} of {totalPages}
+        {sortedProjects.length} of {totalCount} projects match filters · page {safePage} of {totalPages}
       </div>
     </>
   );

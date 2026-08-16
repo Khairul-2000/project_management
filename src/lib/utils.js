@@ -113,12 +113,20 @@ export function getFilterMonthYear(project) {
   return getProjectMonthYear(project?.date);
 }
 
+/** Normalize possibility flag to Yes | No. */
+export function normalizePossibility(value) {
+  const v = String(value || "").trim().toLowerCase();
+  if (v === "yes" || v === "y" || v === "true" || v === "1") return "Yes";
+  return "No";
+}
+
 export function normalizeProjects(list) {
   if (!Array.isArray(list)) return [];
   return list.map((p) => ({
     ...p,
     stackLocked: Boolean(p.stackLocked),
     stack: getProjectStack(p),
+    possibility: normalizePossibility(p.possibility),
     teamMembers: Array.isArray(p.teamMembers) ? p.teamMembers.map(normalizeTeamMember) : [
       { id: "m1", name: "Alex Chen", role: "Project Lead" },
       { id: "m2", name: "Elena Rostova", role: "UI/UX Designer" },

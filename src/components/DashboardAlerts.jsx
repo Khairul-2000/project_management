@@ -1,4 +1,5 @@
-import { AlertTriangle, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import {
   formatDaysLeft,
   formatDaysSinceIntake,
@@ -7,10 +8,13 @@ import {
   getDaysLeft,
   getDaysSinceIntake,
   hasAdminSchedule,
+  hasTakenExtension,
   isDueSoon,
   isNewArrival,
 } from "../lib/utils";
 import { useTheme } from "../lib/theme";
+
+const COLLAPSED_COUNT = 4;
 
 function AlertCard({ tone, icon: Icon, title, children }) {
   const { colors, card } = useTheme();
@@ -75,6 +79,53 @@ function AlertRow({ href, title, meta }) {
   );
 }
 
+function ExpandableAlertList({ items, renderRow }) {
+  const { colors } = useTheme();
+  const [expanded, setExpanded] = useState(false);
+  const canToggle = items.length > COLLAPSED_COUNT;
+  const visible = canToggle && !expanded ? items.slice(0, COLLAPSED_COUNT) : items;
+  const hiddenCount = items.length - COLLAPSED_COUNT;
+
+  return (
+    <>
+      {visible.map(renderRow)}
+      {canToggle ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            marginTop: 2,
+            padding: "7px 10px",
+            borderRadius: 10,
+            border: `1px solid ${colors.border}`,
+            background: colors.panel,
+            color: colors.text,
+            fontSize: 12.5,
+            fontWeight: 700,
+            cursor: "pointer",
+            width: "100%",
+            boxSizing: "border-box",
+          }}
+        >
+          {expanded ? (
+            <>
+              <ChevronUp size={14} /> Show less
+            </>
+          ) : (
+            <>
+              <ChevronDown size={14} /> Show {hiddenCount} more
+            </>
+          )}
+        </button>
+      ) : null}
+    </>
+  );
+}
+
 export default function DashboardAlerts({ projects }) {
   const list = Array.isArray(projects) ? projects : [];
 
@@ -93,8 +144,14 @@ export default function DashboardAlerts({ projects }) {
       daysLeft: getDaysLeft(p),
       due: getCurrentDeliveryDate(p),
       admin: hasAdminSchedule(p),
+      extended: hasTakenExtension(p),
     }))
-    .sort((a, b) => a.daysLeft - b.daysLeft);
+    .sort((a, b) => {
+      if (a.daysLeft == null && b.daysLeft == null) return 0;
+      if (a.daysLeft == null) return 1;
+      if (b.daysLeft == null) return -1;
+      return a.daysLeft - b.daysLeft;
+    });
 
   if (!arrivals.length && !dueSoon.length) return null;
 
@@ -114,26 +171,24 @@ export default function DashboardAlerts({ projects }) {
           icon={Sparkles}
           title={`New arrivals · ${arrivals.length} project${arrivals.length === 1 ? "" : "s"} intake within 3 days`}
         >
-          {arrivals.slice(0, 8).map(({ project: p, daysSince }) => (
-            <AlertRow
-              key={p.id}
-              href={`#/project/${p.id}`}
-              title={p.projectName || "Untitled"}
-              meta={[
-                formatDaysSinceIntake(daysSince),
-                p.date ? `intake ${formatDisplayDate(p.date)}` : null,
-                p.phase || null,
-                p.profile || null,
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            />
-          ))}
-          {arrivals.length > 8 ? (
-            <div style={{ fontSize: 12, color: "inherit", opacity: 0.7, paddingLeft: 4 }}>
-              +{arrivals.length - 8} more
-            </div>
-          ) : null}
+          <ExpandableAlertList
+            items={arrivals}
+            renderRow={({ project: p, daysSince }) => (
+              <AlertRow
+                key={p.id}
+                href={`#/project/${p.id}`}
+                title={p.projectName || "Untitled"}
+                meta={[
+                  formatDaysSinceIntake(daysSince),
+                  p.date ? `intake ${formatDisplayDate(p.date)}` : null,
+                  p.phase || null,
+                  p.profile || null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              />
+            )}
+          />
         </AlertCard>
       ) : null}
 
@@ -141,28 +196,30 @@ export default function DashboardAlerts({ projects }) {
         <AlertCard
           tone="due"
           icon={AlertTriangle}
-          title={`Extension needed · ${dueSoon.length} project${dueSoon.length === 1 ? "" : "s"} with 4 days or less`}
+          title={`Extension warning · ${dueSoon.length} project${dueSoon.length === 1 ? "" : "s"} (≤7 days or extended)`}
         >
-          {dueSoon.slice(0, 8).map(({ project: p, daysLeft, due, admin }) => (
-            <AlertRow
-              key={p.id}
-              href={`#/project/${p.id}`}
-              title={p.projectName || "Untitled"}
-              meta={[
-                formatDaysLeft(daysLeft),
-                due ? `due ${formatDisplayDate(due)}` : null,
-                admin ? "admin schedule" : p.dateline ? `sheet “${p.dateline}”` : null,
-                "take extension or deliver",
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            />
-          ))}
-          {dueSoon.length > 8 ? (
-            <div style={{ fontSize: 12, color: "inherit", opacity: 0.7, paddingLeft: 4 }}>
-              +{dueSoon.length - 8} more
-            </div>
-          ) : null}
+          <ExpandableAlertList
+            items={dueSoon}
+            renderRow={({ project: p, daysLeft, due, admin, extended }) => (
+              <AlertRow
+                key={p.id}
+                href={`#/project/${p.id}`}
+                title={p.projectName || "Untitled"}
+                meta={[
+                  daysLeft != null ? formatDaysLeft(daysLeft) : null,
+                  due
+                    ? extended
+                      ? `extended to ${formatDisplayDate(due)}`
+                      : `due ${formatDisplayDate(due)}`
+                    : null,
+                  admin ? "admin schedule" : p.dateline ? `sheet “${p.dateline}”` : null,
+                  extended ? "new delivery date" : "take extension or deliver",
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              />
+            )}
+          />
         </AlertCard>
       ) : null}
     </div>

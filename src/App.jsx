@@ -798,26 +798,30 @@ export default function Dashboard() {
             <ProjectDetails
               project={activeProject}
               isAdmin={isAdmin}
+              backLabel={
+                activeClientProjectId || view === "clientProjects" || view === "clientProjectDetail"
+                  ? "Back to Projects"
+                  : "Back to Dashboard"
+              }
               onBack={() => {
                 window.location.hash = "";
-                const fromId = activeClientProjectId;
-                if (fromId) {
+                // Opened from Projects → client project → phase
+                if (activeClientProjectId) {
                   setView("clientProjectDetail");
                   return;
                 }
-                const key = String(activeProject.projectName || "")
-                  .trim()
-                  .toLowerCase();
-                const match = clientProjects.find(
-                  (cp) =>
-                    (cp.projectNameKey || String(cp.projectName || "").trim().toLowerCase()) === key
-                );
-                if (match) {
-                  setActiveClientProjectId(match.id);
-                  setView("clientProjectDetail");
+                // Stay on analytics/users if opened from there
+                if (view === "analytics" || view === "users") {
                   return;
                 }
-                setView("clientProjects");
+                // Opened from Projects list (no client context)
+                if (view === "clientProjects" || view === "clientProjectDetail") {
+                  setView("clientProjects");
+                  setActiveClientProjectId(null);
+                  return;
+                }
+                // Opened from dashboard table / alerts / stack modal
+                setView("dashboard");
                 setActiveClientProjectId(null);
               }}
               onUpdate={(updated) => persistProjects(projects.map((p) => (p.id === updated.id ? updated : p)))}
@@ -825,7 +829,11 @@ export default function Dashboard() {
                 if (!isAdmin) return;
                 persistProjects(projects.filter((p) => p.id !== id));
                 window.location.hash = "";
-                setView("clientProjects");
+                if (activeClientProjectId) {
+                  setView("clientProjectDetail");
+                  return;
+                }
+                setView("dashboard");
               }}
             />
           ) : view === "clientProjectDetail" && activeClientProject ? (

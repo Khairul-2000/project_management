@@ -1,4 +1,4 @@
-import { getProjectMonthYear, getProjectStack, statusOf } from "./utils";
+import { getCurrentDeliveryDate, getProjectMonthYear, getProjectStack, statusOf } from "./utils";
 
 const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit" });
 
@@ -33,6 +33,31 @@ function isLate(project) {
   return String(project.dateline || "").trim().toLowerCase().includes("order late");
 }
 
+function monthKeyFromParts(month, year) {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+function ensureMonth(map, month, year) {
+  const key = monthKeyFromParts(month, year);
+  if (!map.has(key)) {
+    map.set(key, {
+      key,
+      date: new Date(year, month - 1, 1),
+      projects: 0,
+      value: 0,
+      delivered: 0,
+      deliveredValue: 0,
+    });
+  }
+  return map.get(key);
+}
+
+function deliveryMonthYear(project) {
+  const due = getCurrentDeliveryDate(project);
+  if (due) return { month: due.getMonth() + 1, year: due.getFullYear() };
+  return getProjectMonthYear(project.date);
+}
+
 export function buildAnalytics(projects) {
   const rows = Array.isArray(projects) ? projects : [];
   const delivered = rows.filter((project) => statusOf(project) === "delivered");
@@ -40,15 +65,21 @@ export function buildAnalytics(projects) {
   const late = rows.filter(isLate);
 
   const monthlyMap = new Map();
+
   rows.forEach((project) => {
     const { month, year } = getProjectMonthYear(project.date);
     if (!month || !year) return;
-    const key = `${year}-${String(month).padStart(2, "0")}`;
-    const current = monthlyMap.get(key) || { key, date: new Date(year, month - 1, 1), projects: 0, delivered: 0, value: 0 };
+    const current = ensureMonth(monthlyMap, month, year);
     current.projects += 1;
-    if (statusOf(project) === "delivered") current.delivered += 1;
     current.value += amount(project);
-    monthlyMap.set(key, current);
+  });
+
+  delivered.forEach((project) => {
+    const { month, year } = deliveryMonthYear(project);
+    if (!month || !year) return;
+    const current = ensureMonth(monthlyMap, month, year);
+    current.delivered += 1;
+    current.deliveredValue += amount(project);
   });
 
   const monthly = [...monthlyMap.values()]

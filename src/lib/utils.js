@@ -313,13 +313,24 @@ export function getDaysLeft(project, today = new Date()) {
   return getSheetRemainingDays(project?.dateline);
 }
 
-/** WIP projects with 0–4 days left that have real schedule data (sheet countdown or admin date). */
+/** True when the project has at least one taken delivery extension. */
+export function hasTakenExtension(project) {
+  return getProjectExtensions(project).length > 0;
+}
+
+/**
+ * WIP projects that need extension attention:
+ * - 0–7 days left until current delivery date, or
+ * - already extended to a new delivery date
+ */
 export function isDueSoon(project, options = {}) {
-  const threshold = Number.isFinite(options?.threshold) ? options.threshold : 4;
+  const threshold = Number.isFinite(options?.threshold) ? options.threshold : 7;
   const lead = String(project?.teamLeadStatus || "").trim().toLowerCase();
   if (lead === "delivered" || lead === "cancelled") return false;
   const sales = String(project?.salesStatus || "").trim().toLowerCase();
   if (sales === "delivered" || sales === "cancelled") return false;
+
+  if (hasTakenExtension(project)) return true;
 
   const daysLeft = getDaysLeft(project);
   // No schedule data, or already overdue / Order Late → do not alert

@@ -62,7 +62,7 @@ function defaultRoleForProject(project) {
 
 const ROLES = PROJECT_ROLES;
 
-export default function ProjectDetails({ project, onBack, onUpdate, onDelete, isAdmin = false }) {
+export default function ProjectDetails({ project, onBack, onUpdate, onDelete, isAdmin = false, backLabel = "Back to Projects" }) {
   const { colors, isDark } = useTheme();
   const COLORS = colors;
   const [newSubtaskText, setNewSubtaskText] = useState("");
@@ -404,10 +404,10 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
         onMouseEnter={(e) => { e.currentTarget.style.background = COLORS.panel2; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = COLORS.panel; }}
         >
-          <ArrowLeft size={16} /> Back to Projects
+          <ArrowLeft size={16} /> {backLabel}
         </button>
         <div style={{ color: COLORS.muted, fontSize: 13 }}>
-          Console &nbsp;/&nbsp; Projects &nbsp;/&nbsp; <span style={{ color: COLORS.text, fontWeight: 500 }}>{project.projectName}</span>
+          Console &nbsp;/&nbsp; {backLabel.includes("Dashboard") ? "Dashboard" : "Projects"} &nbsp;/&nbsp; <span style={{ color: COLORS.text, fontWeight: 500 }}>{project.projectName}</span>
         </div>
       </div>
 
@@ -637,7 +637,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
               {hasDelivery ? (
                 <div style={{ fontSize: 12.5, color: COLORS.muted, textAlign: "right" }}>
                   Current due{" "}
-                  <strong style={{ color: daysLeft != null && daysLeft <= 4 ? COLORS.late : COLORS.text }}>
+                  <strong style={{ color: daysLeft != null && daysLeft <= 7 ? COLORS.late : COLORS.text }}>
                     {formatDisplayDate(currentDelivery)}
                   </strong>
                   {" · "}

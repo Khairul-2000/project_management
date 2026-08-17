@@ -196,7 +196,7 @@ export default function DashboardAlerts({ projects }) {
         <AlertCard
           tone="due"
           icon={AlertTriangle}
-          title={`Extension warning · ${dueSoon.length} project${dueSoon.length === 1 ? "" : "s"} (≤7 days or extended)`}
+          title={`Extension warning · ${dueSoon.length} project${dueSoon.length === 1 ? "" : "s"} with 7 days or less`}
         >
           <ExpandableAlertList
             items={dueSoon}

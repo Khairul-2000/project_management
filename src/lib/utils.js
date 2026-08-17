@@ -319,9 +319,8 @@ export function hasTakenExtension(project) {
 }
 
 /**
- * WIP projects that need extension attention:
- * - 0–7 days left until current delivery date, or
- * - already extended to a new delivery date
+ * WIP projects with 0–7 days left until the *current* delivery date.
+ * After an extension, that is the new due date (not the original).
  */
 export function isDueSoon(project, options = {}) {
   const threshold = Number.isFinite(options?.threshold) ? options.threshold : 7;
@@ -329,8 +328,6 @@ export function isDueSoon(project, options = {}) {
   if (lead === "delivered" || lead === "cancelled") return false;
   const sales = String(project?.salesStatus || "").trim().toLowerCase();
   if (sales === "delivered" || sales === "cancelled") return false;
-
-  if (hasTakenExtension(project)) return true;
 
   const daysLeft = getDaysLeft(project);
   // No schedule data, or already overdue / Order Late → do not alert

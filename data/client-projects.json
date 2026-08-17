@@ -1,0 +1,1272 @@
+{
+  "clientProjects": [
+    {
+      "id": "cp-affultim",
+      "projectName": "affultim",
+      "projectNameKey": "affultim",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-ahmedhadhrami",
+      "projectName": "ahmedhadhrami",
+      "projectNameKey": "ahmedhadhrami",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-ahomesllc",
+      "projectName": "ahomesllc",
+      "projectNameKey": "ahomesllc",
+      "supervisor": "",
+      "teamMembers": [
+        {
+          "id": "u-mslo41o8-93a57a",
+          "userId": "u-mslo41o8-93a57a",
+          "name": "Ovie Rahaman Sheikh",
+          "roles": [
+            "UI/UX Designer"
+          ],
+          "role": "UI/UX Designer"
+        },
+        {
+          "id": "u-mslo41o8-56048b",
+          "userId": "u-mslo41o8-56048b",
+          "name": "Md Sawjal Sikder",
+          "roles": [
+            "Backend Developer"
+          ],
+          "role": "Backend Developer"
+        },
+        {
+          "id": "u-mslo41o8-c41716",
+          "userId": "u-mslo41o8-c41716",
+          "name": "Miraz Or Rashid Alvee",
+          "roles": [
+            "Frontend Developer"
+          ],
+          "role": "Frontend Developer"
+        },
+        {
+          "id": "u-mslo41o8-e02250",
+          "userId": "u-mslo41o8-e02250",
+          "name": "Bayajit Islam",
+          "roles": [
+            "App Developer"
+          ],
+          "role": "App Developer"
+        }
+      ],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-alchemistan99",
+      "projectName": "alchemistan99",
+      "projectNameKey": "alchemistan99",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-alex-hawlkin",
+      "projectName": "alex_hawlkin",
+      "projectNameKey": "alex_hawlkin",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-amathew22",
+      "projectName": "amathew22",
+      "projectNameKey": "amathew22",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-amurgai3",
+      "projectName": "amurgai3",
+      "projectNameKey": "amurgai3",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-anjapepito",
+      "projectName": "anjapepito",
+      "projectNameKey": "anjapepito",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-aprilmariee",
+      "projectName": "aprilmariee",
+      "projectNameKey": "aprilmariee",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-aschlenvoigt",
+      "projectName": "aschlenvoigt",
+      "projectNameKey": "aschlenvoigt",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-autockr989",
+      "projectName": "autockr989",
+      "projectNameKey": "autockr989",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-awufiverr",
+      "projectName": "awufiverr",
+      "projectNameKey": "awufiverr",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-bharatjoshi393",
+      "projectName": "bharatjoshi393",
+      "projectNameKey": "bharatjoshi393",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-blu-yonder",
+      "projectName": "blu_yonder",
+      "projectNameKey": "blu_yonder",
+      "supervisor": "Sishir",
+      "teamMembers": [
+        {
+          "id": "sup-1786167679869-rupm",
+          "name": "Sishir",
+          "roles": [
+            "Supervisor"
+          ],
+          "role": "Supervisor"
+        }
+      ],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-brandonli560",
+      "projectName": "brandonli560",
+      "projectNameKey": "brandonli560",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-caesar370",
+      "projectName": "caesar370",
+      "projectNameKey": "caesar370",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-casi67",
+      "projectName": "casi67",
+      "projectNameKey": "casi67",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-cboone12",
+      "projectName": "cboone12",
+      "projectNameKey": "cboone12",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-cbrownaz",
+      "projectName": "cbrownaz",
+      "projectNameKey": "cbrownaz",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-charismaexpert",
+      "projectName": "charismaexpert",
+      "projectNameKey": "charismaexpert",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-chloetsw514",
+      "projectName": "chloetsw514",
+      "projectNameKey": "chloetsw514",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-chris-feist1",
+      "projectName": "chris_feist1",
+      "projectNameKey": "chris_feist1",
+      "supervisor": "",
+      "teamMembers": [
+        {
+          "id": "u-mslo41o8-2e868e",
+          "userId": "u-mslo41o8-2e868e",
+          "name": "Riaz Mahmood",
+          "roles": [
+            "AI Engineer"
+          ],
+          "role": "AI Engineer"
+        }
+      ],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-chris-k401",
+      "projectName": "chris_k401",
+      "projectNameKey": "chris_k401",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-chrishammack1",
+      "projectName": "chrishammack1",
+      "projectNameKey": "chrishammack1",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-david-cortesm",
+      "projectName": "david_cortesm",
+      "projectNameKey": "david_cortesm",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-davidedeki",
+      "projectName": "davidedeki",
+      "projectNameKey": "davidedeki",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-davidsamadi799",
+      "projectName": "davidsamadi799",
+      "projectNameKey": "davidsamadi799",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-demiangoldstraj",
+      "projectName": "demiangoldstraj",
+      "projectNameKey": "demiangoldstraj",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-derickotoo",
+      "projectName": "derickotoo",
+      "projectNameKey": "derickotoo",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-derikgodeaux",
+      "projectName": "derikgodeaux",
+      "projectNameKey": "derikgodeaux",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-designhouse2018",
+      "projectName": "designhouse2018",
+      "projectNameKey": "designhouse2018",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-domiragroup",
+      "projectName": "domiragroup",
+      "projectNameKey": "domiragroup",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-earnmoney247",
+      "projectName": "earnmoney247",
+      "projectNameKey": "earnmoney247",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-15T02:48:59.902Z"
+    },
+    {
+      "id": "cp-eitansela1",
+      "projectName": "eitansela1",
+      "projectNameKey": "eitansela1",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-elnatan123",
+      "projectName": "elnatan123",
+      "projectNameKey": "elnatan123",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-eric-promm",
+      "projectName": "Eric Promm",
+      "projectNameKey": "eric promm",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-erwin-rent",
+      "projectName": "erwin_rent",
+      "projectNameKey": "erwin_rent",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-facep123",
+      "projectName": "facep123",
+      "projectNameKey": "facep123",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-15T06:24:06.075Z"
+    },
+    {
+      "id": "cp-ferrifim",
+      "projectName": "ferrifim",
+      "projectNameKey": "ferrifim",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-fredjulen",
+      "projectName": "fredjulen",
+      "projectNameKey": "fredjulen",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-getright92",
+      "projectName": "getright92",
+      "projectNameKey": "getright92",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-gijs-afk",
+      "projectName": "gijs_afk",
+      "projectNameKey": "gijs_afk",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-harry01642",
+      "projectName": "harry01642",
+      "projectNameKey": "harry01642",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-huma-logan",
+      "projectName": "huma_logan",
+      "projectNameKey": "huma_logan",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-hussein531",
+      "projectName": "hussein531",
+      "projectNameKey": "hussein531",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-isarkoetje",
+      "projectName": "isarkoetje",
+      "projectNameKey": "isarkoetje",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-jaquis-br",
+      "projectName": "jaquis_br",
+      "projectNameKey": "jaquis_br",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-jennitheboss",
+      "projectName": "jennitheboss",
+      "projectNameKey": "jennitheboss",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-jinvalex",
+      "projectName": "jinvalex",
+      "projectNameKey": "jinvalex",
+      "supervisor": "",
+      "teamMembers": [
+        {
+          "id": "u-msos5z7q-d68a83",
+          "userId": "u-msos5z7q-d68a83",
+          "name": "Md. Arman Hosen",
+          "roles": [
+            "UI/UX Designer"
+          ],
+          "role": "UI/UX Designer"
+        }
+      ],
+      "membersRaw": "",
+      "notes": [],
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-jmunsayac",
+      "projectName": "jmunsayac",
+      "projectNameKey": "jmunsayac",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-jocelynnicole27",
+      "projectName": "jocelynnicole27",
+      "projectNameKey": "jocelynnicole27",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-joe-stumble",
+      "projectName": "joe_stumble",
+      "projectNameKey": "joe_stumble",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-joedor999",
+      "projectName": "joedor999",
+      "projectNameKey": "joedor999",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-johnsgregory01",
+      "projectName": "johnsgregory01",
+      "projectNameKey": "johnsgregory01",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-juist-12",
+      "projectName": "juist_12",
+      "projectNameKey": "juist_12",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-kanaryyoung",
+      "projectName": "kanaryyoung",
+      "projectNameKey": "kanaryyoung",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-kierantait159",
+      "projectName": "kierantait159",
+      "projectNameKey": "kierantait159",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-knowlsey01",
+      "projectName": "knowlsey01",
+      "projectNameKey": "knowlsey01",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-lalaneeds",
+      "projectName": "lalaneeds",
+      "projectNameKey": "lalaneeds",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-lasharra",
+      "projectName": "lasharra",
+      "projectNameKey": "lasharra",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-lexi-comb",
+      "projectName": "lexi_comb",
+      "projectNameKey": "lexi_comb",
+      "supervisor": "Khairul",
+      "teamMembers": [
+        {
+          "id": "sup-1786167679869-cgb0",
+          "name": "Khairul",
+          "roles": [
+            "Supervisor"
+          ],
+          "role": "Supervisor"
+        },
+        {
+          "id": "mem-1786167679869-uytb",
+          "name": "Sawjal",
+          "roles": [
+            "Backend Developer"
+          ],
+          "role": "Backend Developer"
+        },
+        {
+          "id": "mem-1786167679869-a39g",
+          "name": "Emon",
+          "roles": [
+            "Backend Developer"
+          ],
+          "role": "Backend Developer"
+        }
+      ],
+      "membersRaw": "Sawjal, Emon",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-lino1998",
+      "projectName": "lino1998",
+      "projectNameKey": "lino1998",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-lukevanacker",
+      "projectName": "lukevanacker",
+      "projectNameKey": "lukevanacker",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-mannyibay",
+      "projectName": "mannyibay",
+      "projectNameKey": "mannyibay",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-mariakampli",
+      "projectName": "mariakampli",
+      "projectNameKey": "mariakampli",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-marianrezeanu",
+      "projectName": "marianrezeanu",
+      "projectNameKey": "marianrezeanu",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-max-andreotti",
+      "projectName": "max_andreotti",
+      "projectNameKey": "max_andreotti",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-mconstantin",
+      "projectName": "mconstantin",
+      "projectNameKey": "mconstantin",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-millerbuilder",
+      "projectName": "millerbuilder",
+      "projectNameKey": "millerbuilder",
+      "supervisor": "",
+      "teamMembers": [
+        {
+          "id": "u-mslo41o8-93a57a",
+          "userId": "u-mslo41o8-93a57a",
+          "name": "Ovie Rahaman Sheikh",
+          "roles": [
+            "UI/UX Designer"
+          ],
+          "role": "UI/UX Designer"
+        },
+        {
+          "id": "u-mslo41o8-c41716",
+          "userId": "u-mslo41o8-c41716",
+          "name": "Miraz Or Rashid Alvee",
+          "roles": [
+            "Frontend Developer"
+          ],
+          "role": "Frontend Developer"
+        },
+        {
+          "id": "u-mslo41o8-487104",
+          "userId": "u-mslo41o8-487104",
+          "name": "Md. Arman Hosen",
+          "roles": [
+            "Backend Developer"
+          ],
+          "role": "Backend Developer"
+        }
+      ],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-mothirahman",
+      "projectName": "mothirahman",
+      "projectNameKey": "mothirahman",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-murcin",
+      "projectName": "murcin",
+      "projectNameKey": "murcin",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-mustafafly",
+      "projectName": "mustafafly",
+      "projectNameKey": "mustafafly",
+      "supervisor": "Sifat",
+      "teamMembers": [
+        {
+          "id": "sup-1786167679869-gu40",
+          "name": "Sifat",
+          "roles": [
+            "Supervisor"
+          ],
+          "role": "Supervisor"
+        }
+      ],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-myriamsaaid",
+      "projectName": "myriamsaaid",
+      "projectNameKey": "myriamsaaid",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-navy-dxb",
+      "projectName": "navy_dxb",
+      "projectNameKey": "navy_dxb",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-nelsontan321",
+      "projectName": "nelsontan321",
+      "projectNameKey": "nelsontan321",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-neonsaidi",
+      "projectName": "neonsaidi",
+      "projectNameKey": "neonsaidi",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-nestorc",
+      "projectName": "nestorc",
+      "projectNameKey": "nestorc",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-ni-colie",
+      "projectName": "ni_colie",
+      "projectNameKey": "ni_colie",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-omarfayedddd",
+      "projectName": "omarfayedddd",
+      "projectNameKey": "omarfayedddd",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-paradise1917",
+      "projectName": "paradise1917",
+      "projectNameKey": "paradise1917",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-pauls91",
+      "projectName": "pauls91",
+      "projectNameKey": "pauls91",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-pierre-csh",
+      "projectName": "pierre_csh",
+      "projectNameKey": "pierre_csh",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-plifplifplif",
+      "projectName": "plifplifplif",
+      "projectNameKey": "plifplifplif",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-primozrejec",
+      "projectName": "primozrejec",
+      "projectNameKey": "primozrejec",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-r1chardh",
+      "projectName": "r1chardh",
+      "projectNameKey": "r1chardh",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-richardgraney",
+      "projectName": "richardgraney",
+      "projectNameKey": "richardgraney",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-robertomassa887",
+      "projectName": "robertomassa887",
+      "projectNameKey": "robertomassa887",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-robinjohn515",
+      "projectName": "robinjohn515",
+      "projectNameKey": "robinjohn515",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-ronygermon",
+      "projectName": "ronygermon",
+      "projectNameKey": "ronygermon",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-sam-adams-pet",
+      "projectName": "sam_adams_pet",
+      "projectNameKey": "sam_adams_pet",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-sathyasai642",
+      "projectName": "sathyasai642",
+      "projectNameKey": "sathyasai642",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-serd67",
+      "projectName": "serd67",
+      "projectNameKey": "serd67",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-shakslens",
+      "projectName": "shakslens",
+      "projectNameKey": "shakslens",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-simonsabir606",
+      "projectName": "simonsabir606",
+      "projectNameKey": "simonsabir606",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-sleepee",
+      "projectName": "sleepee",
+      "projectNameKey": "sleepee",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-soficor1111",
+      "projectName": "soficor1111",
+      "projectNameKey": "soficor1111",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-spethy39",
+      "projectName": "spethy39",
+      "projectNameKey": "spethy39",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-srinivas667",
+      "projectName": "srinivas667",
+      "projectNameKey": "srinivas667",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-stefansmall89",
+      "projectName": "stefansmall89",
+      "projectNameKey": "stefansmall89",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-stellamaris96",
+      "projectName": "stellamaris96",
+      "projectNameKey": "stellamaris96",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-steveb-81",
+      "projectName": "steveb_81",
+      "projectNameKey": "steveb_81",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-svetlinboris221",
+      "projectName": "svetlinboris221",
+      "projectNameKey": "svetlinboris221",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-terryalbert",
+      "projectName": "terryalbert",
+      "projectNameKey": "terryalbert",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-tmmoone1",
+      "projectName": "tmmoone1",
+      "projectNameKey": "tmmoone1",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-tongugeofrey",
+      "projectName": "tongugeofrey",
+      "projectNameKey": "tongugeofrey",
+      "supervisor": "Sifat",
+      "teamMembers": [
+        {
+          "id": "u-mslo41o8-b29e74",
+          "userId": "u-mslo41o8-b29e74",
+          "name": "Sifat Rahman",
+          "roles": [
+            "DevOps Engineer"
+          ],
+          "role": "DevOps Engineer"
+        }
+      ],
+      "membersRaw": "Faysal, Sifat",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-tonicanog",
+      "projectName": "tonicanog",
+      "projectNameKey": "tonicanog",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-travis-account",
+      "projectName": "travis_account",
+      "projectNameKey": "travis_account",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.382Z"
+    },
+    {
+      "id": "cp-tsinclair0113",
+      "projectName": "tsinclair0113",
+      "projectNameKey": "tsinclair0113",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-tyronerosales",
+      "projectName": "tyronerosales",
+      "projectNameKey": "tyronerosales",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-vasi1ias",
+      "projectName": "vasi1ias",
+      "projectNameKey": "vasi1ias",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-vincenoroyan",
+      "projectName": "vincenoroyan",
+      "projectNameKey": "vincenoroyan",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-wendallgarth982",
+      "projectName": "wendallgarth982",
+      "projectNameKey": "wendallgarth982",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-yedeld",
+      "projectName": "yedeld",
+      "projectNameKey": "yedeld",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-12T10:36:10.383Z"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 /* Delivery Ops Console — minimal PWA service worker */
-const CACHE_NAME = "delivery-ops-shell-v1";
-const PRECACHE = ["/", "/index.html", "/manifest.webmanifest", "/favicon.svg", "/icons/icon-192.png", "/icons/icon-512.png"];
+const CACHE_NAME = "delivery-ops-shell-v2";
+const PRECACHE = ["/", "/index.html", "/manifest.webmanifest", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -52,5 +52,48 @@ self.addEventListener("fetch", (event) => {
         }
         throw new Error("offline");
       })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification?.data?.url || "/";
+
+  event.waitUntil(
+    (async () => {
+      const allClients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const client of allClients) {
+        if ("focus" in client) {
+          await client.focus();
+          if ("navigate" in client) {
+            try {
+              await client.navigate(targetUrl);
+            } catch {
+              /* ignore navigate failures */
+            }
+          }
+          return;
+        }
+      }
+      if (self.clients.openWindow) {
+        await self.clients.openWindow(targetUrl);
+      }
+    })()
+  );
+});
+
+self.addEventListener("message", (event) => {
+  const data = event.data;
+  if (!data || data.type !== "SHOW_NOTIFICATION") return;
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Delivery Ops", {
+      body: data.body || "",
+      icon: data.icon || "/favicon.svg",
+      badge: data.badge || "/favicon.svg",
+      tag: data.tag || "delivery-ops",
+      renotify: Boolean(data.renotify),
+      data: data.data || {},
+    })
   );
 });

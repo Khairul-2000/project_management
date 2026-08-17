@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { AlertTriangle, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, Bell, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import {
   formatDaysLeft,
   formatDaysSinceIntake,
@@ -12,6 +12,12 @@ import {
   isDueSoon,
   isNewArrival,
 } from "../lib/utils";
+import {
+  ensureNotificationPermission,
+  getExtensionWarningProjects,
+  notificationPermission,
+  notifyExtensionWarnings,
+} from "../lib/extensionNotifications";
 import { useTheme } from "../lib/theme";
 
 const COLLAPSED_COUNT = 4;
@@ -127,7 +133,10 @@ function ExpandableAlertList({ items, renderRow }) {
 }
 
 export default function DashboardAlerts({ projects }) {
+  const { colors } = useTheme();
   const list = Array.isArray(projects) ? projects : [];
+  const [perm, setPerm] = useState(() => notificationPermission());
+  const [notifBusy, setNotifBusy] = useState(false);
 
   const arrivals = list
     .filter((p) => isNewArrival(p))
@@ -153,7 +162,42 @@ export default function DashboardAlerts({ projects }) {
       return a.daysLeft - b.daysLeft;
     });
 
+  const dueFingerprint = useMemo(
+    () =>
+      getExtensionWarningProjects(list)
+        .map((r) => `${r.id}:${r.daysLeft ?? "x"}`)
+        .join("|"),
+    [list]
+  );
+
+  useEffect(() => {
+    if (!dueFingerprint) return undefined;
+    let cancelled = false;
+    (async () => {
+      await notifyExtensionWarnings(list);
+      if (!cancelled) setPerm(notificationPermission());
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [list, dueFingerprint]);
+
+  async function enableNotifications() {
+    setNotifBusy(true);
+    try {
+      const next = await ensureNotificationPermission();
+      setPerm(next);
+      if (next === "granted") {
+        await notifyExtensionWarnings(list, { force: true });
+      }
+    } finally {
+      setNotifBusy(false);
+    }
+  }
+
   if (!arrivals.length && !dueSoon.length) return null;
+
+  const showEnable = dueSoon.length > 0 && perm !== "granted" && perm !== "unsupported";
 
   return (
     <div
@@ -165,6 +209,51 @@ export default function DashboardAlerts({ projects }) {
         marginBottom: 16,
       }}
     >
+      {showEnable ? (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+            padding: "10px 12px",
+            borderRadius: 12,
+            border: `1px solid ${colors.border}`,
+            background: colors.panel,
+          }}
+        >
+          <div style={{ fontSize: 12.5, color: colors.muted, fontWeight: 600 }}>
+            {perm === "denied"
+              ? "Notifications blocked in browser settings — enable them to get extension warnings."
+              : "Turn on notifications to get alerts when projects need extension (≤7 days)."}
+          </div>
+          {perm !== "denied" ? (
+            <button
+              type="button"
+              disabled={notifBusy}
+              onClick={enableNotifications}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                border: `1px solid ${colors.accent}`,
+                background: colors.accent,
+                color: colors.onAccent,
+                borderRadius: 10,
+                padding: "7px 11px",
+                fontWeight: 700,
+                fontSize: 12,
+                cursor: notifBusy ? "wait" : "pointer",
+                opacity: notifBusy ? 0.7 : 1,
+              }}
+            >
+              <Bell size={14} /> Enable notifications
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       {arrivals.length ? (
         <AlertCard
           tone="new"

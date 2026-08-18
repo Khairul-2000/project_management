@@ -5,6 +5,7 @@ import { getRequestUser } from "./authApiMiddleware.js";
 import { pathnameOf, readJsonBody, sendJson } from "./httpHelpers.js";
 import { syncAssignmentsFromProjects } from "./usersStore.js";
 import { interconnectClientAndPhases } from "./clientProjectsStore.js";
+import { isAdminRole } from "./roles.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -39,13 +40,13 @@ function writeProjects(projects) {
 
 function filterForUser(projects, user) {
   if (!user) return [];
-  if (user.role === "admin") return projects;
+  if (isAdminRole(user)) return projects;
   const allowed = new Set((user.assignedProjectIds || []).map(String));
   return projects.filter((p) => allowed.has(String(p.id)));
 }
 
 function assertMemberWriteAllowed(user, nextProjects, prevProjects) {
-  if (user.role === "admin") return;
+  if (isAdminRole(user)) return;
   const allowed = new Set((user.assignedProjectIds || []).map(String));
   const prevById = new Map(prevProjects.map((p) => [String(p.id), p]));
   const nextById = new Map(nextProjects.map((p) => [String(p.id), p]));
@@ -120,7 +121,7 @@ async function handle(req, res) {
       return;
     }
 
-    if (user.role === "admin") {
+    if (isAdminRole(user)) {
       writeProjects(body);
     } else {
       // Merge member edits into full DB for assigned ids only

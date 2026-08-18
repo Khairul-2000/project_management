@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Eye, Plus, X } from "lucide-react";
 import { useTheme } from "../lib/theme";
 import { createUser, listUsers, patchUser, syncAssignmentsFromProjects } from "../lib/auth";
+import { isAdminRole, isSuperAdmin, roleLabel } from "../lib/roles";
 
-export default function UsersAdmin({ projects, clientProjects = [] }) {
+export default function UsersAdmin({ projects, clientProjects = [], currentUser }) {
   const { colors, card } = useTheme();
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
@@ -15,6 +16,8 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
   const [projectQuery, setProjectQuery] = useState("");
   const [resetPassword, setResetPassword] = useState({});
   const [syncingAssignments, setSyncingAssignments] = useState(false);
+
+  const canManageAdmins = isSuperAdmin(currentUser);
 
   function projectNameKey(name) {
     return String(name || "").trim().toLowerCase();
@@ -51,7 +54,7 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
   }, [clientProjects, phasesByClientKey]);
 
   function clientProjectsForUser(user) {
-    if (!user || user.role === "admin") return [];
+    if (!user || isAdminRole(user)) return [];
     const allowed = new Set((user.assignedProjectIds || []).map(String));
     return clientOptions
       .map((cp) => {
@@ -153,7 +156,7 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
       const updated = await patchUser(user.id, { role });
       setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
       setStatus(`Updated ${user.username} to ${updated.role}`);
-      if (viewUserId === user.id && updated.role === "admin") {
+      if (viewUserId === user.id && isAdminRole(updated)) {
         setViewUserId(null);
       }
     } catch (err) {
@@ -192,8 +195,8 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
           User management
         </h1>
         <div style={{ color: colors.muted, fontSize: 13 }}>
-          Create accounts and change roles (member ↔ admin). Member project access comes from team
-          names on projects — use <strong>Sync from projects</strong>, then open a member to see
+          Create accounts and change roles. Super admin can assign an admin as supervisor or any member.
+          Member project access comes from team names on projects — use <strong>Sync from projects</strong>, then open a member to see
           their associated client projects.
         </div>
         <div style={{ marginTop: 12 }}>
@@ -250,7 +253,7 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
             style={field}
           >
             <option value="member">Member</option>
-            <option value="admin">Admin</option>
+            {canManageAdmins ? <option value="admin">Admin</option> : null}
           </select>
           <button
             type="submit"
@@ -295,7 +298,8 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
               )}
               {!loading &&
                 users.map((u) => {
-                  const linkedCount = u.role === "admin" ? null : clientProjectsForUser(u).length;
+                  const linkedCount = isAdminRole(u) ? null : clientProjectsForUser(u).length;
+                  const roleLocked = !canManageAdmins && isAdminRole(u);
                   return (
                     <tr key={u.id} style={{ borderTop: `1px solid ${colors.border}` }}>
                       <td style={{ padding: "10px 12px", fontWeight: 650 }}>{u.name}</td>
@@ -305,17 +309,23 @@ export default function UsersAdmin({ projects, clientProjects = [] }) {
                           value={u.role}
                           onChange={(e) => changeRole(u, e.target.value)}
                           aria-label={`Role for ${u.username}`}
-                          style={{ ...field, width: "auto", minWidth: 110, padding: "7px 8px" }}
+                          disabled={roleLocked}
+                          style={{ ...field, width: "auto", minWidth: 130, padding: "7px 8px" }}
                         >
-                          <option value="member">Member</option>
-                          <option value="admin">Admin</option>
+                          <option value="member">{roleLabel("member")}</option>
+                          {(canManageAdmins || u.role === "admin") ? (
+                            <option value="admin">{roleLabel("admin")}</option>
+                          ) : null}
+                          {(canManageAdmins || u.role === "super_admin") ? (
+                            <option value="super_admin">{roleLabel("super_admin")}</option>
+                          ) : null}
                         </select>
                       </td>
                       <td style={{ padding: "10px 12px", color: u.active ? colors.delivered : colors.late }}>
                         {u.active ? "Yes" : "No"}
                       </td>
                       <td style={{ padding: "10px 12px" }}>
-                        {u.role === "admin" ? "All" : linkedCount}
+                        {isAdminRole(u) ? "All" : linkedCount}
                       </td>
                       <td style={{ padding: "10px 12px" }}>
                         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>

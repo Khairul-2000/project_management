@@ -4,8 +4,9 @@ import { useTheme } from "../lib/theme";
 import { listTeamDirectory } from "../lib/auth";
 import { fmtMoney, statusOf, getProjectStack } from "../lib/utils";
 import StatusBadge from "./StatusBadge";
-import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeNotes, normalizeTeamMember } from "../lib/projectMetadata";
+import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeNotes, normalizeTeamMember, supervisorNameFromTeam } from "../lib/projectMetadata";
 import RoleMultiSelect from "./RoleMultiSelect";
+import { roleLabel } from "../lib/roles";
 
 const ROLES = PROJECT_ROLES;
 
@@ -17,6 +18,7 @@ export default function ClientProjectDetail({
   clientProject,
   phases,
   isAdmin,
+  includeStaff = false,
   onBack,
   onUpdate,
   onOpenPhase,
@@ -37,7 +39,7 @@ export default function ClientProjectDetail({
 
   useEffect(() => {
     let cancelled = false;
-    listTeamDirectory()
+    listTeamDirectory({ includeStaff })
       .then((users) => {
         if (!cancelled) setDirectory(users);
       })
@@ -47,7 +49,7 @@ export default function ClientProjectDetail({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [includeStaff]);
 
   const team = Array.isArray(clientProject.teamMembers) ? clientProject.teamMembers : [];
   const assignedUserIds = useMemo(
@@ -96,14 +98,24 @@ export default function ClientProjectDetail({
       name: user.name,
       roles: newMemberRoles,
     });
-    persist({ teamMembers: existingIndex >= 0 ? team.map((member, index) => index === existingIndex ? mergeMemberRoles(member, newMemberRoles) : member) : [...team, newMember] });
+    const nextTeam = existingIndex >= 0 ? team.map((member, index) => index === existingIndex ? mergeMemberRoles(member, newMemberRoles) : member) : [...team, newMember];
+    const supervisor = supervisorNameFromTeam(nextTeam);
+    persist({
+      teamMembers: nextTeam,
+      ...(supervisor ? { supervisor } : {}),
+    });
     setSelectedUserId("");
     setSaveStatus("Team updated");
   }
 
   function handleRemoveMember(memberId) {
     if (!isAdmin) return;
-    persist({ teamMembers: team.filter((m) => m.id !== memberId) });
+    const nextTeam = team.filter((m) => m.id !== memberId);
+    const supervisor = supervisorNameFromTeam(nextTeam);
+    persist({
+      teamMembers: nextTeam,
+      ...(supervisor ? { supervisor } : supervisorNameFromTeam(team) ? { supervisor: "" } : {}),
+    });
     setSaveStatus("Team updated");
   }
 
@@ -189,6 +201,7 @@ export default function ClientProjectDetail({
           <div style={{ fontSize: 12, color: colors.muted, marginBottom: 12 }}>
             Roles map to matching phase types: App Developer → Mobile/AI App phases, Frontend → website
             frontend, Backend → backend, UI/UX → UI/UX. Assign here to update those phases automatically.
+            {includeStaff ? " Super admin can assign an admin as Supervisor, or any member." : ""}
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
@@ -233,7 +246,7 @@ export default function ClientProjectDetail({
                 <option value="">{availableUsers.length ? "Select user…" : "All users already assigned"}</option>
                 {availableUsers.map((u) => (
                   <option key={u.id} value={u.id}>
-                    {u.name}
+                    {includeStaff && u.role !== "member" ? `${u.name} (${roleLabel(u.role)})` : u.name}
                   </option>
                 ))}
               </select>

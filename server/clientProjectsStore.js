@@ -199,17 +199,21 @@ export function applyClientTeamToSinglePhase(phase, clientProject) {
     membersRaw: phase.membersRaw || "",
   };
 
-  if (!String(next.supervisor || "").trim() && String(clientProject.supervisor || "").trim()) {
-    next.supervisor = String(clientProject.supervisor).trim();
+  const assignedSupervisor = String(clientProject.supervisor || "").trim();
+  if (assignedSupervisor && !String(next.supervisor || "").trim()) {
+    next.supervisor = assignedSupervisor;
   }
 
   let added = 0;
   for (const m of clientMembers) {
     if (!m?.name) continue;
     const allRoles = memberRoles(m);
+    const isSupervisor = allRoles.some((role) => String(role || "").trim().toLowerCase() === "supervisor");
     const isLead = allRoles.some((role) => /supervisor|project lead|^lead$/i.test(role));
 
-    if (isLead && !String(next.supervisor || "").trim()) {
+    if (isSupervisor) {
+      next.supervisor = String(m.name).trim();
+    } else if (isLead && !String(next.supervisor || "").trim()) {
       next.supervisor = m.name;
     }
 

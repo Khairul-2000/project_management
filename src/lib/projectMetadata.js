@@ -29,6 +29,16 @@ export function mergeMemberRoles(member, roles) {
   return { ...member, roles: merged, role: merged[0] || "Member" };
 }
 
+export function hasSupervisorRole(memberOrRoles) {
+  const roles = Array.isArray(memberOrRoles) ? memberOrRoles : normalizeMemberRoles(memberOrRoles);
+  return roles.some((role) => String(role || "").trim().toLowerCase() === "supervisor");
+}
+
+export function supervisorNameFromTeam(teamMembers) {
+  const lead = (teamMembers || []).find((member) => hasSupervisorRole(member));
+  return lead?.name ? String(lead.name).trim() : "";
+}
+
 export function normalizeNotes(notes) {
   if (Array.isArray(notes)) {
     return notes

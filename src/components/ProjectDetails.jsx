@@ -27,8 +27,9 @@ import {
   getProjectStack,
   deriveStack,
 } from "../lib/utils";
-import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeNotes, normalizeTeamMember } from "../lib/projectMetadata";
+import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeNotes, normalizeTeamMember, supervisorNameFromTeam } from "../lib/projectMetadata";
 import RoleMultiSelect from "./RoleMultiSelect";
+import { roleLabel } from "../lib/roles";
 
 function getInitials(name) {
   return name
@@ -62,7 +63,7 @@ function defaultRoleForProject(project) {
 
 const ROLES = PROJECT_ROLES;
 
-export default function ProjectDetails({ project, onBack, onUpdate, onDelete, isAdmin = false, backLabel = "Back to Projects" }) {
+export default function ProjectDetails({ project, onBack, onUpdate, onDelete, isAdmin = false, includeStaff = false, backLabel = "Back to Projects" }) {
   const { colors, isDark } = useTheme();
   const COLORS = colors;
   const [newSubtaskText, setNewSubtaskText] = useState("");
@@ -94,7 +95,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
 
   useEffect(() => {
     let cancelled = false;
-    listTeamDirectory()
+    listTeamDirectory({ includeStaff })
       .then((users) => {
         if (!cancelled) setDirectory(users);
       })
@@ -104,7 +105,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [includeStaff]);
 
   const defaultSubtasks = useMemo(() => [
     { id: "1", text: "Requirements gathering & analysis", completed: false },
@@ -195,18 +196,23 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
       name: user.name,
       roles: newMemberRoles,
     });
+    const nextTeam = existingIndex >= 0 ? team.map((member, index) => index === existingIndex ? mergeMemberRoles(member, newMemberRoles) : member) : [...team, newMember];
+    const supervisor = supervisorNameFromTeam(nextTeam);
     onUpdate({
       ...project,
-      teamMembers: existingIndex >= 0 ? team.map((member, index) => index === existingIndex ? mergeMemberRoles(member, newMemberRoles) : member) : [...team, newMember],
+      teamMembers: nextTeam,
+      ...(supervisor ? { supervisor } : {}),
     });
     setSelectedUserId("");
   };
 
   const handleRemoveMember = (memberId) => {
     const updatedTeam = team.filter((m) => m.id !== memberId);
+    const supervisor = supervisorNameFromTeam(updatedTeam);
     onUpdate({
       ...project,
       teamMembers: updatedTeam,
+      ...(supervisor ? { supervisor } : supervisorNameFromTeam(team) ? { supervisor: "" } : {}),
     });
   };
 
@@ -882,6 +888,11 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
             {/* ADD MEMBER FORM */}
             <form onSubmit={handleAddMember} style={{ display: "flex", flexDirection: "column", gap: 10, borderTop: `1px solid ${COLORS.border}`, paddingTop: 14 }}>
               <div style={{ fontSize: 11.5, color: COLORS.muted, fontWeight: 600 }}>ASSIGN NEW MEMBER</div>
+              {includeStaff ? (
+                <div style={{ fontSize: 12, color: COLORS.muted }}>
+                  Super admin can assign an admin as Supervisor, or any member.
+                </div>
+              ) : null}
               <select
                 value={selectedUserId}
                 onChange={(e) => {
@@ -903,7 +914,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
                 </option>
                 {availableUsers.map((u) => (
                   <option key={u.id} value={u.id}>
-                    {u.name}
+                    {includeStaff && u.role !== "member" ? `${u.name} (${roleLabel(u.role)})` : u.name}
                   </option>
                 ))}
               </select>

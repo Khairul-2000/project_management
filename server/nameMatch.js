@@ -52,7 +52,7 @@ export function collectProjectMemberNames(project) {
 export function buildUserMatchIndex(users) {
   /** @type {Map<string, string>} normalized key -> userId */
   const index = new Map();
-  const members = (users || []).filter((u) => u?.id && u.role !== "admin");
+  const members = (users || []).filter((u) => u?.id && u.role === "member");
 
   // 1) Full names + explicit aliases
   for (const user of members) {
@@ -99,7 +99,7 @@ export function resolveUserIdForName(name, matchIndex) {
  */
 export function assignmentsFromProjects(projects, users, clientProjects = []) {
   const matchIndex = buildUserMatchIndex(users);
-  const knownIds = new Set((users || []).filter((u) => u?.id && u.role !== "admin").map((u) => u.id));
+  const knownIds = new Set((users || []).filter((u) => u?.id && u.role === "member").map((u) => u.id));
   /** @type {Map<string, Set<string>>} */
   const byUser = new Map();
   const unmatched = new Map();

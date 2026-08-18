@@ -1,5 +1,6 @@
 import { Plus, Menu, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useTheme } from "../lib/theme";
+import { roleLabel } from "../lib/roles";
 
 export default function DashboardHeader({
   title,
@@ -19,7 +20,7 @@ export default function DashboardHeader({
   const subtitle = saveState
     ? saveState
     : currentUser
-      ? `Signed in as ${currentUser.name} (${currentUser.role})`
+      ? `Signed in as ${currentUser.name} (${roleLabel(currentUser.role)})`
       : `DB: projects.json${canWriteDb ? " · writable" : " · read-only"}`;
 
   let ToggleIcon = Menu;

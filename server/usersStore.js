@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { assignmentsFromProjects } from "./nameMatch.js";
 import { listClientProjects } from "./clientProjectsStore.js";
+import { isAdminRole, isSuperAdmin, normalizeAccountRole } from "./roles.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -91,8 +92,28 @@ function loadUsersRaw() {
   }
 }
 
+function migrateSuperAdmin(data) {
+  let changed = false;
+  const khairul = (data.users || []).find(
+    (user) => user?.id === "u-admin" || String(user?.username || "").toLowerCase() === "khairul"
+  );
+  if (khairul && khairul.role !== "super_admin") {
+    khairul.role = "super_admin";
+    changed = true;
+  }
+  if (!(data.users || []).some((user) => isSuperAdmin(user))) {
+    const firstAdmin = (data.users || []).find((user) => user?.role === "admin");
+    if (firstAdmin) {
+      firstAdmin.role = "super_admin";
+      changed = true;
+    }
+  }
+  return changed;
+}
+
 export function readUsersFile() {
   const data = loadUsersRaw();
+  let changed = migrateSuperAdmin(data);
   const byName = new Set(data.users.map((u) => String(u.name).toLowerCase()));
   const usedUsernames = new Set(data.users.map((u) => u.username.toLowerCase()));
   let added = 0;
@@ -116,9 +137,10 @@ export function readUsersFile() {
       assignedProjectIds: [],
     });
     added += 1;
+    changed = true;
   }
 
-  if (added) writeUsersFile(data);
+  if (changed) writeUsersFile(data);
   return data;
 }
 
@@ -135,7 +157,7 @@ export function seedUsersFile() {
       name: "Khairul Islam",
       username: "khairul",
       passwordHash: hashPassword(bootstrap),
-      role: "admin",
+      role: "super_admin",
       active: true,
       assignedProjectIds: [],
     },
@@ -207,7 +229,7 @@ export function createUser({ name, username, password, role = "member" }) {
     name: String(name || "").trim() || uname,
     username: uname,
     passwordHash: password ? hashPassword(password) : null,
-    role: role === "admin" ? "admin" : "member",
+    role: normalizeAccountRole(role),
     active: true,
     assignedProjectIds: [],
   };
@@ -231,7 +253,7 @@ export function updateUser(id, patch) {
     }
     user.username = uname;
   }
-  if (patch.role != null) user.role = patch.role === "admin" ? "admin" : "member";
+  if (patch.role != null) user.role = normalizeAccountRole(patch.role);
   if (patch.active != null) user.active = Boolean(patch.active);
   if (Array.isArray(patch.assignedProjectIds)) {
     user.assignedProjectIds = [...new Set(patch.assignedProjectIds.map(String))];
@@ -257,7 +279,7 @@ export function replaceUsers(users) {
       ...prev,
       name: incoming.name ?? prev.name,
       username: String(incoming.username || prev.username).trim().toLowerCase(),
-      role: incoming.role === "admin" ? "admin" : "member",
+      role: normalizeAccountRole(incoming.role ?? prev.role),
       active: incoming.active != null ? Boolean(incoming.active) : prev.active,
       assignedProjectIds: Array.isArray(incoming.assignedProjectIds)
         ? [...new Set(incoming.assignedProjectIds.map(String))]
@@ -288,7 +310,7 @@ export function syncAssignmentsFromProjects(projects) {
   let totalLinks = 0;
 
   data.users = data.users.map((user) => {
-    if (user.role === "admin") {
+    if (isAdminRole(user)) {
       return { ...user, assignedProjectIds: [] };
     }
     const fromProjects = byUser.get(user.id);

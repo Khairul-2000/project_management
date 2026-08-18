@@ -47,6 +47,7 @@ import {
   patchClientProject,
 } from "./lib/db";
 import { fetchMe, logout as apiLogout } from "./lib/auth";
+import { isAdminRole, isSuperAdmin } from "./lib/roles";
 
 const SHEETS_POLL_MS = 2 * 60 * 1000;
 const SIDEBAR_STORAGE_KEY = "delivery-ops-sidebar";
@@ -92,7 +93,8 @@ export default function Dashboard() {
     typeof window !== "undefined" ? window.matchMedia(MOBILE_MQ).matches : false
   );
 
-  const isAdmin = currentUser?.role === "admin";
+  const isAdmin = isAdminRole(currentUser);
+  const canAssignAdmins = isSuperAdmin(currentUser);
 
   // Members only use the Projects workspace — never dashboard/analytics/users.
   useEffect(() => {
@@ -265,7 +267,7 @@ export default function Dashboard() {
         if (cancelled) return;
         setProjects(rows);
         setCanWriteDb(canWrite);
-        if (currentUser.role !== "admin") {
+        if (!isAdminRole(currentUser)) {
           setView("clientProjects");
           setActiveClientProjectId(null);
         }
@@ -276,7 +278,7 @@ export default function Dashboard() {
           console.error(err);
         }
 
-        if (currentUser.role === "admin") {
+        if (isAdminRole(currentUser)) {
           const status = await getGoogleStatus().catch(() => null);
           if (cancelled) return;
           if (status) setGoogleStatus(status);
@@ -791,13 +793,14 @@ export default function Dashboard() {
           />
 
           {view === "users" && isAdmin ? (
-            <UsersAdmin projects={projects} clientProjects={clientProjects} />
+            <UsersAdmin projects={projects} clientProjects={clientProjects} currentUser={currentUser} />
           ) : view === "analytics" && isAdmin ? (
             <AnalyticsDashboard projects={projects} />
           ) : activeProject ? (
             <ProjectDetails
               project={activeProject}
               isAdmin={isAdmin}
+              includeStaff={canAssignAdmins}
               backLabel={
                 activeClientProjectId || view === "clientProjects" || view === "clientProjectDetail"
                   ? "Back to Projects"
@@ -841,6 +844,7 @@ export default function Dashboard() {
               clientProject={activeClientProject}
               phases={projects}
               isAdmin={isAdmin}
+              includeStaff={canAssignAdmins}
               onBack={() => {
                 setView("clientProjects");
                 setActiveClientProjectId(null);

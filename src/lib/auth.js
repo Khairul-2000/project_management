@@ -1,3 +1,5 @@
+import { isAdminRole } from "./roles";
+
 const opts = { credentials: "include", cache: "no-store" };
 
 export async function fetchMe() {
@@ -39,10 +41,14 @@ export async function listUsers() {
   return data.users || [];
 }
 
-/** Active members for project team dropdowns (available to any signed-in user). */
-export async function listTeamDirectory() {
+/** Active users for project team dropdowns (available to any signed-in user). */
+export async function listTeamDirectory({ includeStaff = false } = {}) {
   const users = await listUsers();
-  return users.filter((u) => u.active !== false && u.role !== "admin");
+  return users.filter((u) => {
+    if (u.active === false) return false;
+    if (!includeStaff && isAdminRole(u)) return false;
+    return true;
+  });
 }
 
 export async function createUser(payload) {

@@ -1,4 +1,5 @@
 import { getRequestUser, requireAdmin } from "./authApiMiddleware.js";
+import { isAdminRole } from "./roles.js";
 import { pathnameOf, readJsonBody, sendJson } from "./httpHelpers.js";
 import {
   applyClientTeamToPhases,
@@ -26,7 +27,7 @@ function readPhases() {
 
 function filterClientProjectsForUser(clientProjects, phases, user) {
   if (!user) return [];
-  if (user.role === "admin") return clientProjects;
+  if (isAdminRole(user)) return clientProjects;
 
   const allowedPhaseIds = new Set((user.assignedProjectIds || []).map(String));
   const allowedKeys = new Set();

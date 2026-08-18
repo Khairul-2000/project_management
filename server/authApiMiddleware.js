@@ -19,6 +19,7 @@ import { pathnameOf, readJsonBody, sendJson } from "./httpHelpers.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { isAdminRole, isSuperAdmin, normalizeAccountRole } from "./roles.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECTS_PATH = path.resolve(__dirname, "../public/data/projects.json");
@@ -50,11 +51,40 @@ export function requireUser(req, res) {
 export function requireAdmin(req, res) {
   const user = requireUser(req, res);
   if (!user) return null;
-  if (user.role !== "admin") {
+  if (!isAdminRole(user)) {
     sendJson(res, 403, { error: "Admin only" });
     return null;
   }
   return user;
+}
+
+export function requireSuperAdmin(req, res) {
+  const user = requireUser(req, res);
+  if (!user) return null;
+  if (!isSuperAdmin(user)) {
+    sendJson(res, 403, { error: "Super admin only" });
+    return null;
+  }
+  return user;
+}
+
+function assertCanManageUser(actor, target, patch = {}) {
+  if (!actor || !target) return;
+  const nextRole = patch.role != null ? normalizeAccountRole(patch.role) : target.role;
+  const nextActive = patch.active != null ? Boolean(patch.active) : target.active;
+
+  if (!isSuperAdmin(actor)) {
+    if (isAdminRole(target) || isAdminRole(nextRole)) {
+      throw new Error("Only super admin can create or change admin accounts");
+    }
+  }
+
+  if (isSuperAdmin(target) && (nextRole !== "super_admin" || nextActive === false)) {
+    const others = listUsers().filter((user) => isSuperAdmin(user) && user.id !== target.id && user.active !== false);
+    if (!others.length) {
+      throw new Error("Cannot remove the last super admin");
+    }
+  }
 }
 
 /**
@@ -118,7 +148,7 @@ async function handle(req, res, pathname) {
     if (!user) return;
     const users = listUsers();
     // Members get a directory for team dropdowns (no assignment lists)
-    if (user.role !== "admin") {
+    if (!isAdminRole(user)) {
       sendJson(res, 200, {
         users: users
           .filter((u) => u.active && u.role === "member")
@@ -131,20 +161,26 @@ async function handle(req, res, pathname) {
   }
 
   if (pathname === "/api/users" && req.method === "POST") {
-    if (!requireAdmin(req, res)) return;
+    const actor = requireAdmin(req, res);
+    if (!actor) return;
     const body = await readJsonBody(req);
-    const created = createUser({
-      name: body.name,
-      username: body.username,
-      password: body.password,
-      role: body.role,
-    });
-    sendJson(res, 201, { user: created });
+    try {
+      assertCanManageUser(actor, { role: "member", active: true }, { role: body.role });
+      const created = createUser({
+        name: body.name,
+        username: body.username,
+        password: body.password,
+        role: body.role,
+      });
+      sendJson(res, 201, { user: created });
+    } catch (err) {
+      sendJson(res, 403, { error: err.message || "Cannot create user" });
+    }
     return;
   }
 
   if (pathname === "/api/users" && req.method === "PUT") {
-    if (!requireAdmin(req, res)) return;
+    if (!requireSuperAdmin(req, res)) return;
     const body = await readJsonBody(req);
     const users = replaceUsers(body.users || body);
     sendJson(res, 200, { users });
@@ -167,11 +203,23 @@ async function handle(req, res, pathname) {
 
   const patchMatch = pathname.match(/^\/api\/users\/([^/]+)$/);
   if (patchMatch && req.method === "PATCH") {
-    if (!requireAdmin(req, res)) return;
+    const actor = requireAdmin(req, res);
+    if (!actor) return;
     const id = decodeURIComponent(patchMatch[1]);
     const body = await readJsonBody(req);
-    const updated = updateUser(id, body);
-    sendJson(res, 200, { user: updated });
+    const target = findUserById(id);
+    if (!target) {
+      sendJson(res, 404, { error: "User not found" });
+      return;
+    }
+    try {
+      assertCanManageUser(actor, target, body);
+      const updated = updateUser(id, body);
+      sendJson(res, 200, { user: updated });
+    } catch (err) {
+      const status = err.message === "User not found" ? 404 : 403;
+      sendJson(res, status, { error: err.message || "Failed to update user" });
+    }
     return;
   }
 

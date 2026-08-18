@@ -12,6 +12,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useTheme } from "../lib/theme";
+import { roleLabel } from "../lib/roles";
 
 const EXPANDED_W = 240;
 const COLLAPSED_W = 72;
@@ -369,7 +370,7 @@ export default function AppSidebar({
                   <span style={{ display: "block", color: colors.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {currentUser.name}
                   </span>
-                  <span style={{ display: "block", fontWeight: 500, textTransform: "capitalize" }}>{currentUser.role}</span>
+                  <span style={{ display: "block", fontWeight: 500 }}>{roleLabel(currentUser.role)}</span>
                 </span>
               ) : null}
             </div>

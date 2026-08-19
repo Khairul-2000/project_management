@@ -1,7 +1,16 @@
 import { useMemo, useState } from "react";
 import { Pencil, Trash2, ExternalLink, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { PROFILE_SHORT, STACK_COLOR, PAGE_SIZE_OPTIONS } from "../lib/constants";
-import { getProjectStack, statusOf, fmtMoney, normalizePossibility } from "../lib/utils";
+import {
+  getProjectStack,
+  statusOf,
+  fmtMoney,
+  normalizePossibility,
+  formatProjectDateline,
+  projectDatelineTitle,
+  hasAdminSchedule,
+  isDatelineOverdue,
+} from "../lib/utils";
 import { useTheme } from "../lib/theme";
 import StatusBadge from "./StatusBadge";
 
@@ -285,8 +294,21 @@ export default function ProjectsTable({
                     <td className="mono" style={{ ...td, ...ellipsis, fontWeight: 650 }} title={fmtMoney(p.price)}>
                       {fmtMoney(p.price)}
                     </td>
-                    <td className="mono" style={{ ...td, ...ellipsis, color: colors.muted }} title={p.dateline || ""}>
-                      {p.dateline || "—"}
+                    <td
+                      className="mono"
+                      style={{
+                        ...td,
+                        ...ellipsis,
+                        color: isDatelineOverdue(p)
+                          ? colors.late
+                          : hasAdminSchedule(p)
+                            ? colors.delivered
+                            : colors.muted,
+                        fontWeight: hasAdminSchedule(p) || isDatelineOverdue(p) ? 700 : 500,
+                      }}
+                      title={projectDatelineTitle(p)}
+                    >
+                      {formatProjectDateline(p)}
                     </td>
                     <td style={td}>
                       <StatusBadge status={statusOf(p)} compact />

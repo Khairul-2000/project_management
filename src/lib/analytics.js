@@ -1,4 +1,4 @@
-import { getCurrentDeliveryDate, getProjectMonthYear, getProjectStack, statusOf } from "./utils";
+import { getFilterMonthYear, getProjectStack, statusOf } from "./utils";
 
 const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "short", year: "2-digit" });
 
@@ -30,7 +30,14 @@ function workflowStatus(project) {
 }
 
 function isLate(project) {
+  if (workflowStatus(project) !== "WIP") return false;
   return String(project.dateline || "").trim().toLowerCase().includes("order late");
+}
+
+function salesPersonName(project) {
+  const name = String(project.salesPerson || "").trim();
+  if (!name || /^#?n\/a$/i.test(name)) return "Unassigned";
+  return name;
 }
 
 function monthKeyFromParts(month, year) {
@@ -52,10 +59,30 @@ function ensureMonth(map, month, year) {
   return map.get(key);
 }
 
-function deliveryMonthYear(project) {
-  const due = getCurrentDeliveryDate(project);
-  if (due) return { month: due.getMonth() + 1, year: due.getFullYear() };
-  return getProjectMonthYear(project.date);
+/**
+ * Attribute work to the Google Sheet tab month (STA Aug 2026), matching the
+ * dashboard calendar filter. Initial Date is often a carry-over from an
+ * earlier month, and completed rows rarely have a usable due date.
+ */
+function analyticsMonthYear(project) {
+  return getFilterMonthYear(project);
+}
+
+function fillMonthRange(map) {
+  if (!map.size) return;
+  const keys = [...map.keys()].sort();
+  const [minYear, minMonth] = keys[0].split("-").map(Number);
+  const [maxYear, maxMonth] = keys[keys.length - 1].split("-").map(Number);
+  let year = minYear;
+  let month = minMonth;
+  while (year < maxYear || (year === maxYear && month <= maxMonth)) {
+    ensureMonth(map, month, year);
+    month += 1;
+    if (month > 12) {
+      month = 1;
+      year += 1;
+    }
+  }
 }
 
 export function buildAnalytics(projects) {
@@ -67,7 +94,7 @@ export function buildAnalytics(projects) {
   const monthlyMap = new Map();
 
   rows.forEach((project) => {
-    const { month, year } = getProjectMonthYear(project.date);
+    const { month, year } = analyticsMonthYear(project);
     if (!month || !year) return;
     const current = ensureMonth(monthlyMap, month, year);
     current.projects += 1;
@@ -75,12 +102,14 @@ export function buildAnalytics(projects) {
   });
 
   delivered.forEach((project) => {
-    const { month, year } = deliveryMonthYear(project);
+    const { month, year } = analyticsMonthYear(project);
     if (!month || !year) return;
     const current = ensureMonth(monthlyMap, month, year);
     current.delivered += 1;
     current.deliveredValue += amount(project);
   });
+
+  fillMonthRange(monthlyMap);
 
   const monthly = [...monthlyMap.values()]
     .sort((a, b) => a.date - b.date)
@@ -105,7 +134,7 @@ export function buildAnalytics(projects) {
     monthly,
     statuses,
     stacks: grouped(rows, getProjectStack).sort((a, b) => b.value - a.value),
-    salesPeople: grouped(rows, (project) => project.salesPerson).sort((a, b) => b.value - a.value),
+    salesPeople: grouped(rows, salesPersonName).sort((a, b) => b.value - a.value),
     lateStacks: grouped(late, getProjectStack).sort((a, b) => b.value - a.value),
     wipStacks: grouped(wip, getProjectStack).sort((a, b) => b.value - a.value),
     lateProjects: late.sort((a, b) => amount(b) - amount(a)),

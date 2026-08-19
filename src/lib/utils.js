@@ -381,6 +381,53 @@ export function formatDaysLeft(daysLeft) {
   return `${daysLeft} days left`;
 }
 
+function isClosedStatus(project) {
+  const lead = String(project?.teamLeadStatus || "").trim().toLowerCase();
+  return lead === "delivered" || lead === "cancelled" || lead === "canceled";
+}
+
+function formatCountdownDays(daysLeft) {
+  if (daysLeft == null) return "";
+  if (daysLeft < 0) {
+    const n = Math.abs(daysLeft);
+    return n <= 1 ? "Overdue" : `Overdue ${n}d`;
+  }
+  if (daysLeft === 0) return "Due today";
+  return daysLeft === 1 ? "1 Day" : `${daysLeft} Days`;
+}
+
+/**
+ * Table dateline: after a delivery date / extension, show remaining days
+ * from that schedule instead of the live sheet string (often "Order Late").
+ */
+export function formatProjectDateline(project) {
+  const sheet = String(project?.dateline || "").trim();
+  if (isClosedStatus(project)) return sheet || "—";
+  if (hasAdminSchedule(project)) {
+    const countdown = formatCountdownDays(getDaysLeft(project));
+    if (countdown) return countdown;
+  }
+  return sheet || "—";
+}
+
+export function projectDatelineTitle(project) {
+  const sheet = String(project?.dateline || "").trim();
+  if (!hasAdminSchedule(project) || isClosedStatus(project)) return sheet;
+  const due = getCurrentDeliveryDate(project);
+  const parts = [];
+  if (hasTakenExtension(project)) parts.push("Extended");
+  if (due) parts.push(`due ${formatDisplayDate(due)}`);
+  if (sheet) parts.push(`sheet: ${sheet}`);
+  return parts.join(" · ");
+}
+
+export function isDatelineOverdue(project) {
+  if (isClosedStatus(project)) return false;
+  const daysLeft = getDaysLeft(project);
+  if (daysLeft != null) return daysLeft < 0;
+  return String(project?.dateline || "").toLowerCase().includes("order late");
+}
+
 export function statusOf(p) {
   const lead = String(p.teamLeadStatus || "").trim().toLowerCase();
   if (lead === "delivered") return "delivered";

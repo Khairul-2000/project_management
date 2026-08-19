@@ -18,7 +18,11 @@ import { fmtMoney } from "../../lib/utils";
 import { useTheme } from "../../lib/theme";
 import AnalyticsCard from "./AnalyticsCard";
 
-const STATUS_COLORS = ["#1F9D63", "#D9A117", "#E24B4A"];
+const STATUS_COLORS = {
+  Delivered: "#1F9D63",
+  WIP: "#D9A117",
+  Cancelled: "#E24B4A",
+};
 
 function useChartStyle() {
   const { colors } = useTheme();
@@ -204,13 +208,14 @@ export function ProjectTimelineChart({ data }) {
 
 export function StatusChart({ data }) {
   const { colors, tooltip } = useChartStyle();
+  const rows = data.filter((item) => item.value);
   return (
     <AnalyticsCard title="Workflow status">
       <ResponsiveContainer width="100%" height={270}>
         <PieChart>
-          <Pie data={data.filter((item) => item.value)} dataKey="value" nameKey="name" innerRadius={62} outerRadius={90} paddingAngle={3}>
-            {data.map((item, index) => (
-              <Cell key={item.name} fill={STATUS_COLORS[index]} stroke={colors.panel} />
+          <Pie data={rows} dataKey="value" nameKey="name" innerRadius={62} outerRadius={90} paddingAngle={3}>
+            {rows.map((item) => (
+              <Cell key={item.name} fill={STATUS_COLORS[item.name] || STATUS_COLORS.WIP} stroke={colors.panel} />
             ))}
           </Pie>
           <Tooltip contentStyle={tooltip} />

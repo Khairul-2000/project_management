@@ -2,7 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Users, Plus, Trash2, ExternalLink } from "lucide-react";
 import { useTheme } from "../lib/theme";
 import { listTeamDirectory } from "../lib/auth";
-import { fmtMoney, statusOf, getProjectStack } from "../lib/utils";
+import {
+  fmtMoney,
+  statusOf,
+  getProjectStack,
+  formatProjectDateline,
+  projectDatelineTitle,
+  hasAdminSchedule,
+  isDatelineOverdue,
+} from "../lib/utils";
 import StatusBadge from "./StatusBadge";
 import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeNotes, normalizeTeamMember, supervisorNameFromTeam } from "../lib/projectMetadata";
 import RoleMultiSelect from "./RoleMultiSelect";
@@ -305,7 +313,20 @@ export default function ClientProjectDetail({
                       <td style={{ padding: "10px 8px", fontWeight: 650 }}>{p.phase || "—"}</td>
                       <td style={{ padding: "10px 8px", color: colors.muted }}>{getProjectStack(p)}</td>
                       <td className="mono" style={{ padding: "10px 8px" }}>{p.orderId || "—"}</td>
-                      <td style={{ padding: "10px 8px", color: colors.muted }}>{p.dateline || "—"}</td>
+                      <td
+                        style={{
+                          padding: "10px 8px",
+                          color: isDatelineOverdue(p)
+                            ? colors.late
+                            : hasAdminSchedule(p)
+                              ? colors.delivered
+                              : colors.muted,
+                          fontWeight: hasAdminSchedule(p) || isDatelineOverdue(p) ? 700 : 500,
+                        }}
+                        title={projectDatelineTitle(p)}
+                      >
+                        {formatProjectDateline(p)}
+                      </td>
                       <td style={{ padding: "10px 8px" }}>
                         <StatusBadge status={statusOf(p)} compact />
                       </td>

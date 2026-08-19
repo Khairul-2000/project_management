@@ -29,6 +29,11 @@ export function mergeMemberRoles(member, roles) {
   return { ...member, roles: merged, role: merged[0] || "Member" };
 }
 
+export function replaceMemberRoles(member, roles) {
+  const next = [...new Set((roles || []).map((role) => String(role || "").trim()).filter(Boolean))];
+  return { ...member, roles: next, role: next[0] || "Member" };
+}
+
 export function hasSupervisorRole(memberOrRoles) {
   const roles = Array.isArray(memberOrRoles) ? memberOrRoles : normalizeMemberRoles(memberOrRoles);
   return roles.some((role) => String(role || "").trim().toLowerCase() === "supervisor");

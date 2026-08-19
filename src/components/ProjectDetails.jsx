@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { 
   ArrowLeft, Calendar, User, DollarSign, Tag, CheckSquare, 
-  Trash2, Plus, Clock, Clock3, FileText, CheckCircle2, AlertTriangle, Users, ExternalLink
+  Trash2, Plus, Clock, Clock3, FileText, CheckCircle2, AlertTriangle, Users, ExternalLink,
+  Pencil, Check, X
 } from "lucide-react";
 import { STACK_COLOR, PROFILE_SHORT, STACKS } from "../lib/constants";
 import { useTheme } from "../lib/theme";
@@ -27,7 +28,7 @@ import {
   getProjectStack,
   deriveStack,
 } from "../lib/utils";
-import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeNotes, normalizeTeamMember, supervisorNameFromTeam } from "../lib/projectMetadata";
+import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeMemberRoles, normalizeNotes, normalizeTeamMember, replaceMemberRoles, supervisorNameFromTeam } from "../lib/projectMetadata";
 import RoleMultiSelect from "./RoleMultiSelect";
 import { roleLabel } from "../lib/roles";
 
@@ -69,6 +70,8 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
   const [newMemberRoles, setNewMemberRoles] = useState(() => defaultRoleForProject(project));
+  const [editingMemberId, setEditingMemberId] = useState(null);
+  const [editingRoles, setEditingRoles] = useState([]);
   const [directory, setDirectory] = useState([]);
   const [teamError, setTeamError] = useState("");
   const [notes, setNotes] = useState(() => normalizeNotes(project.notes));
@@ -177,6 +180,15 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
     });
   };
 
+  const persistTeam = (nextTeam) => {
+    const supervisor = supervisorNameFromTeam(nextTeam);
+    onUpdate({
+      ...project,
+      teamMembers: nextTeam,
+      ...(supervisor ? { supervisor } : supervisorNameFromTeam(team) ? { supervisor: "" } : {}),
+    });
+  };
+
   const handleAddMember = (e) => {
     e.preventDefault();
     setTeamError("");
@@ -197,23 +209,34 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
       roles: newMemberRoles,
     });
     const nextTeam = existingIndex >= 0 ? team.map((member, index) => index === existingIndex ? mergeMemberRoles(member, newMemberRoles) : member) : [...team, newMember];
-    const supervisor = supervisorNameFromTeam(nextTeam);
-    onUpdate({
-      ...project,
-      teamMembers: nextTeam,
-      ...(supervisor ? { supervisor } : {}),
-    });
+    persistTeam(nextTeam);
     setSelectedUserId("");
+    setEditingMemberId(null);
+  };
+
+  const handleStartEditMember = (member) => {
+    setTeamError("");
+    setEditingMemberId(member.id);
+    setEditingRoles(normalizeMemberRoles(member));
+  };
+
+  const handleSaveMemberRoles = (memberId) => {
+    if (!editingRoles.length) {
+      setTeamError("Select at least one role.");
+      return;
+    }
+    persistTeam(team.map((member) => (member.id === memberId ? replaceMemberRoles(member, editingRoles) : member)));
+    setEditingMemberId(null);
+    setEditingRoles([]);
+    setTeamError("");
   };
 
   const handleRemoveMember = (memberId) => {
-    const updatedTeam = team.filter((m) => m.id !== memberId);
-    const supervisor = supervisorNameFromTeam(updatedTeam);
-    onUpdate({
-      ...project,
-      teamMembers: updatedTeam,
-      ...(supervisor ? { supervisor } : supervisorNameFromTeam(team) ? { supervisor: "" } : {}),
-    });
+    persistTeam(team.filter((m) => m.id !== memberId));
+    if (editingMemberId === memberId) {
+      setEditingMemberId(null);
+      setEditingRoles([]);
+    }
   };
 
   const handleAddNote = () => {
@@ -838,46 +861,94 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
             
             {/* TEAM LIST */}
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
-              {team.map((m) => (
+              {team.map((m) => {
+                const editing = editingMemberId === m.id;
+                return (
                 <div key={m.id} style={{ 
                   display: "flex", 
-                  alignItems: "center", 
-                  justifyContent: "space-between", 
+                  flexDirection: "column",
+                  gap: 8,
                   background: COLORS.panel2, 
-                  border: `1px solid ${COLORS.border}`, 
+                  border: `1px solid ${editing ? COLORS.accent : COLORS.border}`, 
                   borderRadius: 10, 
-                  padding: "10px 12px"
+                  padding: "10px 12px",
+                  position: "relative",
+                  zIndex: editing ? 4 : 1,
                 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ 
-                      width: 32, 
-                      height: 32, 
-                      borderRadius: "50%", 
-                      background: getAvatarBg(m.name), 
-                      color: "#FFFFFF", 
-                      display: "flex", 
-                      alignItems: "center", 
-                      justifyContent: "center", 
-                      fontSize: 12, 
-                      fontWeight: 700 
-                    }}>
-                      {getInitials(m.name)}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                      <div style={{ 
+                        width: 32, 
+                        height: 32, 
+                        borderRadius: "50%", 
+                        background: getAvatarBg(m.name), 
+                        color: "#FFFFFF", 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center", 
+                        fontSize: 12, 
+                        fontWeight: 700,
+                        flexShrink: 0,
+                      }}>
+                        {getInitials(m.name)}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 600 }}>{m.name}</div>
+                        {!editing ? (
+                          <div style={{ fontSize: 11, color: COLORS.muted, marginTop: 1 }}>{memberRoleLabel(m)}</div>
+                        ) : null}
+                      </div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: 13.5, fontWeight: 600 }}>{m.name}</div>
-                      <div style={{ fontSize: 11, color: COLORS.muted, marginTop: 1 }}>{memberRoleLabel(m)}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
+                      {editing ? (
+                        <>
+                          <button
+                            type="button"
+                            title="Save roles"
+                            onClick={() => handleSaveMemberRoles(m.id)}
+                            style={{ background: "none", border: "none", color: COLORS.delivered, cursor: "pointer", padding: 4 }}
+                          >
+                            <Check size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            title="Cancel"
+                            onClick={() => { setEditingMemberId(null); setEditingRoles([]); setTeamError(""); }}
+                            style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", padding: 4 }}
+                          >
+                            <X size={15} />
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          title="Edit roles"
+                          onClick={() => handleStartEditMember(m)}
+                          style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", padding: 4 }}
+                          onMouseEnter={(e) => { e.currentTarget.style.color = COLORS.accent; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.color = COLORS.muted; }}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                      )}
+                      <button 
+                        type="button"
+                        title="Remove member"
+                        onClick={() => handleRemoveMember(m.id)} 
+                        style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", padding: 4 }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = COLORS.late; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = COLORS.muted; }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleRemoveMember(m.id)} 
-                    style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", padding: 4 }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = COLORS.late}
-                    onMouseLeave={(e) => e.currentTarget.style.color = COLORS.muted}
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  {editing ? (
+                    <RoleMultiSelect roles={ROLES} value={editingRoles} onChange={setEditingRoles} />
+                  ) : null}
                 </div>
-              ))}
+                );
+              })}
               {team.length === 0 && (
                 <div style={{ textAlign: "center", padding: "16px", color: COLORS.muted, fontSize: 13 }}>
                   No team members assigned yet.

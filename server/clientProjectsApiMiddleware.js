@@ -3,6 +3,7 @@ import { isAdminRole } from "./roles.js";
 import { pathnameOf, readJsonBody, sendJson } from "./httpHelpers.js";
 import {
   applyClientTeamToPhases,
+  findClientProjectById,
   interconnectClientAndPhases,
   updateClientProject,
   writePhasesJson,
@@ -95,10 +96,15 @@ async function handle(req, res) {
     if (!requireAdmin(req, res)) return;
     const id = decodeURIComponent(patchMatch[1]);
     const body = await readJsonBody(req);
+    const prev = findClientProjectById(id);
     const updated = updateClientProject(id, body);
+    const teamChanged = JSON.stringify(prev?.teamMembers || []) !== JSON.stringify(updated.teamMembers || []);
 
-    // Push role-matched client team onto phases (keeps existing members)
-    const { phases: nextPhases, changed } = applyClientTeamToPhases(phases, updated);
+    // Push role-matched client team onto phases. When roles are edited, replace
+    // instead of merge so members move to the phases that match their new roles.
+    const { phases: nextPhases, changed } = applyClientTeamToPhases(phases, updated, {
+      syncRoles: teamChanged,
+    });
     const stamped = nextPhases.map((p) =>
       projectNameKey(p.projectName) === (updated.projectNameKey || projectNameKey(updated.projectName))
         ? { ...p, clientProjectId: updated.id }

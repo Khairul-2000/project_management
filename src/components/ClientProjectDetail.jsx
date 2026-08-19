@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Users, Plus, Trash2, ExternalLink } from "lucide-react";
+import { ArrowLeft, Users, Plus, Trash2, ExternalLink, Pencil, Check, X } from "lucide-react";
 import { useTheme } from "../lib/theme";
 import { listTeamDirectory } from "../lib/auth";
 import {
@@ -12,7 +12,7 @@ import {
   isDatelineOverdue,
 } from "../lib/utils";
 import StatusBadge from "./StatusBadge";
-import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeNotes, normalizeTeamMember, supervisorNameFromTeam } from "../lib/projectMetadata";
+import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeMemberRoles, normalizeNotes, normalizeTeamMember, replaceMemberRoles, supervisorNameFromTeam } from "../lib/projectMetadata";
 import RoleMultiSelect from "./RoleMultiSelect";
 import { roleLabel } from "../lib/roles";
 
@@ -35,6 +35,8 @@ export default function ClientProjectDetail({
   const [directory, setDirectory] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [newMemberRoles, setNewMemberRoles] = useState([ROLES[0]]);
+  const [editingMemberId, setEditingMemberId] = useState(null);
+  const [editingRoles, setEditingRoles] = useState([]);
   const [teamError, setTeamError] = useState("");
   const [notes, setNotes] = useState(() => normalizeNotes(clientProject.notes));
   const [noteDraft, setNoteDraft] = useState("");
@@ -86,6 +88,14 @@ export default function ClientProjectDetail({
     onUpdate({ ...clientProject, ...patch });
   }
 
+  function persistTeam(nextTeam) {
+    const supervisor = supervisorNameFromTeam(nextTeam);
+    persist({
+      teamMembers: nextTeam,
+      ...(supervisor ? { supervisor } : supervisorNameFromTeam(team) ? { supervisor: "" } : {}),
+    });
+  }
+
   function handleAddMember(e) {
     e.preventDefault();
     if (!isAdmin) return;
@@ -107,23 +117,39 @@ export default function ClientProjectDetail({
       roles: newMemberRoles,
     });
     const nextTeam = existingIndex >= 0 ? team.map((member, index) => index === existingIndex ? mergeMemberRoles(member, newMemberRoles) : member) : [...team, newMember];
-    const supervisor = supervisorNameFromTeam(nextTeam);
-    persist({
-      teamMembers: nextTeam,
-      ...(supervisor ? { supervisor } : {}),
-    });
+    persistTeam(nextTeam);
     setSelectedUserId("");
+    setEditingMemberId(null);
+    setSaveStatus("Team updated");
+  }
+
+  function handleStartEditMember(member) {
+    if (!isAdmin) return;
+    setTeamError("");
+    setEditingMemberId(member.id);
+    setEditingRoles(normalizeMemberRoles(member));
+  }
+
+  function handleSaveMemberRoles(memberId) {
+    if (!isAdmin) return;
+    if (!editingRoles.length) {
+      setTeamError("Select at least one role.");
+      return;
+    }
+    persistTeam(team.map((member) => (member.id === memberId ? replaceMemberRoles(member, editingRoles) : member)));
+    setEditingMemberId(null);
+    setEditingRoles([]);
+    setTeamError("");
     setSaveStatus("Team updated");
   }
 
   function handleRemoveMember(memberId) {
     if (!isAdmin) return;
-    const nextTeam = team.filter((m) => m.id !== memberId);
-    const supervisor = supervisorNameFromTeam(nextTeam);
-    persist({
-      teamMembers: nextTeam,
-      ...(supervisor ? { supervisor } : supervisorNameFromTeam(team) ? { supervisor: "" } : {}),
-    });
+    persistTeam(team.filter((m) => m.id !== memberId));
+    if (editingMemberId === memberId) {
+      setEditingMemberId(null);
+      setEditingRoles([]);
+    }
     setSaveStatus("Team updated");
   }
 
@@ -213,34 +239,78 @@ export default function ClientProjectDetail({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
-            {team.map((m) => (
+            {team.map((m) => {
+              const editing = editingMemberId === m.id;
+              return (
               <div
                 key={m.id}
                 style={{
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
+                  flexDirection: "column",
+                  gap: 8,
                   background: colors.panel2,
-                  border: `1px solid ${colors.border}`,
+                  border: `1px solid ${editing ? colors.accent : colors.border}`,
                   borderRadius: 10,
                   padding: "10px 12px",
+                  position: "relative",
+                  zIndex: editing ? 4 : 1,
                 }}
               >
-                <div>
-                  <div style={{ fontSize: 13.5, fontWeight: 650 }}>{m.name}</div>
-                  <div style={{ fontSize: 11, color: colors.muted }}>{memberRoleLabel(m)}</div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 650 }}>{m.name}</div>
+                    {!editing ? (
+                      <div style={{ fontSize: 11, color: colors.muted }}>{memberRoleLabel(m)}</div>
+                    ) : null}
+                  </div>
+                  {isAdmin ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
+                      {editing ? (
+                        <>
+                          <button
+                            type="button"
+                            title="Save roles"
+                            onClick={() => handleSaveMemberRoles(m.id)}
+                            style={{ background: "none", border: "none", color: colors.delivered, padding: 4 }}
+                          >
+                            <Check size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            title="Cancel"
+                            onClick={() => { setEditingMemberId(null); setEditingRoles([]); setTeamError(""); }}
+                            style={{ background: "none", border: "none", color: colors.muted, padding: 4 }}
+                          >
+                            <X size={15} />
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          title="Edit roles"
+                          onClick={() => handleStartEditMember(m)}
+                          style={{ background: "none", border: "none", color: colors.muted, padding: 4 }}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        title="Remove member"
+                        onClick={() => handleRemoveMember(m.id)}
+                        style={{ background: "none", border: "none", color: colors.muted, padding: 4 }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
-                {isAdmin ? (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveMember(m.id)}
-                    style={{ background: "none", border: "none", color: colors.muted, padding: 4 }}
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                {editing ? (
+                  <RoleMultiSelect roles={ROLES} value={editingRoles} onChange={setEditingRoles} />
                 ) : null}
               </div>
-            ))}
+              );
+            })}
             {team.length === 0 ? (
               <div style={{ textAlign: "center", padding: 14, color: colors.muted, fontSize: 13 }}>
                 No team members assigned yet.

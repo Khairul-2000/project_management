@@ -186,8 +186,9 @@ function phaseHasMember(phase, member) {
  * Supervisor/Project Lead → supervisor field if empty; also added to team when role is lead.
  * Only the roles that match this phase's stack are written onto the phase member.
  */
-export function applyClientTeamToSinglePhase(phase, clientProject) {
+export function applyClientTeamToSinglePhase(phase, clientProject, options = {}) {
   if (!phase || !clientProject) return phase;
+  const syncRoles = Boolean(options.syncRoles);
   const stack = phaseStack(phase);
   const clientMembers = Array.isArray(clientProject.teamMembers) ? clientProject.teamMembers : [];
   const next = {
@@ -200,8 +201,12 @@ export function applyClientTeamToSinglePhase(phase, clientProject) {
   };
 
   const assignedSupervisor = String(clientProject.supervisor || "").trim();
-  if (assignedSupervisor && !String(next.supervisor || "").trim()) {
-    next.supervisor = assignedSupervisor;
+  if (assignedSupervisor) {
+    if (syncRoles || !String(next.supervisor || "").trim()) {
+      next.supervisor = assignedSupervisor;
+    }
+  } else if (syncRoles) {
+    next.supervisor = "";
   }
 
   let added = 0;
@@ -218,8 +223,6 @@ export function applyClientTeamToSinglePhase(phase, clientProject) {
     }
 
     const matchedRoles = rolesForStack(allRoles, stack);
-    if (!matchedRoles.length) continue;
-
     const existingIndex = next.teamMembers.findIndex(
       (member) =>
         (m.userId && member?.userId && String(m.userId) === String(member.userId)) ||
@@ -230,12 +233,22 @@ export function applyClientTeamToSinglePhase(phase, clientProject) {
             .trim()
             .toLowerCase()
     );
+
+    if (!matchedRoles.length) {
+      if (syncRoles && existingIndex >= 0) {
+        next.teamMembers.splice(existingIndex, 1);
+      }
+      continue;
+    }
+
     if (existingIndex >= 0) {
-      const mergedRoles = [...new Set([...memberRoles(next.teamMembers[existingIndex]), ...matchedRoles])];
+      const nextRoles = syncRoles
+        ? matchedRoles
+        : [...new Set([...memberRoles(next.teamMembers[existingIndex]), ...matchedRoles])];
       next.teamMembers[existingIndex] = {
         ...next.teamMembers[existingIndex],
-        roles: mergedRoles,
-        role: mergedRoles[0] || "Member",
+        roles: nextRoles,
+        role: nextRoles[0] || "Member",
         userId: m.userId ? String(m.userId) : next.teamMembers[existingIndex].userId,
       };
       continue;
@@ -263,7 +276,7 @@ export function applyClientTeamToEmptyPhases(phases, clientProject) {
   return applyClientTeamToPhases(phases, clientProject);
 }
 
-export function applyClientTeamToPhases(phases, clientProject) {
+export function applyClientTeamToPhases(phases, clientProject, options = {}) {
   if (!clientProjectHasTeam(clientProject)) return { phases, changed: 0 };
   const key = clientProject.projectNameKey || projectNameKey(clientProject.projectName);
   let changed = 0;
@@ -274,7 +287,7 @@ export function applyClientTeamToPhases(phases, clientProject) {
       teamMembers: p.teamMembers || [],
       clientProjectId: p.clientProjectId || "",
     });
-    const updated = applyClientTeamToSinglePhase(p, clientProject);
+    const updated = applyClientTeamToSinglePhase(p, clientProject, options);
     delete updated._membersAdded;
     const after = JSON.stringify({
       supervisor: updated.supervisor || "",

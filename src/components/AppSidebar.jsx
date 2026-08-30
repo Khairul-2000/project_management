@@ -260,11 +260,11 @@ export default function AppSidebar({
           </div>
         ) : null}*/}
 
-        {isAdmin && configured && !connected ? (
+        {isAdmin && configured ? (
           <div style={itemWrap}>
             <NavButton
               icon={Link2}
-              label="Connect Google"
+              label={connected ? "Reconnect Google" : "Connect Google"}
               showLabel={showLabel}
               onClick={() => go(onConnectGoogle)}
             />

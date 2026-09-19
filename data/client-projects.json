@@ -158,6 +158,16 @@
       "createdAt": "2026-08-31T09:01:36.791Z"
     },
     {
+      "id": "cp-avsbakshi",
+      "projectName": "avsbakshi",
+      "projectNameKey": "avsbakshi",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-09-19T06:31:31.587Z"
+    },
+    {
       "id": "cp-awufiverr",
       "projectName": "awufiverr",
       "projectNameKey": "awufiverr",
@@ -771,6 +781,16 @@
       "createdAt": "2026-08-12T10:36:10.383Z"
     },
     {
+      "id": "cp-manoor3244945",
+      "projectName": "manoor3244945",
+      "projectNameKey": "manoor3244945",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-09-19T06:31:31.587Z"
+    },
+    {
       "id": "cp-mariakampli",
       "projectName": "mariakampli",
       "projectNameKey": "mariakampli",
@@ -946,6 +966,16 @@
       "membersRaw": "",
       "notes": "",
       "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-ni-amc",
+      "projectName": "ni_amc",
+      "projectNameKey": "ni_amc",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-09-19T06:31:31.587Z"
     },
     {
       "id": "cp-ni-colie",

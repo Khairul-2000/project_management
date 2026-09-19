@@ -10,7 +10,7 @@ export default function StackWorkload({ byStack, projects = [] }) {
   const [activeStack, setActiveStack] = useState(null);
 
   return (
-    <div style={{ ...card, padding: "16px 18px", marginBottom: 16 }}>
+    <div style={{ ...card, padding: "20px 22px", borderRadius: 24, height: "100%", boxSizing: "border-box" }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
         <div className="disp" style={{ fontWeight: 750, fontSize: 15, letterSpacing: -0.2 }}>
           Workload by department

@@ -1,22 +1,35 @@
 import { useEffect, useMemo, useState } from "react";
-import { Eye, Plus, X } from "lucide-react";
+import { Plus, X, Search, Check, FolderKanban, Shield, User, Trash2 } from "lucide-react";
 import { useTheme } from "../lib/theme";
 import { createUser, listUsers, patchUser, syncAssignmentsFromProjects } from "../lib/auth";
-import { isAdminRole, isSuperAdmin, roleLabel } from "../lib/roles";
+import { isAdminRole, isSuperAdmin, roleLabel, roleBadgeColor } from "../lib/roles";
+import { GitHubIcon, GitLabIcon } from "./GitIcons";
+import { saveStoredUsers } from "../lib/clientStorage";
 
-export default function UsersAdmin({ projects, clientProjects = [], currentUser }) {
+export default function UsersAdmin({ projects = [], clientProjects = [], currentUser }) {
   const { colors, card } = useTheme();
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: "", username: "", password: "", role: "member" });
-  const [viewUserId, setViewUserId] = useState(null);
-  const [projectQuery, setProjectQuery] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // New user form state
+  const [form, setForm] = useState({
+    name: "",
+    username: "",
+    password: "",
+    role: "member",
+    githubUsername: "",
+    gitlabUsername: "",
+  });
+
+  // Assign projects modal state
+  const [assigningUser, setAssigningUser] = useState(null);
+  const [assignSearch, setAssignSearch] = useState("");
   const [resetPassword, setResetPassword] = useState({});
   const [syncingAssignments, setSyncingAssignments] = useState(false);
-  const [showGitUsernames, setShowGitUsernames] = useState({});
 
   const canManageAdmins = isSuperAdmin(currentUser);
 
@@ -35,59 +48,6 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
     return map;
   }, [projects]);
 
-  const clientOptions = useMemo(() => {
-    const fromRegistry = (clientProjects || []).map((cp) => ({
-      id: cp.id,
-      projectName: cp.projectName,
-      projectNameKey: cp.projectNameKey || projectNameKey(cp.projectName),
-    }));
-    const seen = new Set(fromRegistry.map((c) => c.projectNameKey));
-    for (const [key, phases] of phasesByClientKey) {
-      if (seen.has(key)) continue;
-      const name = phases[0]?.projectName || key;
-      fromRegistry.push({
-        id: `cp-${key.replace(/[^a-z0-9]+/g, "-")}`,
-        projectName: name,
-        projectNameKey: key,
-      });
-    }
-    return fromRegistry.sort((a, b) => a.projectName.localeCompare(b.projectName));
-  }, [clientProjects, phasesByClientKey]);
-
-  function clientProjectsForUser(user) {
-    if (!user || isAdminRole(user)) return [];
-    const allowed = new Set((user.assignedProjectIds || []).map(String));
-    return clientOptions
-      .map((cp) => {
-        const phases = phasesByClientKey.get(cp.projectNameKey) || [];
-        const linked = phases.filter((p) => allowed.has(String(p.id)));
-        if (!linked.length) return null;
-        return { ...cp, phases: linked };
-      })
-      .filter(Boolean)
-      .sort((a, b) => a.projectName.localeCompare(b.projectName));
-  }
-
-  async function syncFromProjects() {
-    setSyncingAssignments(true);
-    setError("");
-    try {
-      const result = await syncAssignmentsFromProjects();
-      setUsers(result.users || []);
-      const unmatched = result.unmatched || {};
-      const unmatchedNote = Object.keys(unmatched).length
-        ? ` · unmatched names: ${Object.keys(unmatched).join(", ")}`
-        : "";
-      setStatus(
-        `Synced from projects.json · ${result.totalLinks} links across ${result.updatedMembers} member update(s)${unmatchedNote}`
-      );
-    } catch (err) {
-      setError(err.message || "Sync failed");
-    } finally {
-      setSyncingAssignments(false);
-    }
-  }
-
   async function refresh() {
     setLoading(true);
     setError("");
@@ -104,27 +64,6 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
     refresh();
   }, []);
 
-  const viewUser = useMemo(
-    () => users.find((u) => u.id === viewUserId) || null,
-    [users, viewUserId]
-  );
-
-  const linkedProjects = useMemo(
-    () => (viewUser ? clientProjectsForUser(viewUser) : []),
-    [viewUser, clientOptions, phasesByClientKey]
-  );
-
-  const viewProjects = useMemo(() => {
-    const q = projectQuery.trim().toLowerCase();
-    if (!q) return linkedProjects;
-    return linkedProjects.filter((cp) => cp.projectName.toLowerCase().includes(q));
-  }, [linkedProjects, projectQuery]);
-
-  function openProjects(user) {
-    setViewUserId(user.id);
-    setProjectQuery("");
-  }
-
   async function onCreate(e) {
     e.preventDefault();
     setCreating(true);
@@ -132,8 +71,16 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
     try {
       const user = await createUser(form);
       setUsers((prev) => [...prev, user]);
-      setForm({ name: "", username: "", password: "", role: "member" });
-      setStatus(`Created ${user.username}`);
+      setForm({
+        name: "",
+        username: "",
+        password: "",
+        role: "member",
+        githubUsername: "",
+        gitlabUsername: "",
+      });
+      setShowCreateModal(false);
+      setStatus(`Created user: ${user.name} (@${user.username})`);
     } catch (err) {
       setError(err.message || "Create failed");
     } finally {
@@ -156,10 +103,7 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
     try {
       const updated = await patchUser(user.id, { role });
       setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
-      setStatus(`Updated ${user.username} to ${updated.role}`);
-      if (viewUserId === user.id && isAdminRole(updated)) {
-        setViewUserId(null);
-      }
+      setStatus(`Updated role for ${user.username} to ${roleLabel(role)}`);
     } catch (err) {
       setError(err.message || "Failed to update role");
     }
@@ -178,112 +122,145 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
     }
   }
 
+  async function toggleProjectAssignment(userId, phaseId) {
+    const targetUser = users.find((u) => u.id === userId);
+    if (!targetUser) return;
+
+    const currentAssigned = new Set((targetUser.assignedProjectIds || []).map(String));
+    const strId = String(phaseId);
+    if (currentAssigned.has(strId)) {
+      currentAssigned.delete(strId);
+    } else {
+      currentAssigned.add(strId);
+    }
+
+    try {
+      const updated = await patchUser(userId, {
+        assignedProjectIds: Array.from(currentAssigned),
+      });
+      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+      if (assigningUser?.id === userId) {
+        setAssigningUser(updated);
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function syncFromProjects() {
+    setSyncingAssignments(true);
+    setError("");
+    try {
+      const result = await syncAssignmentsFromProjects();
+      setUsers(result.users || []);
+      setStatus(
+        `Synced from projects: ${result.totalLinks} links updated across ${result.updatedMembers} member(s)`
+      );
+    } catch (err) {
+      setError(err.message || "Sync failed");
+    } finally {
+      setSyncingAssignments(false);
+    }
+  }
+
   const field = {
     width: "100%",
     boxSizing: "border-box",
     background: colors.panel2,
     border: `1px solid ${colors.border}`,
-    borderRadius: 10,
-    padding: "9px 11px",
+    borderRadius: 8,
+    padding: "8px 10px",
     color: colors.text,
     fontSize: 13,
   };
 
   return (
-    <div style={{ padding: "20px 16px 48px", maxWidth: 1100, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+    <div style={{ padding: "20px 16px 48px", maxWidth: 1180, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+      {/* Header & Overview Card */}
       <div style={{ ...card, padding: "20px 22px", marginBottom: 16 }}>
-        <h1 className="disp" style={{ margin: "0 0 6px", fontSize: 24, fontWeight: 800 }}>
-          User management
-        </h1>
-        <div style={{ color: colors.muted, fontSize: 13 }}>
-          Create accounts and change roles. Super admin can assign an admin as supervisor or any member.
-          Member project access comes from team names on projects — use <strong>Sync from projects</strong>, then open a member to see
-          their associated client projects.
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
+          <div>
+            <h1 className="disp" style={{ margin: "0 0 6px", fontSize: 24, fontWeight: 800 }}>
+              User Management & Access Control
+            </h1>
+            <div style={{ color: colors.muted, fontSize: 13, maxWidth: 650 }}>
+              Manage team accounts, developer roles, GitHub/GitLab usernames, and project permissions. Super Admin can configure administrators and project leads.
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={syncFromProjects}
+              disabled={syncingAssignments}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                background: colors.panel2,
+                color: colors.text,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 10,
+                padding: "8px 12px",
+                fontWeight: 650,
+                fontSize: 12.5,
+                cursor: syncingAssignments ? "wait" : "pointer",
+              }}
+            >
+              {syncingAssignments ? "Syncing…" : "Sync from Projects"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                background: colors.accent,
+                color: colors.onAccent,
+                border: "none",
+                borderRadius: 10,
+                padding: "8px 14px",
+                fontWeight: 700,
+                fontSize: 12.5,
+                cursor: "pointer",
+              }}
+            >
+              <Plus size={15} /> Add User
+            </button>
+          </div>
         </div>
-        <div style={{ marginTop: 12 }}>
-          <button
-            type="button"
-            onClick={syncFromProjects}
-            disabled={syncingAssignments}
-            style={{
-              background: colors.accent,
-              color: colors.onAccent,
-              border: "none",
-              borderRadius: 10,
-              padding: "9px 14px",
-              fontWeight: 700,
-              fontSize: 13,
-              opacity: syncingAssignments ? 0.75 : 1,
-            }}
-          >
-            {syncingAssignments ? "Syncing…" : "Sync from projects"}
-          </button>
-        </div>
-        {status ? <div style={{ marginTop: 10, color: colors.delivered, fontSize: 13, fontWeight: 650 }}>{status}</div> : null}
-        {error ? <div style={{ marginTop: 10, color: colors.late, fontSize: 13, fontWeight: 650 }}>{error}</div> : null}
+
+        {status ? (
+          <div style={{ marginTop: 12, color: colors.delivered, fontSize: 13, fontWeight: 650 }}>
+            {status}
+          </div>
+        ) : null}
+        {error ? (
+          <div style={{ marginTop: 12, color: colors.late, fontSize: 13, fontWeight: 650 }}>
+            {error}
+          </div>
+        ) : null}
       </div>
 
-      <div style={{ ...card, padding: "18px 20px", marginBottom: 16 }}>
-        <div className="disp" style={{ fontWeight: 750, fontSize: 16, marginBottom: 12 }}>Create user</div>
-        <form onSubmit={onCreate} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 0.8fr auto", gap: 10 }}>
-          <input
-            placeholder="Full name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            required
-            style={field}
-          />
-          <input
-            placeholder="Username"
-            value={form.username}
-            onChange={(e) => setForm({ ...form, username: e.target.value })}
-            required
-            style={field}
-          />
-          <input
-            type="password"
-            placeholder="Temp password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            required
-            style={field}
-          />
-          <select
-            value={form.role}
-            onChange={(e) => setForm({ ...form, role: e.target.value })}
-            style={field}
-          >
-            <option value="member">Member</option>
-            {canManageAdmins ? <option value="admin">Admin</option> : null}
-          </select>
-          <button
-            type="submit"
-            disabled={creating}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: colors.accent,
-              color: colors.onAccent,
-              border: "none",
-              borderRadius: 10,
-              padding: "0 14px",
-              fontWeight: 700,
-              whiteSpace: "nowrap",
-            }}
-          >
-            <Plus size={15} /> Add
-          </button>
-        </form>
-      </div>
-
+      {/* Users Table */}
       <div style={{ ...card, overflow: "hidden" }}>
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <table style={{ width: "100%", minWidth: 960, borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ background: colors.panel2, textAlign: "left" }}>
-                {["Name", "Username", "GitHub / GitLab", "Role", "Active", "Projects", "Password", "Actions"].map((h) => (
-                  <th key={h} style={{ padding: "10px 12px", color: colors.muted, fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>
+                {["Name", "Username", "Role", "Git Profiles", "Active", "Assigned Projects", "Password", ""].map((h) => (
+                  <th
+                    key={h}
+                    style={{
+                      padding: "10px 12px",
+                      color: colors.muted,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                    }}
+                  >
                     {h}
                   </th>
                 ))}
@@ -292,94 +269,197 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={8} style={{ padding: 20, color: colors.muted, textAlign: "center" }}>
+                  <td colSpan={8} style={{ padding: 24, textAlign: "center", color: colors.muted }}>
                     Loading users…
                   </td>
                 </tr>
               )}
               {!loading &&
                 users.map((u) => {
-                  const linkedCount = isAdminRole(u) ? null : clientProjectsForUser(u).length;
-                  const roleLocked = !canManageAdmins && isAdminRole(u);
+                  const isAdmin = isAdminRole(u);
+                  const isSuper = isSuperAdmin(u);
+                  const assignedCount = (u.assignedProjectIds || []).length;
+                  const roleColor = roleBadgeColor(u.role, colors);
+
                   return (
                     <tr key={u.id} style={{ borderTop: `1px solid ${colors.border}` }}>
-                      <td style={{ padding: "10px 12px", fontWeight: 650 }}>{u.name}</td>
-                      <td className="mono" style={{ padding: "10px 12px" }}>{u.username}</td>
-                      <td style={{ padding: "10px 12px", color: colors.muted, whiteSpace: "nowrap" }}>
-                        {(u.githubUsername || u.gitlabUsername) ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <button
-                              type="button"
-                              onClick={() => setShowGitUsernames(prev => ({ ...prev, [u.id]: !prev[u.id] }))}
+                      {/* Name */}
+                      <td style={{ padding: "10px 12px", fontWeight: 700 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: 99,
+                              background: `${roleColor}22`,
+                              color: roleColor,
+                              display: "grid",
+                              placeItems: "center",
+                              fontWeight: 800,
+                              fontSize: 11,
+                            }}
+                          >
+                            {u.name.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <div>{u.name}</div>
+                            <div style={{ fontSize: 11, color: colors.muted }}>{u.id}</div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Username */}
+                      <td className="mono" style={{ padding: "10px 12px", fontSize: 12 }}>
+                        @{u.username}
+                      </td>
+
+                      {/* Role */}
+                      <td style={{ padding: "10px 12px" }}>
+                        {canManageAdmins ? (
+                          <select
+                            value={u.role}
+                            onChange={(e) => changeRole(u, e.target.value)}
+                            style={{
+                              ...field,
+                              width: "auto",
+                              padding: "5px 8px",
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: roleColor,
+                            }}
+                          >
+                            <option value="member">Team Member</option>
+                            <option value="admin">Admin / Team Lead</option>
+                            <option value="super_admin">Super Admin</option>
+                          </select>
+                        ) : (
+                          <span
+                            style={{
+                              background: `${roleColor}18`,
+                              color: roleColor,
+                              border: `1px solid ${roleColor}44`,
+                              borderRadius: 8,
+                              padding: "3px 8px",
+                              fontSize: 11.5,
+                              fontWeight: 700,
+                            }}
+                          >
+                            {roleLabel(u.role)}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Git Profiles */}
+                      <td style={{ padding: "10px 12px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          {u.githubUsername ? (
+                            <a
+                              href={`https://github.com/${u.githubUsername}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              title={`GitHub: @${u.githubUsername}`}
                               style={{
                                 display: "inline-flex",
                                 alignItems: "center",
-                                justifyContent: "center",
-                                background: colors.panel2,
-                                border: `1px solid ${colors.border}`,
-                                borderRadius: 6,
+                                gap: 4,
                                 color: colors.text,
-                                padding: "4px",
-                                cursor: "pointer",
+                                textDecoration: "none",
+                                fontSize: 12,
                               }}
-                              title={showGitUsernames[u.id] ? "Hide usernames" : "Show usernames"}
                             >
-                              <Eye size={14} />
-                            </button>
-                            {showGitUsernames[u.id] ? (
-                              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                                {u.githubUsername && (
-                                  <div style={{ display: "inline-flex", gap: 6 }}>
-                                    <strong style={{ opacity: 0.7 }}>GH:</strong>
-                                    <span className="mono">{u.githubUsername}</span>
-                                  </div>
-                                )}
-                                {u.gitlabUsername && (
-                                  <div style={{ display: "inline-flex", gap: 6 }}>
-                                    <strong style={{ opacity: 0.7 }}>GL:</strong>
-                                    <span className="mono">{u.gitlabUsername}</span>
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <span style={{ fontSize: 12 }}>•••</span>
-                            )}
-                          </div>
+                              <GitHubIcon size={14} />
+                              <span className="mono">{u.githubUsername}</span>
+                            </a>
+                          ) : null}
+
+                          {u.gitlabUsername ? (
+                            <a
+                              href={`https://gitlab.com/${u.gitlabUsername}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              title={`GitLab: @${u.gitlabUsername}`}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                color: colors.text,
+                                textDecoration: "none",
+                                fontSize: 12,
+                              }}
+                            >
+                              <GitLabIcon size={14} />
+                              <span className="mono">{u.gitlabUsername}</span>
+                            </a>
+                          ) : null}
+
+                          {!u.githubUsername && !u.gitlabUsername ? (
+                            <span style={{ color: colors.muted, fontSize: 12 }}>—</span>
+                          ) : null}
+                        </div>
+                      </td>
+
+                      {/* Active Toggle */}
+                      <td style={{ padding: "10px 12px" }}>
+                        <button
+                          type="button"
+                          onClick={() => toggleActive(u)}
+                          disabled={isSuper}
+                          style={{
+                            border: "none",
+                            background: u.active ? `${colors.delivered}18` : `${colors.late}18`,
+                            color: u.active ? colors.delivered : colors.late,
+                            padding: "3px 8px",
+                            borderRadius: 8,
+                            fontSize: 11.5,
+                            fontWeight: 750,
+                            cursor: isSuper ? "default" : "pointer",
+                          }}
+                        >
+                          {u.active ? "Active" : "Disabled"}
+                        </button>
+                      </td>
+
+                      {/* Assigned Projects */}
+                      <td style={{ padding: "10px 12px" }}>
+                        {isAdmin ? (
+                          <span style={{ fontSize: 12, color: colors.muted, fontWeight: 650 }}>
+                            All Projects (Admin)
+                          </span>
                         ) : (
-                          "-"
+                          <button
+                            type="button"
+                            onClick={() => setAssigningUser(u)}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                              padding: "4px 8px",
+                              borderRadius: 8,
+                              border: `1px solid ${colors.border}`,
+                              background: colors.panel2,
+                              color: colors.text,
+                              fontSize: 12,
+                              fontWeight: 650,
+                              cursor: "pointer",
+                            }}
+                          >
+                            <FolderKanban size={13} />
+                            {assignedCount} phase{assignedCount === 1 ? "" : "s"}
+                          </button>
                         )}
                       </td>
-                      <td style={{ padding: "10px 12px" }}>
-                        <select
-                          value={u.role}
-                          onChange={(e) => changeRole(u, e.target.value)}
-                          aria-label={`Role for ${u.username}`}
-                          disabled={roleLocked}
-                          style={{ ...field, width: "auto", minWidth: 130, padding: "7px 8px" }}
-                        >
-                          <option value="member">{roleLabel("member")}</option>
-                          {(canManageAdmins || u.role === "admin") ? (
-                            <option value="admin">{roleLabel("admin")}</option>
-                          ) : null}
-                          {(canManageAdmins || u.role === "super_admin") ? (
-                            <option value="super_admin">{roleLabel("super_admin")}</option>
-                          ) : null}
-                        </select>
-                      </td>
-                      <td style={{ padding: "10px 12px", color: u.active ? colors.delivered : colors.late }}>
-                        {u.active ? "Yes" : "No"}
-                      </td>
-                      <td style={{ padding: "10px 12px" }}>
-                        {isAdminRole(u) ? "All" : linkedCount}
-                      </td>
+
+                      {/* Password Reset */}
                       <td style={{ padding: "10px 12px" }}>
                         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                           <input
                             type="password"
-                            placeholder={u.hasPassword ? "Reset…" : "Set…"}
+                            placeholder="New password…"
                             value={resetPassword[u.id] || ""}
-                            onChange={(e) => setResetPassword((prev) => ({ ...prev, [u.id]: e.target.value }))}
-                            style={{ ...field, width: 110, padding: "7px 8px" }}
+                            onChange={(e) =>
+                              setResetPassword((prev) => ({ ...prev, [u.id]: e.target.value }))
+                            }
+                            style={{ ...field, width: 110, padding: "5px 7px", fontSize: 11.5 }}
                           />
                           <button
                             type="button"
@@ -387,54 +467,43 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
                             style={{
                               background: colors.panel2,
                               border: `1px solid ${colors.border}`,
-                              borderRadius: 8,
+                              borderRadius: 6,
                               color: colors.text,
-                              padding: "7px 8px",
+                              padding: "5px 8px",
                               fontWeight: 650,
-                              fontSize: 12,
+                              fontSize: 11.5,
+                              cursor: "pointer",
                             }}
                           >
                             Set
                           </button>
                         </div>
                       </td>
-                      <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>
-                        {u.role === "member" && (
+
+                      {/* Action */}
+                      <td style={{ padding: "10px 12px", textAlign: "right" }}>
+                        {!isSuper && u.id !== currentUser?.id ? (
                           <button
                             type="button"
-                            onClick={() => openProjects(u)}
+                            onClick={async () => {
+                              if (confirm(`Remove user account @${u.username}?`)) {
+                                const next = users.filter((usr) => usr.id !== u.id);
+                                setUsers(next);
+                                await saveStoredUsers(next);
+                              }
+                            }}
+                            title="Delete user"
                             style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: 5,
-                              background: colors.panel2,
-                              border: `1px solid ${colors.border}`,
-                              borderRadius: 8,
-                              color: colors.text,
-                              padding: "7px 10px",
-                              fontWeight: 700,
-                              fontSize: 12,
-                              marginRight: 6,
+                              background: "none",
+                              border: "none",
+                              color: colors.muted,
+                              cursor: "pointer",
+                              padding: 4,
                             }}
                           >
-                            <Eye size={13} /> Projects
+                            <Trash2 size={14} />
                           </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => toggleActive(u)}
-                          style={{
-                            background: colors.panel2,
-                            border: `1px solid ${colors.border}`,
-                            borderRadius: 8,
-                            color: colors.text,
-                            padding: "7px 10px",
-                            fontWeight: 650,
-                            fontSize: 12,
-                          }}
-                        >
-                          {u.active ? "Disable" : "Enable"}
-                        </button>
+                        ) : null}
                       </td>
                     </tr>
                   );
@@ -444,7 +513,8 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
         </div>
       </div>
 
-      {viewUser && (
+      {/* Modal: Create User */}
+      {showCreateModal && (
         <div
           style={{
             position: "fixed",
@@ -455,89 +525,310 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
             zIndex: 60,
             padding: 16,
           }}
-          onClick={() => setViewUserId(null)}
+          onClick={() => setShowCreateModal(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
               ...card,
-              width: "min(720px, 100%)",
-              maxHeight: "85vh",
-              overflow: "auto",
-              padding: 20,
+              width: "100%",
+              maxWidth: 480,
+              padding: 24,
+              boxShadow: colors.shadow,
             }}
           >
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 6 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div className="disp" style={{ fontSize: 18, fontWeight: 800 }}>
+                Create New User Account
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(false)}
+                style={{ background: "none", border: "none", color: colors.muted, cursor: "pointer" }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={onCreate} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
-                <div className="disp" style={{ fontWeight: 800, fontSize: 18 }}>
-                  Assigned projects · {viewUser.name}
+                <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: "block", marginBottom: 4 }}>
+                  Full Name
+                </label>
+                <input
+                  placeholder="e.g. Sifat Rahman"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  required
+                  style={field}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: "block", marginBottom: 4 }}>
+                    Username
+                  </label>
+                  <input
+                    placeholder="e.g. sifat.rahman"
+                    value={form.username}
+                    onChange={(e) => setForm({ ...form, username: e.target.value })}
+                    required
+                    style={field}
+                  />
                 </div>
-                <div style={{ color: colors.muted, fontSize: 13, marginTop: 4 }}>
-                  {linkedProjects.length} client project
-                  {linkedProjects.length === 1 ? "" : "s"} linked via sync / team membership
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: "block", marginBottom: 4 }}>
+                    Role
+                  </label>
+                  <select
+                    value={form.role}
+                    onChange={(e) => setForm({ ...form, role: e.target.value })}
+                    style={field}
+                  >
+                    <option value="member">Team Member</option>
+                    <option value="admin">Admin / Team Lead</option>
+                    {canManageAdmins ? <option value="super_admin">Super Admin</option> : null}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: "block", marginBottom: 4 }}>
+                  Temporary Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="Password for sign in"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  required
+                  style={field}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: "block", marginBottom: 4 }}>
+                    GitHub Handle
+                  </label>
+                  <input
+                    placeholder="e.g. sifat-dev"
+                    value={form.githubUsername}
+                    onChange={(e) => setForm({ ...form, githubUsername: e.target.value })}
+                    style={field}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: colors.muted, display: "block", marginBottom: 4 }}>
+                    GitLab Handle
+                  </label>
+                  <input
+                    placeholder="e.g. sifat"
+                    value={form.gitlabUsername}
+                    onChange={(e) => setForm({ ...form, gitlabUsername: e.target.value })}
+                    style={field}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  style={{
+                    background: colors.panel2,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: 10,
+                    padding: "9px 14px",
+                    fontWeight: 650,
+                    color: colors.text,
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  style={{
+                    background: colors.accent,
+                    border: "none",
+                    borderRadius: 10,
+                    padding: "9px 18px",
+                    fontWeight: 700,
+                    color: colors.onAccent,
+                    cursor: "pointer",
+                  }}
+                >
+                  {creating ? "Creating…" : "Create User"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Direct Project Assignment */}
+      {assigningUser && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: colors.overlay,
+            display: "grid",
+            placeItems: "center",
+            zIndex: 60,
+            padding: 16,
+          }}
+          onClick={() => setAssigningUser(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              ...card,
+              width: "100%",
+              maxWidth: 620,
+              maxHeight: "85vh",
+              display: "flex",
+              flexDirection: "column",
+              padding: 22,
+              boxShadow: colors.shadow,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div>
+                <div className="disp" style={{ fontSize: 18, fontWeight: 800 }}>
+                  Assign Projects: {assigningUser.name}
+                </div>
+                <div style={{ fontSize: 12, color: colors.muted }}>
+                  Check the project phases this team member is authorized to view and update.
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => setViewUserId(null)}
-                aria-label="Close"
+                onClick={() => setAssigningUser(null)}
+                style={{ background: "none", border: "none", color: colors.muted, cursor: "pointer" }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Search filter for projects */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <div
                 style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
                   background: colors.panel2,
                   border: `1px solid ${colors.border}`,
                   borderRadius: 8,
-                  color: colors.muted,
-                  padding: 8,
-                  display: "inline-flex",
+                  padding: "6px 10px",
+                  flex: 1,
                 }}
               >
-                <X size={16} />
-              </button>
-            </div>
-            <input
-              value={projectQuery}
-              onChange={(e) => setProjectQuery(e.target.value)}
-              placeholder="Search assigned projects…"
-              style={{ ...field, margin: "12px 0" }}
-            />
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 420, overflow: "auto" }}>
-              {viewProjects.length === 0 ? (
-                <div
+                <Search size={14} color={colors.muted} />
+                <input
+                  placeholder="Filter projects or phases…"
+                  value={assignSearch}
+                  onChange={(e) => setAssignSearch(e.target.value)}
                   style={{
-                    padding: "18px 12px",
-                    textAlign: "center",
-                    color: colors.muted,
-                    fontSize: 13,
-                    border: `1px dashed ${colors.border}`,
-                    borderRadius: 10,
+                    background: "none",
+                    border: "none",
+                    outline: "none",
+                    color: colors.text,
+                    fontSize: 12.5,
+                    width: "100%",
                   }}
-                >
-                  No projects linked to this member yet. Run <strong>Sync from projects</strong> after
-                  they appear on project teams.
-                </div>
-              ) : (
-                viewProjects.map((cp) => (
-                  <div
-                    key={cp.id}
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: 10,
-                      border: `1px solid ${colors.border}`,
-                      background: colors.panel2,
-                    }}
-                  >
-                    <div style={{ fontWeight: 700 }}>{cp.projectName}</div>
-                    <div style={{ fontSize: 12, color: colors.muted, marginTop: 2 }}>
-                      {cp.phases.length} phase{cp.phases.length === 1 ? "" : "s"}
-                      {cp.phases.length
-                        ? ` · ${cp.phases
-                            .map((p) => p.phase || p.stack || "Phase")
-                            .slice(0, 4)
-                            .join(", ")}${cp.phases.length > 4 ? "…" : ""}`
-                        : ""}
-                    </div>
-                  </div>
-                ))
-              )}
+                />
+              </div>
+            </div>
+
+            {/* Scrollable list of phases */}
+            <div
+              style={{
+                flex: 1,
+                overflowY: "auto",
+                border: `1px solid ${colors.border}`,
+                borderRadius: 10,
+                padding: 10,
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+              }}
+            >
+              {projects
+                .filter((p) => {
+                  const q = assignSearch.trim().toLowerCase();
+                  if (!q) return true;
+                  return (
+                    p.projectName?.toLowerCase().includes(q) ||
+                    p.phase?.toLowerCase().includes(q) ||
+                    p.orderId?.toLowerCase().includes(q)
+                  );
+                })
+                .map((p) => {
+                  const isAssigned = (assigningUser.assignedProjectIds || [])
+                    .map(String)
+                    .includes(String(p.id));
+
+                  return (
+                    <label
+                      key={p.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "8px 10px",
+                        borderRadius: 8,
+                        background: isAssigned ? `${colors.accent}14` : colors.panel2,
+                        border: `1px solid ${isAssigned ? colors.accent : colors.border}`,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isAssigned}
+                        onChange={() => toggleProjectAssignment(assigningUser.id, p.id)}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700 }}>{p.projectName}</div>
+                        <div style={{ fontSize: 11.5, color: colors.muted }}>
+                          {p.phase || "Phase"} · {p.orderId || "Order"} · {p.stack || "Stack"}
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: isAssigned ? colors.delivered : colors.muted,
+                        }}
+                      >
+                        {isAssigned ? "Assigned" : "Not Assigned"}
+                      </span>
+                    </label>
+                  );
+                })}
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
+              <button
+                type="button"
+                onClick={() => setAssigningUser(null)}
+                style={{
+                  background: colors.accent,
+                  color: colors.onAccent,
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "8px 16px",
+                  fontWeight: 700,
+                  fontSize: 12.5,
+                  cursor: "pointer",
+                }}
+              >
+                Done
+              </button>
             </div>
           </div>
         </div>

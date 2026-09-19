@@ -20,10 +20,13 @@ import ClientProjectDetail from "./components/ClientProjectDetail";
 import DashboardAlerts from "./components/DashboardAlerts";
 import AnalyticsDashboard from "./components/AnalyticsDashboard";
 import UserProfile from "./components/UserProfile";
+import HeroMetricStrip from "./components/HeroMetricStrip";
 import {
   FONTS,
   PROFILES,
   PROFILE_SHORT,
+  formatProfileName,
+  extractProfiles,
   STACKS,
   emptyForm,
 } from "./lib/constants";
@@ -48,7 +51,15 @@ import {
   patchClientProject,
 } from "./lib/db";
 import { fetchMe, logout as apiLogout } from "./lib/auth";
-import { isAdminRole, isSuperAdmin } from "./lib/roles";
+import {
+  isAdminRole,
+  isSuperAdmin,
+  canDeleteProjects,
+  canViewFinancials,
+  canChangeDeliveryStatus,
+  canCreateProjects,
+} from "./lib/roles";
+import { exportProjectsToCsv, parseCsvToProjects } from "./lib/csvHelper";
 
 const SHEETS_POLL_MS = 2 * 60 * 1000;
 const SIDEBAR_STORAGE_KEY = "delivery-ops-sidebar";
@@ -96,12 +107,13 @@ export default function Dashboard() {
 
   const isAdmin = isAdminRole(currentUser);
   const canAssignAdmins = isSuperAdmin(currentUser);
+  const [memberOnlyView, setMemberOnlyView] = useState(false);
 
-  // Members only use the Projects workspace or profile — never dashboard/analytics/users.
+  // Only the Users Admin view is strictly restricted to admins
   useEffect(() => {
     if (!currentUser || isAdmin) return;
-    if (view === "dashboard" || view === "analytics" || view === "users") {
-      setView("clientProjects");
+    if (view === "users") {
+      setView("dashboard");
       setActiveClientProjectId(null);
     }
   }, [currentUser, isAdmin, view]);
@@ -212,6 +224,9 @@ export default function Dashboard() {
       return result;
     } catch (err) {
       console.error(err);
+      if (err.message?.includes("expired") || err.message?.includes("re-authenticate") || err.message?.includes("invalid_grant")) {
+        setGoogleStatus((prev) => ({ ...(prev || {}), connected: false }));
+      }
       if (!silent) setSaveState(err.message || "Sheet sync failed");
       throw err;
     } finally {
@@ -308,6 +323,9 @@ export default function Dashboard() {
               );
             } catch (err) {
               console.error(err);
+              if (err.message?.includes("expired") || err.message?.includes("re-authenticate") || err.message?.includes("invalid_grant")) {
+                setGoogleStatus((prev) => ({ ...(prev || {}), connected: false }));
+              }
               if (!cancelled) setSaveState(err.message || "Sheet sync failed");
             }
           }
@@ -362,21 +380,98 @@ export default function Dashboard() {
       await saveProjectsToDb(nextProjects);
       // Phase team edits roll up into client projects on the server
       await refreshClientProjects().catch(() => {});
-      setSaveState("Saved to projects.json");
+      setSaveState("Saved changes");
+      setTimeout(() => setSaveState(""), 2500);
     } catch (err) {
       console.error(err);
       setSaveState(err.message || "Save failed");
     }
   }
 
+
+  function handleInlineStatusChange(project, nextStatus) {
+    const status = nextStatus.toLowerCase() === "delivered" ? "Delivered" : "WIP";
+    const updated = {
+      ...project,
+      teamLeadStatus: status,
+      salesStatus: status,
+    };
+    persistProjects(projects.map((p) => (p.id === project.id ? updated : p)));
+  }
+
+  function handleBulkUpdateStatus(ids, status) {
+    const idSet = new Set(ids);
+    const formattedStatus = status.toLowerCase() === "delivered" ? "Delivered" : "WIP";
+    const next = projects.map((p) => {
+      if (idSet.has(p.id)) {
+        return {
+          ...p,
+          teamLeadStatus: formattedStatus,
+          salesStatus: formattedStatus,
+        };
+      }
+      return p;
+    });
+    persistProjects(next);
+    setSaveState(`Updated ${ids.length} projects to ${status}`);
+    setTimeout(() => setSaveState(""), 3000);
+  }
+
+  function handleBulkDelete(ids) {
+    if (!canDeleteProjects(currentUser)) return;
+    const idSet = new Set(ids);
+    const next = projects.filter((p) => !idSet.has(p.id));
+    persistProjects(next);
+    setSaveState(`Deleted ${ids.length} projects`);
+    setTimeout(() => setSaveState(""), 3000);
+  }
+
+  function handleResetFilters() {
+    setStackFilter("All");
+    setStatusFilter("All");
+    setProfileFilter("All");
+    setPossibilityFilter("All");
+    setSearchQuery("");
+  }
+
+  function handleExportCsv() {
+    exportProjectsToCsv(filtered, `delivery-ops-${selectedMonth}-${selectedYear}.csv`);
+  }
+
+  function handleImportCsv(csvString) {
+    try {
+      const imported = parseCsvToProjects(csvString);
+      if (imported.length === 0) {
+        alert("No valid project rows found in the CSV file.");
+        return;
+      }
+      const next = [...imported, ...projects];
+      persistProjects(next);
+      setSaveState(`Imported ${imported.length} projects from CSV`);
+      setTimeout(() => setSaveState(""), 3000);
+    } catch (err) {
+      alert("Failed to parse CSV: " + err.message);
+    }
+  }
+
   const monthFilteredProjects = useMemo(() => {
     return projects.filter((p) => {
+      if (!isAdmin && memberOnlyView && currentUser) {
+        const assignedIds = new Set((currentUser.assignedProjectIds || []).map(String));
+        const uName = (currentUser.name || "").toLowerCase();
+        const uUser = (currentUser.username || "").toLowerCase();
+        const inTeam = (p.teamMembers || []).some((m) => {
+          const mName = (m.name || "").toLowerCase();
+          return mName.includes(uName) || mName.includes(uUser);
+        });
+        if (!assignedIds.has(String(p.id)) && !inTeam) return false;
+      }
       const { month, year } = getFilterMonthYear(p);
       if (selectedMonth !== "All" && month !== selectedMonth) return false;
       if (selectedYear !== "All" && year !== selectedYear) return false;
       return true;
     });
-  }, [projects, selectedMonth, selectedYear]);
+  }, [projects, selectedMonth, selectedYear, isAdmin, memberOnlyView, currentUser]);
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -450,14 +545,52 @@ export default function Dashboard() {
     }).filter((d) => d.total > 0);
   }, [monthFilteredProjects]);
 
+  const allProfiles = useMemo(() => {
+    return extractProfiles(projects);
+  }, [projects]);
+
   const byProfile = useMemo(() => {
-    return PROFILES.map((pf) => {
-      const rows = monthFilteredProjects.filter((p) => p.profile === pf);
-      const value = rows.reduce((s, p) => s + Number(p.price || 0), 0);
-      const delivered = rows.filter((p) => statusOf(p) === "delivered").length;
-      return { profile: pf, name: PROFILE_SHORT[pf], total: rows.length, value, delivered };
+    const map = new Map();
+
+    // 1. Gather all profiles from projects in the active timeframe
+    for (const p of monthFilteredProjects) {
+      const pf = String(p.profile || "").trim();
+      if (!pf) continue;
+      if (!map.has(pf)) {
+        map.set(pf, {
+          profile: pf,
+          name: formatProfileName(pf),
+          total: 0,
+          value: 0,
+          delivered: 0,
+        });
+      }
+      const item = map.get(pf);
+      item.total += 1;
+      item.value += Number(p.price || 0);
+      if (statusOf(p) === "delivered") item.delivered += 1;
+    }
+
+    // 2. Ensure all known profiles from all synced projects are represented
+    for (const pf of allProfiles) {
+      if (!map.has(pf)) {
+        map.set(pf, {
+          profile: pf,
+          name: formatProfileName(pf),
+          total: 0,
+          value: 0,
+          delivered: 0,
+        });
+      }
+    }
+
+    // Sort: active profiles first (descending total orders, then value), then alphabetical
+    return Array.from(map.values()).sort((a, b) => {
+      if (b.total !== a.total) return b.total - a.total;
+      if (b.value !== a.value) return b.value - a.value;
+      return a.name.localeCompare(b.name);
     });
-  }, [monthFilteredProjects]);
+  }, [monthFilteredProjects, allProfiles]);
 
   const statusPie = useMemo(
     () => [
@@ -658,20 +791,20 @@ export default function Dashboard() {
     <div
       style={{
         background: isDark
-          ? `linear-gradient(160deg, ${colors.bg} 0%, ${colors.bgAccent} 55%, #10151D 100%)`
-          : `linear-gradient(160deg, ${colors.bg} 0%, #F2F5FA 48%, ${colors.bgAccent} 100%)`,
+          ? `radial-gradient(circle at 85% 15%, rgba(247, 206, 70, 0.08) 0%, transparent 50%), ${colors.bg}`
+          : `radial-gradient(circle at 85% 15%, rgba(247, 206, 70, 0.22) 0%, transparent 45%), radial-gradient(circle at 10% 90%, rgba(247, 206, 70, 0.14) 0%, transparent 40%), ${colors.bg}`,
         color: colors.text,
         minHeight: "100%",
-        fontFamily: "Manrope, sans-serif",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
       }}
     >
       <style>{FONTS}{`
         ::-webkit-scrollbar { height: 8px; width: 8px; }
         ::-webkit-scrollbar-thumb { background: ${colors.border}; border-radius: 8px; }
         .mono { font-family: 'IBM Plex Mono', monospace; }
-        .disp { font-family: 'Manrope', sans-serif; }
-        button { cursor: pointer; font-family: inherit; }
-        input, select { font-family: 'Manrope', sans-serif; }
+        .disp { font-family: 'Plus Jakarta Sans', sans-serif; }
+        button { cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
+        input, select { font-family: 'Plus Jakarta Sans', sans-serif; }
         .chip { transition: all .15s ease; }
         .project-link { color: ${colors.accent}; text-decoration: none; font-weight: 700; transition: color .15s ease; }
         .project-link:hover { color: ${isDark ? colors.accentSoft : "#3B4558"}; text-decoration: underline; }
@@ -683,6 +816,12 @@ export default function Dashboard() {
         .table-row:hover td { background: ${colors.rowHover} !important; }
         .analytics-kpis { display: grid; grid-template-columns: repeat(6, minmax(150px, 1fr)); gap: 12px; }
         .analytics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+        .bento-top-grid { display: grid; grid-template-columns: 310px 1fr; gap: 16px; margin-bottom: 16px; align-items: start; }
+        .schedule-task-grid { display: grid; grid-template-columns: 1.25fr 0.95fr; gap: 16px; margin-bottom: 16px; }
+        @media (max-width: 1060px) {
+          .bento-top-grid { grid-template-columns: 1fr !important; }
+          .schedule-task-grid { grid-template-columns: 1fr !important; }
+        }
         @media (max-width: 900px) {
           .charts-grid { grid-template-columns: 1fr !important; }
           .analytics-kpis { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
@@ -776,12 +915,12 @@ export default function Dashboard() {
               activeProject
                 ? activeProject.projectName
                 : view === "users" && isAdmin
-                  ? "User management"
+                  ? "User Management"
                   : view === "analytics" && isAdmin
                     ? "Analytics"
                     : view === "clientProjectDetail" && activeClientProject
                       ? activeClientProject.projectName
-                      : view === "clientProjects" || !isAdmin
+                      : view === "clientProjects"
                         ? "Projects"
                         : "Projects Ops Console"
             }
@@ -789,7 +928,7 @@ export default function Dashboard() {
             canWriteDb={canWriteDb}
             currentUser={currentUser}
             isAdmin={isAdmin}
-            showNewProject={isAdmin && view === "dashboard" && !activeProject}
+            showNewProject={isAdmin && (view === "dashboard" || view === "clientProjects") && !activeProject}
             collapsed={sidebarCollapsed}
             isMobile={isMobile}
             mobileOpen={mobileOpen}
@@ -798,6 +937,53 @@ export default function Dashboard() {
               else setSidebarCollapsed((c) => !c);
             }}
             onAdd={openAdd}
+            memberOnlyView={memberOnlyView}
+            onToggleMemberOnlyView={() => setMemberOnlyView((v) => !v)}
+            activeView={
+              view === "users" && isAdmin
+                ? "users"
+                : view === "analytics" && isAdmin
+                  ? "analytics"
+                  : view === "profile"
+                    ? "profile"
+                    : view === "clientProjectDetail" || activeProject
+                      ? "clientProjectDetail"
+                      : view === "clientProjects" || (!isAdmin && view !== "profile")
+                        ? "clientProjects"
+                        : "dashboard"
+            }
+            onNavigate={(dest) => {
+              if (dest === "dashboard") {
+                if (!isAdmin) {
+                  setView("clientProjects");
+                  setActiveClientProjectId(null);
+                  window.location.hash = "";
+                  return;
+                }
+                setView("dashboard");
+                setActiveClientProjectId(null);
+                window.location.hash = "";
+              } else if (dest === "analytics") {
+                if (!isAdmin) return;
+                setView("analytics");
+                setActiveClientProjectId(null);
+                window.location.hash = "";
+              } else if (dest === "clientProjects") {
+                setView("clientProjects");
+                setActiveClientProjectId(null);
+                window.location.hash = "";
+                refreshClientProjects();
+              } else if (dest === "users") {
+                if (!isAdmin) return;
+                setView("users");
+                setActiveClientProjectId(null);
+                window.location.hash = "";
+              } else if (dest === "profile") {
+                setView("profile");
+                setActiveClientProjectId(null);
+                window.location.hash = "";
+              }
+            }}
           />
 
           {view === "profile" ? (
@@ -813,6 +999,7 @@ export default function Dashboard() {
             <ProjectDetails
               project={activeProject}
               isAdmin={isAdmin}
+              currentUser={currentUser}
               includeStaff={canAssignAdmins}
               backLabel={
                 activeClientProjectId || view === "clientProjects" || view === "clientProjectDetail"
@@ -842,7 +1029,7 @@ export default function Dashboard() {
               }}
               onUpdate={(updated) => persistProjects(projects.map((p) => (p.id === updated.id ? updated : p)))}
               onDelete={(id) => {
-                if (!isAdmin) return;
+                if (!canDeleteProjects(currentUser)) return;
                 persistProjects(projects.filter((p) => p.id !== id));
                 window.location.hash = "";
                 if (activeClientProjectId) {
@@ -857,6 +1044,7 @@ export default function Dashboard() {
               clientProject={activeClientProject}
               phases={projects}
               isAdmin={isAdmin}
+              currentUser={currentUser}
               includeStaff={canAssignAdmins}
               onBack={() => {
                 setView("clientProjects");
@@ -885,7 +1073,7 @@ export default function Dashboard() {
                 window.location.hash = `#/project/${phaseId}`;
               }}
             />
-          ) : view === "clientProjects" || !isAdmin ? (
+          ) : view === "clientProjects" ? (
             <ClientProjects
               clientProjects={clientProjects}
               phases={projects}
@@ -896,7 +1084,14 @@ export default function Dashboard() {
               }}
             />
           ) : (
-            <div style={{ padding: "20px 16px 48px", maxWidth: 1400, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+            <div style={{ padding: "20px 24px 64px", maxWidth: 1440, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+              {/* Crextio Hero Greeting & Metric Counters */}
+              <HeroMetricStrip
+                kpis={kpis}
+                currentUser={currentUser}
+                canViewFinancials={canViewFinancials(currentUser)}
+              />
+
               <CalendarFilter
                 availableYears={availableYears}
                 selectedYear={selectedYear}
@@ -908,12 +1103,29 @@ export default function Dashboard() {
 
               <DashboardAlerts projects={projects} />
 
-              <KpiStrip kpis={kpis} />
-              <StackWorkload byStack={byStack} projects={monthFilteredProjects} />
-              <ProfileWorkload byProfile={byProfile} />
+              <KpiStrip kpis={kpis} canViewFinancials={canViewFinancials(currentUser)} />
+
+              {/* Workload Bento Grid: Department & Fiverr Profile side-by-side */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
+                  gap: 16,
+                  marginBottom: 16,
+                }}
+              >
+                <StackWorkload byStack={byStack} projects={monthFilteredProjects} />
+                <ProfileWorkload
+                  byProfile={byProfile}
+                  onSelectProfile={(pf) => setProfileFilter((curr) => curr === pf ? "All" : pf)}
+                />
+              </div>
+
               <ChartsSection byStack={byStack} statusPie={statusPie} timeline={timeline} />
 
               <ProjectFilters
+                projects={monthFilteredProjects}
+                allProfiles={allProfiles}
                 stackFilter={stackFilter}
                 statusFilter={statusFilter}
                 profileFilter={profileFilter}
@@ -922,12 +1134,15 @@ export default function Dashboard() {
                 onStatusChange={setStatusFilter}
                 onProfileChange={setProfileFilter}
                 onPossibilityChange={setPossibilityFilter}
+                onResetFilters={handleResetFilters}
               />
 
               <ProjectSearch
                 value={searchQuery}
                 onChange={setSearchQuery}
                 resultCount={filtered.length}
+                onExportCsv={handleExportCsv}
+                onImportCsv={handleImportCsv}
               />
 
               <ProjectsTable
@@ -939,6 +1154,9 @@ export default function Dashboard() {
                 onPageSizeChange={setPageSize}
                 onEdit={openEdit}
                 onDelete={setConfirmDelete}
+                onStatusChange={handleInlineStatusChange}
+                onBulkUpdateStatus={handleBulkUpdateStatus}
+                onBulkDelete={handleBulkDelete}
                 onPossibilityChange={(project, value) => {
                   const next = normalizePossibility(value);
                   if (normalizePossibility(project.possibility) === next) return;
@@ -947,6 +1165,9 @@ export default function Dashboard() {
                   );
                 }}
                 canManage={isAdmin}
+                canDelete={canDeleteProjects(currentUser)}
+                canViewFinancials={canViewFinancials(currentUser)}
+                canChangeStatus={canChangeDeliveryStatus(currentUser)}
               />
             </div>
           )}
@@ -957,6 +1178,7 @@ export default function Dashboard() {
         <ProjectFormModal
           editingId={editingId}
           form={form}
+          availableProfiles={allProfiles}
           onChange={setForm}
           onClose={() => setModalOpen(false)}
           onSave={saveForm}

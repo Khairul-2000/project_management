@@ -4,7 +4,7 @@ import {
   Trash2, Plus, Clock, Clock3, FileText, CheckCircle2, AlertTriangle, Users, ExternalLink,
   Pencil, Check, X
 } from "lucide-react";
-import { STACK_COLOR, PROFILE_SHORT, STACKS } from "../lib/constants";
+import { STACK_COLOR, PROFILE_SHORT, formatProfileName, STACKS } from "../lib/constants";
 import { useTheme } from "../lib/theme";
 import { listTeamDirectory } from "../lib/auth";
 import {
@@ -30,7 +30,14 @@ import {
 } from "../lib/utils";
 import { PROJECT_ROLES, createNote, memberRoleLabel, mergeMemberRoles, normalizeMemberRoles, normalizeNotes, normalizeTeamMember, replaceMemberRoles, supervisorNameFromTeam } from "../lib/projectMetadata";
 import RoleMultiSelect from "./RoleMultiSelect";
-import { roleLabel } from "../lib/roles";
+import {
+  roleLabel,
+  canDeleteProjects,
+  canViewFinancials,
+  canChangeDeliveryStatus,
+  canEditSchedule,
+} from "../lib/roles";
+import { GitHubIcon, GitLabIcon } from "./GitIcons";
 
 function getInitials(name) {
   return name
@@ -64,9 +71,22 @@ function defaultRoleForProject(project) {
 
 const ROLES = PROJECT_ROLES;
 
-export default function ProjectDetails({ project, onBack, onUpdate, onDelete, isAdmin = false, includeStaff = false, backLabel = "Back to Projects" }) {
+export default function ProjectDetails({
+  project,
+  onBack,
+  onUpdate,
+  onDelete,
+  isAdmin = false,
+  currentUser = null,
+  includeStaff = false,
+  backLabel = "Back to Projects",
+}) {
   const { colors, isDark } = useTheme();
   const COLORS = colors;
+  const canDelete = canDeleteProjects(currentUser);
+  const canSeePrice = canViewFinancials(currentUser);
+  const canChangeStatus = canChangeDeliveryStatus(currentUser);
+  const canChangeSchedule = canEditSchedule(currentUser);
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
   const [newMemberRoles, setNewMemberRoles] = useState(() => defaultRoleForProject(project));
@@ -439,8 +459,14 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
         >
           <ArrowLeft size={16} /> {backLabel}
         </button>
-        <div style={{ color: COLORS.muted, fontSize: 13 }}>
-          Console &nbsp;/&nbsp; {backLabel.includes("Dashboard") ? "Dashboard" : "Projects"} &nbsp;/&nbsp; <span style={{ color: COLORS.text, fontWeight: 500 }}>{project.projectName}</span>
+        <div style={{ color: COLORS.muted, fontSize: 13, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <span>Projects</span>
+          <span>/</span>
+          <span style={{ color: COLORS.text, fontWeight: 700 }}>{project.projectName}</span>
+          <span>/</span>
+          <span style={{ color: COLORS.muted, background: COLORS.panel2, padding: "2px 8px", borderRadius: 6, border: `1px solid ${COLORS.border}`, fontSize: 12, fontWeight: 650 }}>
+            {project.phase || "Phase"}
+          </span>
         </div>
       </div>
 
@@ -577,7 +603,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
         <div style={{ textAlign: "right" }}>
           <div style={{ color: COLORS.muted, fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Project Budget</div>
           <div className="disp" style={{ fontSize: 32, fontWeight: 700, color: COLORS.delivered, marginTop: 4 }}>
-            {fmtMoney(project.price)}
+            {canSeePrice ? fmtMoney(project.price) : "—"}
           </div>
         </div>
       </div>
@@ -604,7 +630,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
                 { label: "Sales Person", value: project.salesPerson, Icon: User },
                 { label: "Team", value: project.teamName || "—", Icon: Users },
                 { label: "Intake Date", value: project.date, Icon: Calendar },
-                { label: "Fiverr Profile", value: PROFILE_SHORT[project.profile] || project.profile, Icon: Tag },
+                { label: "Fiverr Profile", value: formatProfileName(project.profile), Icon: Tag },
                 { label: "Sheet Dateline", value: project.dateline || "—", Icon: Clock },
                 { label: "Supervisor", value: project.supervisor || "—", Icon: User },
                 { label: "Shift", value: project.shift || "—", Icon: Clock3 },
@@ -640,11 +666,23 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
               )}
               {isAdmin ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
-                  <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.muted }}>
-                    <ExternalLink size={16} />
+                  <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.text, display: "grid", placeItems: "center" }}>
+                    <GitHubIcon size={16} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11.5, color: COLORS.muted }}>GitHub Repository</div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ fontSize: 11.5, color: COLORS.muted }}>GitHub Repository</div>
+                      {githubUrlDraft ? (
+                        <a
+                          href={githubUrlDraft}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ fontSize: 11.5, color: COLORS.accent, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 3 }}
+                        >
+                          Open <ExternalLink size={11} />
+                        </a>
+                      ) : null}
+                    </div>
                     <input
                       value={githubUrlDraft}
                       onChange={(e) => setGithubUrlDraft(e.target.value)}
@@ -654,7 +692,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
                           onUpdate({ ...project, githubUrl: val });
                         }
                       }}
-                      placeholder="https://github.com/..."
+                      placeholder="https://github.com/org/repo/..."
                       style={{
                         width: "100%",
                         background: COLORS.panel2,
@@ -670,8 +708,8 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
                 </div>
               ) : project.githubUrl && (
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
-                  <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.muted }}>
-                    <ExternalLink size={16} />
+                  <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.text, display: "grid", placeItems: "center" }}>
+                    <GitHubIcon size={16} />
                   </div>
                   <div>
                     <div style={{ fontSize: 11.5, color: COLORS.muted }}>GitHub Repository</div>
@@ -688,11 +726,23 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
               )}
               {isAdmin ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
-                  <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.muted }}>
-                    <ExternalLink size={16} />
+                  <div style={{ background: "rgba(252, 109, 38, 0.12)", borderRadius: 8, padding: 8, display: "grid", placeItems: "center" }}>
+                    <GitLabIcon size={16} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11.5, color: COLORS.muted }}>GitLab Repository</div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ fontSize: 11.5, color: COLORS.muted }}>GitLab Repository</div>
+                      {gitlabUrlDraft ? (
+                        <a
+                          href={gitlabUrlDraft}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{ fontSize: 11.5, color: COLORS.accent, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 3 }}
+                        >
+                          Open <ExternalLink size={11} />
+                        </a>
+                      ) : null}
+                    </div>
                     <input
                       value={gitlabUrlDraft}
                       onChange={(e) => setGitlabUrlDraft(e.target.value)}
@@ -702,7 +752,7 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
                           onUpdate({ ...project, gitlabUrl: val });
                         }
                       }}
-                      placeholder="https://gitlab.com/..."
+                      placeholder="https://gitlab.com/org/repo/..."
                       style={{
                         width: "100%",
                         background: COLORS.panel2,
@@ -718,8 +768,8 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
                 </div>
               ) : project.gitlabUrl && (
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
-                  <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.muted }}>
-                    <ExternalLink size={16} />
+                  <div style={{ background: "rgba(252, 109, 38, 0.12)", borderRadius: 8, padding: 8, display: "grid", placeItems: "center" }}>
+                    <GitLabIcon size={16} />
                   </div>
                   <div>
                     <div style={{ fontSize: 11.5, color: COLORS.muted }}>GitLab Repository</div>
@@ -1143,8 +1193,12 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
               <div>
                 <label style={{ fontSize: 12, color: COLORS.muted, display: "block", marginBottom: 6, fontWeight: 500 }}>Team Lead Status</label>
                 <select 
+                  disabled={!canChangeStatus}
                   value={project.teamLeadStatus || "WIP"} 
-                  onChange={(e) => handleStatusChange("teamLeadStatus", e.target.value)}
+                  onChange={(e) => {
+                    if (!canChangeStatus) return;
+                    handleStatusChange("teamLeadStatus", e.target.value);
+                  }}
                   style={{ 
                     width: "100%", 
                     background: COLORS.panel2, 
@@ -1153,7 +1207,8 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
                     padding: "9px 11px", 
                     color: COLORS.text, 
                     fontSize: 13.5,
-                    cursor: "pointer"
+                    cursor: canChangeStatus ? "pointer" : "default",
+                    opacity: canChangeStatus ? 1 : 0.8,
                   }}
                 >
                   <option value="WIP">WIP</option>
@@ -1164,33 +1219,35 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
           </div>
 
           {/* DANGER ZONE */}
-          <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 20, padding: 20 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 600, color: COLORS.late, margin: "0 0 8px", fontFamily: "Manrope, sans-serif" }}>Danger Zone</h3>
-            <p style={{ color: COLORS.muted, fontSize: 12.5, margin: "0 0 14px" }}>Remove this project permanently from the delivery database.</p>
-            <button 
-              onClick={() => {
-                if (window.confirm(`Are you sure you want to delete ${project.projectName}?`)) {
-                  onDelete(project.id);
-                }
-              }} 
-              style={{ 
-                width: "100%", 
-                background: COLORS.late + "22", 
-                color: COLORS.late, 
-                border: `1px solid ${COLORS.late}44`, 
-                borderRadius: 8, 
-                padding: "10px 0", 
-                fontWeight: 600, 
-                fontSize: 13,
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = COLORS.late; e.currentTarget.style.color = "#1a0d0d"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = COLORS.late + "22"; e.currentTarget.style.color = COLORS.late; }}
-            >
-              Delete Project
-            </button>
-          </div>
+          {onDelete && canDelete ? (
+            <div style={{ background: COLORS.panel, border: `1px solid ${COLORS.border}`, borderRadius: 20, padding: 20 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 600, color: COLORS.late, margin: "0 0 8px", fontFamily: "Manrope, sans-serif" }}>Danger Zone</h3>
+              <p style={{ color: COLORS.muted, fontSize: 12.5, margin: "0 0 14px" }}>Remove this project permanently from the delivery database.</p>
+              <button 
+                onClick={() => {
+                  if (window.confirm(`Are you sure you want to delete ${project.projectName}?`)) {
+                    onDelete(project.id);
+                  }
+                }} 
+                style={{ 
+                  width: "100%", 
+                  background: COLORS.late + "22", 
+                  color: COLORS.late, 
+                  border: `1px solid ${COLORS.late}44`, 
+                  borderRadius: 8, 
+                  padding: "10px 0", 
+                  fontWeight: 600, 
+                  fontSize: 13,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = COLORS.late; e.currentTarget.style.color = "#1a0d0d"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = COLORS.late + "22"; e.currentTarget.style.color = COLORS.late; }}
+              >
+                Delete Project
+              </button>
+            </div>
+          ) : null}
         </div>
 
         {/* RIGHT COLUMN: WORKSPACE */}

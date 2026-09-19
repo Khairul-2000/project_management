@@ -5,7 +5,7 @@ import {
   isGoogleConfigured,
   syncProjectsFromSheet,
 } from "./googleSheets.js";
-import { requireAdmin, requireUser } from "./authApiMiddleware.js";
+import { requireAdmin, requireSuperAdmin, requireUser } from "./authApiMiddleware.js";
 import { pathnameOf, readBody, sendJson } from "./httpHelpers.js";
 
 function redirect(res, location) {
@@ -93,7 +93,7 @@ async function handle(req, res, pathname) {
   }
 
   if (pathname === "/api/google/auth" && req.method === "GET") {
-    if (!requireAdmin(req, res)) return;
+    if (!requireSuperAdmin(req, res)) return;
     if (!isGoogleConfigured()) {
       sendJson(res, 400, {
         error: "Google OAuth is not configured. Copy .env.example to .env and add client credentials.",
@@ -132,20 +132,32 @@ async function handle(req, res, pathname) {
 
   if (pathname === "/api/sheets/sync" && (req.method === "POST" || req.method === "GET")) {
     if (req.method === "POST") await readBody(req).catch(() => "");
-    if (!requireAdmin(req, res)) return;
+    if (!requireSuperAdmin(req, res)) return;
     if (!isGoogleConfigured()) {
       sendJson(res, 400, { error: "Google OAuth is not configured in .env" });
       return;
     }
-    const result = await syncProjectsFromSheet();
-    sendJson(res, 200, {
-      ok: true,
-      count: result.count,
-      lastSyncAt: result.lastSyncAt,
-      sheetTitle: result.sheetTitle,
-      sheetTitles: result.sheetTitles,
-      projects: result.projects,
-    });
+    try {
+      const result = await syncProjectsFromSheet();
+      sendJson(res, 200, {
+        ok: true,
+        count: result.count,
+        lastSyncAt: result.lastSyncAt,
+        sheetTitle: result.sheetTitle,
+        sheetTitles: result.sheetTitles,
+        projects: result.projects,
+      });
+    } catch (err) {
+      const msg = String(err.message || "");
+      if (msg.includes("invalid_grant")) {
+        sendJson(res, 401, {
+          error: "Google authorization expired. Please click 'Reconnect Google' to re-authenticate.",
+          code: "INVALID_GRANT",
+        });
+      } else {
+        sendJson(res, 500, { error: msg || "Sheet sync failed" });
+      }
+    }
     return;
   }
 

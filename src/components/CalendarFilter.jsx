@@ -14,12 +14,12 @@ export default function CalendarFilter({
 
   function segBtn(active) {
     return {
-      background: active ? colors.accent : "transparent",
-      color: active ? colors.onAccent : colors.muted,
+      background: active ? (colors.accent || "#1A1B20") : "transparent",
+      color: active ? "#FFFFFF" : colors.muted,
       border: "none",
-      borderRadius: 10,
-      padding: "6px 11px",
-      fontSize: 12.5,
+      borderRadius: 9999,
+      padding: "6px 14px",
+      fontSize: 12,
       fontWeight: 650,
       cursor: "pointer",
       transition: "all 0.15s ease",
@@ -51,8 +51,8 @@ export default function CalendarFilter({
             style={{
               display: "flex",
               background: colors.panel2,
-              borderRadius: 12,
-              padding: 4,
+              borderRadius: 9999,
+              padding: 3,
               border: `1px solid ${colors.border}`,
             }}
           >
@@ -77,8 +77,8 @@ export default function CalendarFilter({
             style={{
               display: "flex",
               background: colors.panel2,
-              borderRadius: 12,
-              padding: 4,
+              borderRadius: 9999,
+              padding: 3,
               border: `1px solid ${colors.border}`,
               overflowX: "auto",
               maxWidth: "100%",

@@ -5,7 +5,7 @@ import { getRequestUser } from "./authApiMiddleware.js";
 import { pathnameOf, readJsonBody, sendJson } from "./httpHelpers.js";
 import { syncAssignmentsFromProjects } from "./usersStore.js";
 import { interconnectClientAndPhases } from "./clientProjectsStore.js";
-import { isAdminRole } from "./roles.js";
+import { isAdminRole, isSuperAdmin } from "./roles.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -45,24 +45,38 @@ function filterForUser(projects, user) {
   return projects.filter((p) => allowed.has(String(p.id)));
 }
 
-function assertMemberWriteAllowed(user, nextProjects, prevProjects) {
-  if (isAdminRole(user)) return;
-  const allowed = new Set((user.assignedProjectIds || []).map(String));
+function assertWriteAllowed(user, nextProjects, prevProjects) {
   const prevById = new Map(prevProjects.map((p) => [String(p.id), p]));
   const nextById = new Map(nextProjects.map((p) => [String(p.id), p]));
 
-  // Members cannot add/remove projects
-  if (prevProjects.length !== nextProjects.length) {
-    throw new Error("Members cannot add or remove projects");
-  }
+  // Project deletion is strictly restricted to Super Admin
   for (const id of prevById.keys()) {
-    if (!nextById.has(id)) throw new Error("Members cannot delete projects");
+    if (!nextById.has(id)) {
+      if (!isSuperAdmin(user)) {
+        throw new Error("Only super admin can delete projects or phases");
+      }
+    }
   }
+
+  if (isAdminRole(user)) return;
+
+  const allowed = new Set((user.assignedProjectIds || []).map(String));
+
+  // Members cannot add projects
+  if (nextProjects.length > prevProjects.length) {
+    throw new Error("Members cannot add projects");
+  }
+
   for (const [id, next] of nextById) {
     if (!allowed.has(id)) {
       const prev = prevById.get(id);
       if (JSON.stringify(prev) !== JSON.stringify(next)) {
         throw new Error("Members can only edit assigned projects");
+      }
+    } else {
+      const prev = prevById.get(id);
+      if (prev && String(prev.price) !== String(next.price)) {
+        throw new Error("Members cannot edit project prices");
       }
     }
   }
@@ -115,7 +129,7 @@ async function handle(req, res) {
     }
     const prev = readProjects();
     try {
-      assertMemberWriteAllowed(user, body, prev);
+      assertWriteAllowed(user, body, prev);
     } catch (err) {
       sendJson(res, 403, { error: err.message });
       return;

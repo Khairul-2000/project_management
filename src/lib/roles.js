@@ -21,9 +21,93 @@ export function isAdminRole(userOrRole) {
   return normalized === "admin" || normalized === "super_admin";
 }
 
+export function isMemberRole(userOrRole) {
+  const role = typeof userOrRole === "object" ? userOrRole?.role : userOrRole;
+  return normalizeAccountRole(role) === "member";
+}
+
 export function roleLabel(role) {
   const normalized = normalizeAccountRole(role);
-  if (normalized === "super_admin") return "Super admin";
-  if (normalized === "admin") return "Admin";
-  return "Member";
+  if (normalized === "super_admin") return "Super Admin";
+  if (normalized === "admin") return "Admin / Team Lead";
+  return "Team Member";
+}
+
+export function roleBadgeColor(role, colors) {
+  const normalized = normalizeAccountRole(role);
+  if (normalized === "super_admin") return colors?.late || "#E24B4A";
+  if (normalized === "admin") return colors?.wip || "#D9A117";
+  return colors?.delivered || "#1F9D63";
+}
+
+export function canConnectGoogle(user) {
+  return isSuperAdmin(user);
+}
+
+export function canSyncGoogle(user) {
+  return isSuperAdmin(user);
+}
+
+export function canManageAdmins(user) {
+  return isSuperAdmin(user);
+}
+
+export function canManageUsers(user) {
+  return isAdminRole(user);
+}
+
+export function canDeleteProjects(user) {
+  return isSuperAdmin(user);
+}
+
+export function canCreateProjects(user) {
+  return isAdminRole(user);
+}
+
+export function canEditProjects(user) {
+  return isAdminRole(user);
+}
+
+export function canEditPricing(user) {
+  return isAdminRole(user);
+}
+
+export function canViewFinancials(user) {
+  return isAdminRole(user);
+}
+
+export function canChangeDeliveryStatus(user) {
+  return isAdminRole(user);
+}
+
+export function canEditSchedule(user) {
+  return isAdminRole(user);
+}
+
+export function canExportFullBackup(user) {
+  return isSuperAdmin(user);
+}
+
+export function canImportFullBackup(user) {
+  return isSuperAdmin(user);
+}
+
+export function canExportCsv(user) {
+  return isAdminRole(user);
+}
+
+export function canImportCsv(user) {
+  return isAdminRole(user);
+}
+
+export function canEditChecklists(user) {
+  return Boolean(user);
+}
+
+export function canLinkPhaseRepo(user) {
+  return Boolean(user);
+}
+
+export function canLinkGlobalRepo(user) {
+  return isAdminRole(user);
 }

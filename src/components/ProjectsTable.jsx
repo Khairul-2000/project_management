@@ -1,6 +1,19 @@
 import { useMemo, useState } from "react";
-import { Pencil, Trash2, ExternalLink, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import { PROFILE_SHORT, STACK_COLOR, PAGE_SIZE_OPTIONS } from "../lib/constants";
+import {
+  Pencil,
+  Trash2,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  CheckCircle2,
+  Clock3,
+  Download,
+  X,
+} from "lucide-react";
+import { PROFILE_SHORT, formatProfileName, STACK_COLOR, PAGE_SIZE_OPTIONS } from "../lib/constants";
 import {
   getProjectStack,
   statusOf,
@@ -10,12 +23,35 @@ import {
   projectDatelineTitle,
   hasAdminSchedule,
   isDatelineOverdue,
+  getDaysLeft,
+  formatDaysLeft,
 } from "../lib/utils";
 import { useTheme } from "../lib/theme";
 import StatusBadge from "./StatusBadge";
+import { GitRepoBadges } from "./GitIcons";
+import { exportProjectsToCsv } from "../lib/csvHelper";
+
+function getInitials(name) {
+  return String(name || "")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function getAvatarBg(name) {
+  const hues = [210, 25, 270, 160, 45, 340];
+  let hash = 0;
+  for (let i = 0; i < (name || "").length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = hues[Math.abs(hash) % hues.length];
+  return `hsl(${hue}, 65%, 45%)`;
+}
 
 export default function ProjectsTable({
-  projects,
+  projects = [],
   totalCount,
   currentPage,
   pageSize,
@@ -24,18 +60,68 @@ export default function ProjectsTable({
   onEdit,
   onDelete,
   onPossibilityChange,
+  onStatusChange,
+  onBulkUpdateStatus,
+  onBulkDelete,
   canManage = true,
+  canDelete = false,
+  canViewFinancials = true,
+  canChangeStatus = true,
 }) {
   const { colors, card } = useTheme();
-  // null | "yes-first" | "no-first"
-  const [possibilitySort, setPossibilitySort] = useState(null);
+
+  // Multi-column sort: { key: string, dir: "asc" | "desc" | null }
+  const [sortConfig, setSortConfig] = useState({ key: "date", dir: "desc" });
+
+  // Multi-select for bulk actions
+  const [selectedIds, setSelectedIds] = useState(new Set());
+
+  function handleSort(key) {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        if (prev.dir === "asc") return { key, dir: "desc" };
+        if (prev.dir === "desc") return { key: null, dir: null };
+        return { key, dir: "asc" };
+      }
+      return { key, dir: "asc" };
+    });
+    onPageChange(1);
+  }
 
   const sortedProjects = useMemo(() => {
-    if (!possibilitySort) return projects;
-    const rank = (p) => (normalizePossibility(p.possibility) === "Yes" ? 1 : 0);
-    const dir = possibilitySort === "yes-first" ? -1 : 1;
-    return [...projects].sort((a, b) => (rank(a) - rank(b)) * dir);
-  }, [projects, possibilitySort]);
+    if (!sortConfig.key || !sortConfig.dir) return projects;
+
+    const dir = sortConfig.dir === "asc" ? 1 : -1;
+    return [...projects].sort((a, b) => {
+      switch (sortConfig.key) {
+        case "date": {
+          const da = new Date(a.date || 0).getTime() || 0;
+          const db = new Date(b.date || 0).getTime() || 0;
+          return (da - db) * dir;
+        }
+        case "projectName":
+          return (a.projectName || "").localeCompare(b.projectName || "") * dir;
+        case "stack":
+          return getProjectStack(a).localeCompare(getProjectStack(b)) * dir;
+        case "price":
+          return ((Number(a.price) || 0) - (Number(b.price) || 0)) * dir;
+        case "status":
+          return statusOf(a).localeCompare(statusOf(b)) * dir;
+        case "possibility": {
+          const pa = normalizePossibility(a.possibility) === "Yes" ? 1 : 0;
+          const pb = normalizePossibility(b.possibility) === "Yes" ? 1 : 0;
+          return (pa - pb) * dir;
+        }
+        case "dateline": {
+          const la = getDaysLeft(a) ?? 9999;
+          const lb = getDaysLeft(b) ?? 9999;
+          return (la - lb) * dir;
+        }
+        default:
+          return 0;
+      }
+    });
+  }, [projects, sortConfig]);
 
   const totalPages = Math.max(1, Math.ceil(sortedProjects.length / pageSize));
   const safePage = Math.min(currentPage, totalPages);
@@ -48,13 +134,27 @@ export default function ProjectsTable({
   const rangeStart = sortedProjects.length === 0 ? 0 : (safePage - 1) * pageSize + 1;
   const rangeEnd = Math.min(safePage * pageSize, sortedProjects.length);
 
-  function cyclePossibilitySort() {
-    setPossibilitySort((prev) => {
-      if (prev === null) return "yes-first";
-      if (prev === "yes-first") return "no-first";
-      return null;
-    });
-    onPageChange(1);
+  // Selection handlers
+  const allPageSelected = pageRows.length > 0 && pageRows.every((p) => selectedIds.has(p.id));
+  const somePageSelected = pageRows.some((p) => selectedIds.has(p.id));
+
+  function toggleSelectAllPage() {
+    if (allPageSelected) {
+      const next = new Set(selectedIds);
+      pageRows.forEach((p) => next.delete(p.id));
+      setSelectedIds(next);
+    } else {
+      const next = new Set(selectedIds);
+      pageRows.forEach((p) => next.add(p.id));
+      setSelectedIds(next);
+    }
+  }
+
+  function toggleSelectRow(id) {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedIds(next);
   }
 
   function getPageNumbers() {
@@ -76,7 +176,7 @@ export default function ProjectsTable({
     padding: "10px 8px",
     color: colors.muted,
     fontWeight: 700,
-    fontSize: 10,
+    fontSize: 10.5,
     textTransform: "uppercase",
     letterSpacing: 0.3,
     whiteSpace: "nowrap",
@@ -84,7 +184,7 @@ export default function ProjectsTable({
   };
 
   const td = {
-    padding: "9px 8px",
+    padding: "10px 8px",
     verticalAlign: "middle",
     fontSize: 12,
   };
@@ -95,100 +195,252 @@ export default function ProjectsTable({
     whiteSpace: "nowrap",
   };
 
-  const headers = [
-    { label: "Date", style: { width: 78 } },
-    { label: "Sales", style: { width: "10%" } },
-    { label: "Team", style: { width: "7%" } },
-    { label: "Dept", style: { width: "8%" } },
-    { label: "Profile", style: { width: "7%" } },
-    { label: "Project", style: { width: "12%" } },
-    { label: "Phase", style: { width: "10%" } },
-    { label: "Possible", style: { width: 88 }, sortable: "possibility" },
-    { label: "Order", style: { width: "9%" } },
-    { label: "Price", style: { width: 72 } },
-    { label: "Dateline", style: { width: "8%" } },
-    { label: "Status", style: { width: 78 } },
-    ...(canManage ? [{ label: "Actions", style: { width: 84, textAlign: "right" } }] : []),
-  ];
+  function renderSortHeader(label, sortKey, width) {
+    const isSorted = sortConfig.key === sortKey;
+    const Icon = isSorted
+      ? sortConfig.dir === "asc"
+        ? ArrowUp
+        : ArrowDown
+      : ArrowUpDown;
 
-  const SortIcon =
-    possibilitySort === "yes-first" ? ArrowDown : possibilitySort === "no-first" ? ArrowUp : ArrowUpDown;
-
-  function possibilityStyles(isYes) {
-    if (isYes) {
-      return {
-        background: `${colors.delivered}22`,
-        border: `1px solid ${colors.delivered}66`,
-        color: colors.delivered,
-      };
-    }
-    // No: neutral only — no second accent color
-    return {
-      background: colors.panel2,
-      border: `1px solid ${colors.border}`,
-      color: colors.muted,
-    };
+    return (
+      <th key={sortKey || label} style={{ ...th, width }}>
+        {sortKey ? (
+          <button
+            type="button"
+            onClick={() => handleSort(sortKey)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              background: "none",
+              border: "none",
+              padding: 0,
+              color: isSorted ? colors.accent : colors.muted,
+              fontWeight: 700,
+              fontSize: 10.5,
+              textTransform: "uppercase",
+              letterSpacing: 0.3,
+              cursor: "pointer",
+            }}
+          >
+            {label}
+            <Icon size={12} strokeWidth={isSorted ? 2.5 : 1.75} />
+          </button>
+        ) : (
+          label
+        )}
+      </th>
+    );
   }
 
   return (
     <>
-      <div style={{ ...card, borderRadius: 16, overflow: "hidden" }}>
+      {/* Floating / Embedded Bulk Actions Bar */}
+      {selectedIds.size > 0 && (
+        <div
+          style={{
+            ...card,
+            padding: "8px 18px",
+            marginBottom: 14,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 12,
+            background: "#1A1B20",
+            color: "#FFFFFF",
+            borderRadius: 9999,
+            border: "1px solid #2B2D38",
+            boxShadow: colors.shadow,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span
+              style={{
+                background: colors.accentSoft || "#F7CE46",
+                color: "#1A1B20",
+                padding: "2px 9px",
+                borderRadius: 9999,
+                fontSize: 12,
+                fontWeight: 800,
+              }}
+            >
+              {selectedIds.size}
+            </span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#FFFFFF" }}>projects selected</span>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            {onBulkUpdateStatus && canChangeStatus ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onBulkUpdateStatus(Array.from(selectedIds), "Delivered");
+                    setSelectedIds(new Set());
+                  }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "6px 14px",
+                    borderRadius: 9999,
+                    border: `1px solid ${colors.delivered}55`,
+                    background: `${colors.delivered}22`,
+                    color: colors.delivered,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  <CheckCircle2 size={13} /> Mark Delivered
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onBulkUpdateStatus(Array.from(selectedIds), "WIP");
+                    setSelectedIds(new Set());
+                  }}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "6px 14px",
+                    borderRadius: 9999,
+                    border: `1px solid ${colors.wip}55`,
+                    background: `${colors.wip}22`,
+                    color: colors.wip,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  <Clock3 size={13} /> Mark WIP
+                </button>
+              </>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => {
+                const selectedProjects = projects.filter((p) => selectedIds.has(p.id));
+                exportProjectsToCsv(selectedProjects, `selected-projects-${Date.now()}.csv`);
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "6px 14px",
+                borderRadius: 9999,
+                border: "1px solid rgba(255,255,255,0.2)",
+                background: "rgba(255,255,255,0.1)",
+                color: "#FFFFFF",
+                fontSize: 12,
+                fontWeight: 650,
+                cursor: "pointer",
+              }}
+            >
+              <Download size={13} /> Export CSV
+            </button>
+
+            {onBulkDelete && canDelete ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`Delete ${selectedIds.size} selected projects?`)) {
+                    onBulkDelete(Array.from(selectedIds));
+                    setSelectedIds(new Set());
+                  }
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "6px 14px",
+                  borderRadius: 9999,
+                  border: `1px solid ${colors.late}55`,
+                  background: `${colors.late}22`,
+                  color: colors.late,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                <Trash2 size={13} /> Delete
+              </button>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#8E92A0",
+                padding: 4,
+                cursor: "pointer",
+                display: "grid",
+                placeItems: "center",
+              }}
+              title="Clear selection"
+            >
+              <X size={15} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Table */}
+      <div style={{ ...card, borderRadius: 24, overflow: "hidden" }}>
         <div style={{ width: "100%", overflowX: "auto" }}>
           <table
             style={{
               width: "100%",
-              minWidth: 1040,
+              minWidth: 1180,
               tableLayout: "fixed",
               borderCollapse: "collapse",
             }}
           >
             <thead>
               <tr style={{ background: colors.panel2 }}>
-                {headers.map((h) => (
-                  <th key={h.label} style={{ ...th, ...h.style }}>
-                    {h.label === "Actions" ? (
-                      ""
-                    ) : h.sortable === "possibility" ? (
-                      <button
-                        type="button"
-                        onClick={cyclePossibilitySort}
-                        title={
-                          possibilitySort === "yes-first"
-                            ? "Sorted: Yes first (click for No first)"
-                            : possibilitySort === "no-first"
-                              ? "Sorted: No first (click to clear)"
-                              : "Sort by Possible (Yes / No)"
-                        }
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                          background: "none",
-                          border: "none",
-                          padding: 0,
-                          color: possibilitySort ? colors.text : colors.muted,
-                          fontWeight: 700,
-                          fontSize: 10,
-                          textTransform: "uppercase",
-                          letterSpacing: 0.3,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Possible
-                        <SortIcon size={12} />
-                      </button>
-                    ) : (
-                      h.label
-                    )}
-                  </th>
-                ))}
+                <th style={{ ...th, width: 36, textAlign: "center", padding: "10px 4px" }}>
+                  <input
+                    type="checkbox"
+                    checked={allPageSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = somePageSelected && !allPageSelected;
+                    }}
+                    onChange={toggleSelectAllPage}
+                    style={{ cursor: "pointer" }}
+                    aria-label="Select all on page"
+                  />
+                </th>
+                {renderSortHeader("Date", "date", 82)}
+                {renderSortHeader("Project & Phase", "projectName", "20%")}
+                {renderSortHeader("Dept", "stack", "9%")}
+                <th style={{ ...th, width: "8%" }}>Order ID</th>
+                <th style={{ ...th, width: 56, textAlign: "center" }}>Repos</th>
+                <th style={{ ...th, width: "9%" }}>Team</th>
+                <th style={{ ...th, width: "7%" }}>Profile</th>
+                <th style={{ ...th, width: "8%" }}>Sales</th>
+                {canViewFinancials ? renderSortHeader("Price", "price", 74) : <th style={{ ...th, width: 74 }}>Price</th>}
+                {renderSortHeader("Dateline", "dateline", "9%")}
+                {renderSortHeader("Status", "status", 88)}
+                {renderSortHeader("Possible", "possibility", 78)}
+                {canManage || canDelete ? (
+                  <th style={{ ...th, width: 80, textAlign: "right" }}>Actions</th>
+                ) : null}
               </tr>
             </thead>
             <tbody>
               {pageRows.length === 0 && (
                 <tr>
-                  <td colSpan={headers.length} style={{ padding: 24, textAlign: "center", color: colors.muted }}>
-                    No projects match this filter.
+                  <td
+                    colSpan={14}
+                    style={{ padding: 36, textAlign: "center", color: colors.muted }}
+                  >
+                    No projects found matching the criteria.
                   </td>
                 </tr>
               )}
@@ -196,85 +448,112 @@ export default function ProjectsTable({
                 const stack = getProjectStack(p);
                 const possible = normalizePossibility(p.possibility);
                 const isYes = possible === "Yes";
+                const isSelected = selectedIds.has(p.id);
+                const daysLeft = getDaysLeft(p);
+                const overdue = isDatelineOverdue(p);
+                const currentStatus = statusOf(p);
+
+                // Team members preview
+                const team = Array.isArray(p.teamMembers) ? p.teamMembers : [];
+                const membersList = [
+                  ...(p.supervisor ? [{ name: p.supervisor, role: "Supervisor" }] : []),
+                  ...team,
+                ];
+
                 return (
                   <tr
                     key={p.id}
                     className="table-row"
                     style={{
                       borderTop: `1px solid ${colors.border}`,
-                      background: i % 2 ? colors.panel : colors.bgAccent,
+                      background: isSelected
+                        ? `${colors.accent}14`
+                        : i % 2
+                          ? colors.panel
+                          : colors.bgAccent,
                     }}
                   >
-                    <td className="mono" style={{ ...td, ...ellipsis, color: colors.muted }} title={p.date}>
+                    {/* Checkbox */}
+                    <td style={{ ...td, textAlign: "center", padding: "10px 4px" }}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelectRow(p.id)}
+                        style={{ cursor: "pointer" }}
+                      />
+                    </td>
+
+                    {/* Date */}
+                    <td
+                      className="mono"
+                      style={{ ...td, ...ellipsis, color: colors.muted, fontSize: 11 }}
+                      title={p.date}
+                    >
                       {p.date}
                     </td>
-                    <td style={{ ...td, ...ellipsis, fontWeight: 500 }} title={p.salesPerson}>
-                      {p.salesPerson}
+
+                    {/* Project & Phase UPFRONT */}
+                    <td style={{ ...td }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                        <a
+                          href={`#/project/${p.id}`}
+                          className="project-link"
+                          style={{
+                            ...ellipsis,
+                            fontSize: 13,
+                            fontWeight: 750,
+                            display: "block",
+                          }}
+                          title={p.projectName}
+                        >
+                          {p.projectName}
+                        </a>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span
+                            style={{
+                              ...ellipsis,
+                              fontSize: 11,
+                              color: colors.muted,
+                              fontWeight: 600,
+                              background: colors.panel2,
+                              padding: "1px 6px",
+                              borderRadius: 6,
+                              border: `1px solid ${colors.border}`,
+                              maxWidth: "100%",
+                            }}
+                            title={p.phase || "Main"}
+                          >
+                            {p.phase || "Main Phase"}
+                          </span>
+                        </div>
+                      </div>
                     </td>
-                    <td style={{ ...td, ...ellipsis, color: colors.muted }} title={p.teamName || ""}>
-                      {p.teamName || "—"}
-                    </td>
+
+                    {/* Department (Stack) */}
                     <td style={{ ...td, ...ellipsis }} title={stack}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontWeight: 650, maxWidth: "100%" }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 5,
+                          fontWeight: 650,
+                          fontSize: 11.5,
+                        }}
+                      >
                         <span
                           style={{
-                            width: 6,
-                            height: 6,
+                            width: 7,
+                            height: 7,
                             borderRadius: 99,
-                            background: STACK_COLOR[stack],
+                            background: STACK_COLOR[stack] || "#8A93A3",
                             flexShrink: 0,
                           }}
                         />
                         <span style={ellipsis}>{stack}</span>
                       </span>
                     </td>
-                    <td style={{ ...td, ...ellipsis, color: colors.muted }} title={PROFILE_SHORT[p.profile] || p.profile}>
-                      {PROFILE_SHORT[p.profile] || p.profile}
-                    </td>
-                    <td style={{ ...td, fontWeight: 700 }} title={p.projectName}>
-                      <a href={`#/project/${p.id}`} className="project-link" style={{ ...ellipsis, display: "block" }}>
-                        {p.projectName}
-                      </a>
-                    </td>
-                    <td style={{ ...td, ...ellipsis, color: colors.muted }} title={p.phase || ""}>
-                      {p.phase || "—"}
-                    </td>
-                    <td style={td}>
-                      {canManage && onPossibilityChange ? (
-                        <select
-                          value={possible}
-                          onChange={(e) => onPossibilityChange(p, e.target.value)}
-                          aria-label={`Possible for ${p.phase || p.projectName}`}
-                          title="Flag whether this phase is possible"
-                          style={{
-                            ...possibilityStyles(isYes),
-                            borderRadius: 8,
-                            padding: "4px 6px",
-                            fontSize: 11.5,
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            width: "100%",
-                            maxWidth: 72,
-                          }}
-                        >
-                          <option value="Yes">Yes</option>
-                          <option value="No">No</option>
-                        </select>
-                      ) : (
-                        <span
-                          style={{
-                            ...possibilityStyles(isYes),
-                            display: "inline-block",
-                            padding: "3px 8px",
-                            borderRadius: 8,
-                            fontSize: 11.5,
-                            fontWeight: 700,
-                          }}
-                        >
-                          {possible}
-                        </span>
-                      )}
-                    </td>
+
+                    {/* Order ID */}
                     <td style={td} title={p.orderId || ""}>
                       {p.orderUrl || p.orderId ? (
                         <a
@@ -282,7 +561,13 @@ export default function ProjectsTable({
                           target="_blank"
                           rel="noreferrer"
                           className="project-link mono"
-                          style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, maxWidth: "100%" }}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 3,
+                            fontSize: 11,
+                            maxWidth: "100%",
+                          }}
                         >
                           <span style={ellipsis}>{p.orderId || "Open"}</span>
                           <ExternalLink size={11} style={{ flexShrink: 0 }} />
@@ -291,72 +576,217 @@ export default function ProjectsTable({
                         "—"
                       )}
                     </td>
-                    <td className="mono" style={{ ...td, ...ellipsis, fontWeight: 650 }} title={fmtMoney(p.price)}>
-                      {fmtMoney(p.price)}
+
+                    {/* Code Repositories */}
+                    <td style={{ ...td, textAlign: "center" }}>
+                      <GitRepoBadges githubUrl={p.githubUrl} gitlabUrl={p.gitlabUrl} compact />
                     </td>
+
+                    {/* Team Members */}
+                    <td style={{ ...td }}>
+                      {membersList.length > 0 ? (
+                        <div
+                          style={{ display: "inline-flex", alignItems: "center" }}
+                          title={membersList.map((m) => `${m.name} (${m.role || "Member"})`).join(", ")}
+                        >
+                          {membersList.slice(0, 3).map((m, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: 99,
+                                background: getAvatarBg(m.name),
+                                color: "#FFF",
+                                fontSize: 9.5,
+                                fontWeight: 800,
+                                display: "grid",
+                                placeItems: "center",
+                                marginLeft: idx > 0 ? -6 : 0,
+                                border: `2px solid ${colors.panel}`,
+                                flexShrink: 0,
+                              }}
+                            >
+                              {getInitials(m.name)}
+                            </div>
+                          ))}
+                          {membersList.length > 3 ? (
+                            <span
+                              style={{
+                                fontSize: 10,
+                                color: colors.muted,
+                                fontWeight: 700,
+                                marginLeft: 4,
+                              }}
+                            >
+                              +{membersList.length - 3}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <span style={{ color: colors.muted, fontSize: 11 }}>—</span>
+                      )}
+                    </td>
+
+                    {/* Fiverr Profile */}
+                    <td
+                      style={{ ...td, ...ellipsis, color: colors.muted, fontSize: 11 }}
+                      title={formatProfileName(p.profile)}
+                    >
+                      {formatProfileName(p.profile)}
+                    </td>
+
+                    {/* Sales Person */}
+                    <td style={{ ...td, ...ellipsis, fontWeight: 500, fontSize: 11.5 }} title={p.salesPerson}>
+                      {p.salesPerson || "—"}
+                    </td>
+
+                    {/* Price */}
                     <td
                       className="mono"
-                      style={{
-                        ...td,
-                        ...ellipsis,
-                        color: isDatelineOverdue(p)
-                          ? colors.late
-                          : hasAdminSchedule(p)
-                            ? colors.delivered
-                            : colors.muted,
-                        fontWeight: hasAdminSchedule(p) || isDatelineOverdue(p) ? 700 : 500,
-                      }}
-                      title={projectDatelineTitle(p)}
+                      style={{ ...td, ...ellipsis, fontWeight: 750, fontSize: 12.5 }}
+                      title={canViewFinancials ? fmtMoney(p.price) : "Masked"}
                     >
-                      {formatProjectDateline(p)}
+                      {canViewFinancials ? fmtMoney(p.price) : <span style={{ color: colors.muted }}>—</span>}
                     </td>
-                    <td style={td}>
-                      <StatusBadge status={statusOf(p)} compact />
-                    </td>
-                    {canManage && (
-                    <td style={{ ...td, width: 84, textAlign: "right", whiteSpace: "nowrap" }}>
-                      <div style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
-                        <button
-                          onClick={() => onEdit(p)}
-                          title="Edit"
-                          aria-label="Edit project"
+
+                    {/* Dateline & Days Left */}
+                    <td style={{ ...td }} title={projectDatelineTitle(p)}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                        <span
+                          className="mono"
                           style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: 30,
-                            height: 30,
-                            background: colors.panel2,
-                            border: `1px solid ${colors.border}`,
-                            borderRadius: 8,
-                            color: colors.text,
-                            flexShrink: 0,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: overdue
+                              ? colors.late
+                              : daysLeft != null && daysLeft <= 7
+                                ? colors.wip
+                                : colors.text,
                           }}
                         >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          onClick={() => onDelete(p.id)}
-                          title="Delete"
-                          aria-label="Delete project"
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: 30,
-                            height: 30,
-                            background: "rgba(226, 75, 74, 0.12)",
-                            border: `1px solid rgba(226, 75, 74, 0.28)`,
-                            borderRadius: 8,
-                            color: colors.late,
-                            flexShrink: 0,
-                          }}
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                          {daysLeft != null ? formatDaysLeft(daysLeft) : formatProjectDateline(p)}
+                        </span>
+                        {p.dateline ? (
+                          <span style={{ fontSize: 9.5, color: colors.muted, ...ellipsis }}>
+                            {p.dateline}
+                          </span>
+                        ) : null}
                       </div>
                     </td>
-                    )}
+
+                    {/* Status (with inline quick change) */}
+                    <td style={td}>
+                      {canChangeStatus && onStatusChange ? (
+                        <select
+                          value={currentStatus}
+                          onChange={(e) => onStatusChange(p, e.target.value)}
+                          style={{
+                            background:
+                              currentStatus === "delivered"
+                                ? `${colors.delivered}18`
+                                : `${colors.wip}18`,
+                            color:
+                              currentStatus === "delivered"
+                                ? colors.delivered
+                                : colors.wip,
+                            border: `1px solid ${
+                              currentStatus === "delivered"
+                                ? `${colors.delivered}44`
+                                : `${colors.wip}44`
+                            }`,
+                            borderRadius: 8,
+                            padding: "3px 6px",
+                            fontSize: 11,
+                            fontWeight: 750,
+                            cursor: "pointer",
+                            outline: "none",
+                          }}
+                        >
+                          <option value="wip">WIP</option>
+                          <option value="delivered">Delivered</option>
+                        </select>
+                      ) : (
+                        <StatusBadge status={currentStatus} compact />
+                      )}
+                    </td>
+
+                    {/* Possible Flag */}
+                    <td style={td}>
+                      {canManage && onPossibilityChange ? (
+                        <select
+                          value={possible}
+                          onChange={(e) => onPossibilityChange(p, e.target.value)}
+                          style={{
+                            background: isYes ? `${colors.delivered}18` : colors.panel2,
+                            color: isYes ? colors.delivered : colors.muted,
+                            border: `1px solid ${isYes ? `${colors.delivered}44` : colors.border}`,
+                            borderRadius: 8,
+                            padding: "3px 6px",
+                            fontSize: 11,
+                            fontWeight: 750,
+                            cursor: "pointer",
+                            outline: "none",
+                            width: 62,
+                          }}
+                        >
+                          <option value="Yes">Yes</option>
+                          <option value="No">No</option>
+                        </select>
+                      ) : (
+                        <span
+                          style={{
+                            color: isYes ? colors.delivered : colors.muted,
+                            fontSize: 11,
+                            fontWeight: 700,
+                          }}
+                        >
+                          {possible}
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Actions */}
+                    {canManage || canDelete ? (
+                      <td style={{ ...td, textAlign: "right" }}>
+                        <div style={{ display: "inline-flex", gap: 4 }}>
+                          {canManage && onEdit ? (
+                            <button
+                              type="button"
+                              onClick={() => onEdit(p)}
+                              title="Edit phase"
+                              style={{
+                                padding: "4px 6px",
+                                background: colors.panel2,
+                                border: `1px solid ${colors.border}`,
+                                borderRadius: 6,
+                                color: colors.text,
+                                cursor: "pointer",
+                              }}
+                            >
+                              <Pencil size={12} />
+                            </button>
+                          ) : null}
+                          {canDelete && onDelete ? (
+                            <button
+                              type="button"
+                              onClick={() => onDelete(p.id)}
+                              title="Delete phase"
+                              style={{
+                                padding: "4px 6px",
+                                background: colors.panel2,
+                                border: `1px solid ${colors.border}`,
+                                borderRadius: 6,
+                                color: colors.late,
+                                cursor: "pointer",
+                              }}
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          ) : null}
+                        </div>
+                      </td>
+                    ) : null}
                   </tr>
                 );
               })}
@@ -364,115 +794,119 @@ export default function ProjectsTable({
           </table>
         </div>
 
-        {sortedProjects.length > 0 && (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 10,
-              padding: "10px 12px",
-              borderTop: `1px solid ${colors.border}`,
-              background: colors.panel2,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 11.5, color: colors.muted, fontWeight: 500 }}>
-                Showing {rangeStart}–{rangeEnd} of {sortedProjects.length}
-              </span>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: colors.muted, fontWeight: 500 }}>
-                Rows
-                <select
-                  value={pageSize}
-                  onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                  style={{
-                    background: colors.panel,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: 8,
-                    padding: "5px 7px",
-                    color: colors.text,
-                    fontSize: 12,
-                  }}
-                >
-                  {PAGE_SIZE_OPTIONS.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+        {/* Pagination Bar */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px 16px",
+            borderTop: `1px solid ${colors.border}`,
+            background: colors.panel,
+            flexWrap: "wrap",
+            gap: 10,
+          }}
+        >
+          <div style={{ fontSize: 12, color: colors.muted }}>
+            Showing <strong>{rangeStart}</strong> to <strong>{rangeEnd}</strong> of{" "}
+            <strong>{sortedProjects.length}</strong> entries
+          </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-              <button
-                onClick={() => onPageChange(safePage - 1)}
-                disabled={safePage <= 1}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 12, color: colors.muted }}>Rows per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => onPageSizeChange(Number(e.target.value))}
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 28,
-                  height: 28,
-                  background: colors.panel,
-                  color: safePage <= 1 ? colors.border : colors.text,
+                  background: colors.panel2,
                   border: `1px solid ${colors.border}`,
                   borderRadius: 8,
-                  opacity: safePage <= 1 ? 0.5 : 1,
+                  padding: "4px 8px",
+                  color: colors.text,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: "pointer",
                 }}
-                aria-label="Previous page"
+              >
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <button
+                type="button"
+                disabled={safePage <= 1}
+                onClick={() => onPageChange(safePage - 1)}
+                style={{
+                  display: "grid",
+                  placeItems: "center",
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  border: `1px solid ${colors.border}`,
+                  background: colors.panel2,
+                  color: colors.text,
+                  cursor: safePage <= 1 ? "not-allowed" : "pointer",
+                  opacity: safePage <= 1 ? 0.4 : 1,
+                }}
               >
                 <ChevronLeft size={14} />
               </button>
-              {getPageNumbers().map((page, idx) =>
-                page === "…" ? (
-                  <span key={`ellipsis-${idx}`} style={{ padding: "0 4px", color: colors.muted, fontSize: 11 }}>
+
+              {getPageNumbers().map((num, idx) =>
+                num === "…" ? (
+                  <span key={`dots-${idx}`} style={{ padding: "0 4px", color: colors.muted, fontSize: 12 }}>
                     …
                   </span>
                 ) : (
                   <button
-                    key={page}
-                    onClick={() => onPageChange(page)}
+                    key={num}
+                    type="button"
+                    onClick={() => onPageChange(num)}
                     style={{
-                      minWidth: 28,
+                      width: 28,
                       height: 28,
-                      background: safePage === page ? colors.accent : colors.panel,
-                      color: safePage === page ? colors.onAccent : colors.text,
-                      border: `1px solid ${safePage === page ? colors.accent : colors.border}`,
-                      borderRadius: 8,
+                      borderRadius: 6,
+                      border: `1px solid ${num === safePage ? colors.accent : colors.border}`,
+                      background: num === safePage ? colors.accent : colors.panel2,
+                      color: num === safePage ? colors.onAccent : colors.text,
                       fontSize: 12,
                       fontWeight: 700,
+                      cursor: "pointer",
                     }}
                   >
-                    {page}
+                    {num}
                   </button>
                 )
               )}
+
               <button
-                onClick={() => onPageChange(safePage + 1)}
+                type="button"
                 disabled={safePage >= totalPages}
+                onClick={() => onPageChange(safePage + 1)}
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  display: "grid",
+                  placeItems: "center",
                   width: 28,
                   height: 28,
-                  background: colors.panel,
-                  color: safePage >= totalPages ? colors.border : colors.text,
+                  borderRadius: 6,
                   border: `1px solid ${colors.border}`,
-                  borderRadius: 8,
-                  opacity: safePage >= totalPages ? 0.5 : 1,
+                  background: colors.panel2,
+                  color: colors.text,
+                  cursor: safePage >= totalPages ? "not-allowed" : "pointer",
+                  opacity: safePage >= totalPages ? 0.4 : 1,
                 }}
-                aria-label="Next page"
               >
                 <ChevronRight size={14} />
               </button>
             </div>
           </div>
-        )}
-      </div>
-      <div style={{ marginTop: 8, fontSize: 11.5, color: colors.muted, fontWeight: 500 }}>
-        {sortedProjects.length} of {totalCount} projects match filters · page {safePage} of {totalPages}
+        </div>
       </div>
     </>
   );

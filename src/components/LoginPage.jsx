@@ -31,8 +31,10 @@ export default function LoginPage({ onLoggedIn }) {
         display: "grid",
         placeItems: "center",
         padding: 20,
-        background: `linear-gradient(160deg, ${colors.bg} 0%, ${colors.bgAccent} 100%)`,
-        fontFamily: "Manrope, sans-serif",
+        background: mode === "dark"
+          ? `radial-gradient(circle at 85% 15%, rgba(247, 206, 70, 0.1) 0%, transparent 50%), ${colors.bg}`
+          : `radial-gradient(circle at 85% 15%, rgba(247, 206, 70, 0.25) 0%, transparent 45%), radial-gradient(circle at 10% 90%, rgba(247, 206, 70, 0.15) 0%, transparent 40%), ${colors.bg}`,
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
         color: colors.text,
       }}
     >
@@ -41,16 +43,17 @@ export default function LoginPage({ onLoggedIn }) {
         style={{
           ...card,
           width: "100%",
-          maxWidth: 380,
-          padding: "28px 26px",
+          maxWidth: 400,
+          padding: "34px 30px",
+          borderRadius: 28,
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
           <div>
             <div style={{ fontSize: 12, color: colors.muted, fontWeight: 600, marginBottom: 6 }}>
               Delivery Ops Console
             </div>
-            <h1 className="disp" style={{ margin: 0, fontSize: 24, fontWeight: 800 }}>
+            <h1 className="disp" style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: -0.5 }}>
               Sign in
             </h1>
           </div>
@@ -60,7 +63,7 @@ export default function LoginPage({ onLoggedIn }) {
             style={{
               background: colors.panel2,
               border: `1px solid ${colors.border}`,
-              borderRadius: 10,
+              borderRadius: 9999,
               color: colors.text,
               padding: "8px 10px",
               fontSize: 12,
@@ -129,10 +132,37 @@ export default function LoginPage({ onLoggedIn }) {
             fontWeight: 750,
             fontSize: 14,
             opacity: busy ? 0.75 : 1,
+            cursor: "pointer",
           }}
         >
           {busy ? "Signing in…" : "Sign in"}
         </button>
+
+        <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${colors.border}` }}>
+          <div style={{ fontSize: 11.5, color: colors.muted, fontWeight: 600, marginBottom: 8, textAlign: "center" }}>
+            Local development credentials:
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setUsername("khairul");
+              setPassword("admin123");
+            }}
+            style={{
+              width: "100%",
+              background: colors.panel2,
+              color: colors.text,
+              border: `1px solid ${colors.border}`,
+              borderRadius: 10,
+              padding: "8px 10px",
+              fontSize: 12,
+              fontWeight: 650,
+              cursor: "pointer",
+            }}
+          >
+            Fill Admin (<code style={{ color: colors.accent, fontWeight: 700 }}>khairul</code> / <code style={{ color: colors.accent, fontWeight: 700 }}>admin123</code>)
+          </button>
+        </div>
 
         {busy ? (
           <div style={{ display: "grid", placeItems: "center", marginTop: 16 }}>

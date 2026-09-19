@@ -9,7 +9,7 @@ export default function ChartsSection({ byStack, statusPie, timeline }) {
   const tooltipStyle = {
     background: colors.panel,
     border: `1px solid ${colors.border}`,
-    borderRadius: 12,
+    borderRadius: 16,
     fontSize: 12.5,
     boxShadow: colors.shadowSoft,
     color: colors.text,
@@ -21,22 +21,22 @@ export default function ChartsSection({ byStack, statusPie, timeline }) {
         style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 14, marginBottom: 16 }}
         className="charts-grid"
       >
-        <div style={{ ...card, padding: "16px 18px" }}>
+        <div style={{ ...card, padding: "20px 22px" }}>
           <div className="disp" style={{ fontWeight: 750, fontSize: 15, marginBottom: 10, letterSpacing: -0.2 }}>
             Delivery progress by department
           </div>
           <ResponsiveContainer width="100%" height={210}>
-            <BarChart data={byStack} barSize={22}>
+            <BarChart data={byStack} barSize={20}>
               <CartesianGrid stroke={colors.border} vertical={false} />
               <XAxis dataKey="name" tick={{ fill: colors.muted, fontSize: 11 }} axisLine={{ stroke: colors.border }} tickLine={false} />
               <YAxis tick={{ fill: colors.muted, fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: colors.text }} />
               <Bar dataKey="delivered" stackId="s" fill={colors.delivered} name="Delivered" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="wip" stackId="s" fill={colors.wip} name="WIP" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="wip" stackId="s" fill={colors.wip} name="WIP" radius={[9999, 9999, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div style={{ ...card, padding: "16px 18px" }}>
+        <div style={{ ...card, padding: "20px 22px" }}>
           <div className="disp" style={{ fontWeight: 750, fontSize: 15, marginBottom: 10, letterSpacing: -0.2 }}>
             Status split
           </div>

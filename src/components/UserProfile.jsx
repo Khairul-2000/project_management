@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { Shield } from "lucide-react";
 import { useTheme } from "../lib/theme";
 import { patchUser } from "../lib/auth";
+import { roleLabel, roleBadgeColor } from "../lib/roles";
 
 export default function UserProfile({ currentUser, onUpdateUser }) {
   const { colors, card } = useTheme();
+  const roleColor = roleBadgeColor(currentUser?.role, colors);
   const [githubUsername, setGithubUsername] = useState(currentUser?.githubUsername || "");
   const [gitlabUsername, setGitlabUsername] = useState(currentUser?.gitlabUsername || "");
   const [password, setPassword] = useState("");
@@ -63,6 +66,33 @@ export default function UserProfile({ currentUser, onUpdateUser }) {
         </div>
 
         <form onSubmit={handleSave}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Role & Permissions</label>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "7px 12px",
+              borderRadius: 8,
+              background: `${roleColor}18`,
+              border: `1px solid ${roleColor}44`,
+              color: roleColor,
+              fontWeight: 700,
+              fontSize: 13,
+              marginBottom: 8,
+            }}
+          >
+            <Shield size={15} />
+            <span>{roleLabel(currentUser?.role)}</span>
+          </div>
+          <div style={{ fontSize: 11.5, color: colors.muted, marginBottom: 16 }}>
+            {currentUser?.role === "super_admin"
+              ? "Super Admin has full unrestricted access across projects, financial data, and system settings."
+              : currentUser?.role === "admin"
+                ? "Admin / Team Lead can manage projects, assign members, and view financial data."
+                : "Team Member can update task checklists, commit links, and progress on assigned projects."}
+          </div>
+
           <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Name</label>
           <input value={currentUser?.name || ""} disabled style={{ ...field, opacity: 0.7 }} />
 

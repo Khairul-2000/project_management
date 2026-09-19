@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { X, Users, FolderKanban } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { PROFILE_SHORT, STACK_COLOR } from "../lib/constants";
+import { formatProfileName, STACK_COLOR } from "../lib/constants";
 import { getProjectStack, statusOf, fmtMoney } from "../lib/utils";
 import { useTheme } from "../lib/theme";
 import StatusBadge from "./StatusBadge";
@@ -27,7 +27,7 @@ export default function StackWorkloadDetailModal({ stack, projects, onClose }) {
       const key = p.profile || "Unknown";
       const prev = map.get(key) || {
         profile: key,
-        name: PROFILE_SHORT[key] || key,
+        name: formatProfileName(key),
         value: 0,
       };
       prev.value += 1;
@@ -56,7 +56,7 @@ export default function StackWorkloadDetailModal({ stack, projects, onClose }) {
         prev.projects.push({
           id: p.id,
           projectName: p.projectName,
-          profile: PROFILE_SHORT[p.profile] || p.profile,
+          profile: formatProfileName(p.profile),
           status: statusOf(p),
           role: members.find((m) => personKey(m.name) === key)?.role || "",
         });
@@ -288,7 +288,7 @@ export default function StackWorkloadDetailModal({ stack, projects, onClose }) {
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: 13 }}>{p.projectName}</div>
                       <div style={{ fontSize: 11.5, color: colors.muted, marginTop: 2 }}>
-                        {PROFILE_SHORT[p.profile] || p.profile || "—"}
+                        {formatProfileName(p.profile)}
                         {team ? ` · ${team}` : p.membersRaw ? ` · ${p.membersRaw}` : ""}
                       </div>
                     </div>

@@ -16,6 +16,7 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
   const [projectQuery, setProjectQuery] = useState("");
   const [resetPassword, setResetPassword] = useState({});
   const [syncingAssignments, setSyncingAssignments] = useState(false);
+  const [showGitUsernames, setShowGitUsernames] = useState({});
 
   const canManageAdmins = isSuperAdmin(currentUser);
 
@@ -281,7 +282,7 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ background: colors.panel2, textAlign: "left" }}>
-                {["Name", "Username", "Role", "Active", "Projects", "Password", "Actions"].map((h) => (
+                {["Name", "Username", "GitHub / GitLab", "Role", "Active", "Projects", "Password", "Actions"].map((h) => (
                   <th key={h} style={{ padding: "10px 12px", color: colors.muted, fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>
                     {h}
                   </th>
@@ -291,7 +292,7 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={7} style={{ padding: 20, color: colors.muted, textAlign: "center" }}>
+                  <td colSpan={8} style={{ padding: 20, color: colors.muted, textAlign: "center" }}>
                     Loading users…
                   </td>
                 </tr>
@@ -304,6 +305,50 @@ export default function UsersAdmin({ projects, clientProjects = [], currentUser 
                     <tr key={u.id} style={{ borderTop: `1px solid ${colors.border}` }}>
                       <td style={{ padding: "10px 12px", fontWeight: 650 }}>{u.name}</td>
                       <td className="mono" style={{ padding: "10px 12px" }}>{u.username}</td>
+                      <td style={{ padding: "10px 12px", color: colors.muted, whiteSpace: "nowrap" }}>
+                        {(u.githubUsername || u.gitlabUsername) ? (
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <button
+                              type="button"
+                              onClick={() => setShowGitUsernames(prev => ({ ...prev, [u.id]: !prev[u.id] }))}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                background: colors.panel2,
+                                border: `1px solid ${colors.border}`,
+                                borderRadius: 6,
+                                color: colors.text,
+                                padding: "4px",
+                                cursor: "pointer",
+                              }}
+                              title={showGitUsernames[u.id] ? "Hide usernames" : "Show usernames"}
+                            >
+                              <Eye size={14} />
+                            </button>
+                            {showGitUsernames[u.id] ? (
+                              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                                {u.githubUsername && (
+                                  <div style={{ display: "inline-flex", gap: 6 }}>
+                                    <strong style={{ opacity: 0.7 }}>GH:</strong>
+                                    <span className="mono">{u.githubUsername}</span>
+                                  </div>
+                                )}
+                                {u.gitlabUsername && (
+                                  <div style={{ display: "inline-flex", gap: 6 }}>
+                                    <strong style={{ opacity: 0.7 }}>GL:</strong>
+                                    <span className="mono">{u.gitlabUsername}</span>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span style={{ fontSize: 12 }}>•••</span>
+                            )}
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
                       <td style={{ padding: "10px 12px" }}>
                         <select
                           value={u.role}

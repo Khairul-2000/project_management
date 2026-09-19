@@ -107,4 +107,6 @@ export const emptyForm = {
   possibility: "No",
   extensions: [],
   deliveryDate: "",
+  githubUrl: "",
+  gitlabUrl: "",
 };

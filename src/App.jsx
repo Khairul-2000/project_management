@@ -19,6 +19,7 @@ import ClientProjects from "./components/ClientProjects";
 import ClientProjectDetail from "./components/ClientProjectDetail";
 import DashboardAlerts from "./components/DashboardAlerts";
 import AnalyticsDashboard from "./components/AnalyticsDashboard";
+import UserProfile from "./components/UserProfile";
 import {
   FONTS,
   PROFILES,
@@ -96,7 +97,7 @@ export default function Dashboard() {
   const isAdmin = isAdminRole(currentUser);
   const canAssignAdmins = isSuperAdmin(currentUser);
 
-  // Members only use the Projects workspace — never dashboard/analytics/users.
+  // Members only use the Projects workspace or profile — never dashboard/analytics/users.
   useEffect(() => {
     if (!currentUser || isAdmin) return;
     if (view === "dashboard" || view === "analytics" || view === "users") {
@@ -715,11 +716,13 @@ export default function Dashboard() {
               ? "users"
               : view === "analytics" && isAdmin
                 ? "analytics"
-                : view === "clientProjectDetail" || activeProject
-                  ? "clientProjectDetail"
-                  : view === "clientProjects" || !isAdmin
-                    ? "clientProjects"
-                    : "dashboard"
+                : view === "profile"
+                  ? "profile"
+                  : view === "clientProjectDetail" || activeProject
+                    ? "clientProjectDetail"
+                    : view === "clientProjects" || (!isAdmin && view !== "profile")
+                      ? "clientProjects"
+                      : "dashboard"
           }
           googleStatus={googleStatus}
           syncing={syncing}
@@ -749,6 +752,11 @@ export default function Dashboard() {
           onOpenUsers={() => {
             if (!isAdmin) return;
             setView("users");
+            setActiveClientProjectId(null);
+            window.location.hash = "";
+          }}
+          onOpenProfile={() => {
+            setView("profile");
             setActiveClientProjectId(null);
             window.location.hash = "";
           }}
@@ -792,7 +800,12 @@ export default function Dashboard() {
             onAdd={openAdd}
           />
 
-          {view === "users" && isAdmin ? (
+          {view === "profile" ? (
+            <UserProfile
+              currentUser={currentUser}
+              onUpdateUser={(updated) => setCurrentUser({ ...currentUser, ...updated })}
+            />
+          ) : view === "users" && isAdmin ? (
             <UsersAdmin projects={projects} clientProjects={clientProjects} currentUser={currentUser} />
           ) : view === "analytics" && isAdmin ? (
             <AnalyticsDashboard projects={projects} />

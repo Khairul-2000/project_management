@@ -63,6 +63,8 @@ export default function ProjectFormModal({ editingId, form, onChange, onClose, o
           ["dateline", "Dateline", "text", "e.g. 5 Days / Order Late"],
           ["supervisor", "Supervisor", "text", "e.g. Khairul"],
           ["shift", "Shift", "text", "e.g. Day"],
+          ["githubUrl", "GitHub Repository URL", "text", "https://github.com/..."],
+          ["gitlabUrl", "GitLab Repository URL", "text", "https://gitlab.com/..."],
         ].map(([key, label, type, ph]) => (
           <div key={key} style={{ marginBottom: 12 }}>
             <div style={{ fontSize: 11.5, color: colors.muted, marginBottom: 4, fontWeight: 600 }}>{label}</div>

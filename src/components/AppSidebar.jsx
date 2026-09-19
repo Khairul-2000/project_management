@@ -10,6 +10,7 @@ import {
   Sun,
   Moon,
   LogOut,
+  User,
 } from "lucide-react";
 import { useTheme } from "../lib/theme";
 import { roleLabel } from "../lib/roles";
@@ -83,6 +84,7 @@ export default function AppSidebar({
   onOpenAnalytics,
   onOpenClientProjects,
   onOpenUsers,
+  onOpenProfile,
   onSync,
   onConnectGoogle,
   onExport,
@@ -224,6 +226,14 @@ export default function AppSidebar({
             onClick={() => go(onOpenUsers)}
           />
         ) : null}
+
+        <NavButton
+          icon={User}
+          label="Profile"
+          showLabel={showLabel}
+          active={activeView === "profile"}
+          onClick={() => go(onOpenProfile)}
+        />
 
         <div style={{ flex: 1, minHeight: 12 }} />
 

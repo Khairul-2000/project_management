@@ -51,6 +51,8 @@ const LOCAL_ONLY_KEYS = [
   "extensions",
   "deliveryDate",
   "stackLocked",
+  "githubUrl",
+  "gitlabUrl",
 ];
 
 function env(name, fallback = "") {
@@ -167,16 +169,16 @@ export function saveTokens(tokens) {
   return next;
 }
 
-function createOAuthClient() {
+export function createOAuthClient(redirectUriOverride) {
   const { clientId, clientSecret, redirectUri } = getSheetsConfig();
   if (!clientId || !clientSecret) {
     throw new Error("Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in .env");
   }
-  return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+  return new google.auth.OAuth2(clientId, clientSecret, redirectUriOverride || redirectUri);
 }
 
-export function getAuthUrl() {
-  const client = createOAuthClient();
+export function getAuthUrl(redirectUri) {
+  const client = createOAuthClient(redirectUri);
   return client.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
@@ -184,8 +186,8 @@ export function getAuthUrl() {
   });
 }
 
-export async function exchangeCode(code) {
-  const client = createOAuthClient();
+export async function exchangeCode(code, redirectUri) {
+  const client = createOAuthClient(redirectUri);
   const { tokens } = await client.getToken(code);
   client.setCredentials(tokens);
 

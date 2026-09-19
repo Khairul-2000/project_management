@@ -71,6 +71,8 @@ export function publicUser(user) {
     active: Boolean(user.active),
     assignedProjectIds: Array.isArray(user.assignedProjectIds) ? user.assignedProjectIds : [],
     hasPassword: Boolean(user.passwordHash),
+    githubUsername: user.githubUsername || "",
+    gitlabUsername: user.gitlabUsername || "",
   };
 }
 
@@ -232,6 +234,8 @@ export function createUser({ name, username, password, role = "member" }) {
     role: normalizeAccountRole(role),
     active: true,
     assignedProjectIds: [],
+    githubUsername: "",
+    gitlabUsername: "",
   };
   data.users.push(user);
   writeUsersFile(data);
@@ -262,6 +266,8 @@ export function updateUser(id, patch) {
     user.passwordHash = hashPassword(patch.password);
   }
   if (patch.clearPassword) user.passwordHash = null;
+  if (patch.githubUsername !== undefined) user.githubUsername = String(patch.githubUsername).trim();
+  if (patch.gitlabUsername !== undefined) user.gitlabUsername = String(patch.gitlabUsername).trim();
 
   data.users[idx] = user;
   writeUsersFile(data);
@@ -285,6 +291,8 @@ export function replaceUsers(users) {
         ? [...new Set(incoming.assignedProjectIds.map(String))]
         : prev.assignedProjectIds || [],
       passwordHash: prev.passwordHash,
+      githubUsername: incoming.githubUsername !== undefined ? String(incoming.githubUsername).trim() : prev.githubUsername || "",
+      gitlabUsername: incoming.gitlabUsername !== undefined ? String(incoming.gitlabUsername).trim() : prev.gitlabUsername || "",
     };
     if (incoming.password) merged.passwordHash = hashPassword(incoming.password);
     return merged;

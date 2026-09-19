@@ -81,6 +81,8 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
   const [extendInput, setExtendInput] = useState("");
   const [scheduleError, setScheduleError] = useState("");
   const [phaseDraft, setPhaseDraft] = useState(project.phase || "");
+  const [githubUrlDraft, setGithubUrlDraft] = useState(project.githubUrl || "");
+  const [gitlabUrlDraft, setGitlabUrlDraft] = useState(project.gitlabUrl || "");
 
   // Sync notes / schedule inputs when project changes
   useEffect(() => {
@@ -90,11 +92,13 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
     setScheduleError("");
     setNewMemberRoles(defaultRoleForProject(project));
     setPhaseDraft(project.phase || "");
+    setGithubUrlDraft(project.githubUrl || "");
+    setGitlabUrlDraft(project.gitlabUrl || "");
     const suggested = getSuggestedDeliveryDate(project);
     const original = getOriginalDeliveryDate(project);
     setDeliveryInput(toInputDate(original || suggested || ""));
     setExtendInput("");
-  }, [project.id, project.notes, project.deliveryDate, project.date, project.dateline, project.extensions, project.phase, project.stack]);
+  }, [project.id, project.notes, project.deliveryDate, project.date, project.dateline, project.extensions, project.phase, project.stack, project.githubUrl, project.gitlabUrl]);
 
   useEffect(() => {
     let cancelled = false;
@@ -630,6 +634,102 @@ export default function ProjectDetails({ project, onBack, onUpdate, onDelete, is
                       style={{ fontSize: 13.5, fontWeight: 600, marginTop: 2, color: COLORS.accent, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
                     >
                       {project.orderId || "Open order"} <ExternalLink size={12} />
+                    </a>
+                  </div>
+                </div>
+              )}
+              {isAdmin ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
+                  <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.muted }}>
+                    <ExternalLink size={16} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11.5, color: COLORS.muted }}>GitHub Repository</div>
+                    <input
+                      value={githubUrlDraft}
+                      onChange={(e) => setGithubUrlDraft(e.target.value)}
+                      onBlur={() => {
+                        const val = githubUrlDraft.trim();
+                        if (val !== (project.githubUrl || "")) {
+                          onUpdate({ ...project, githubUrl: val });
+                        }
+                      }}
+                      placeholder="https://github.com/..."
+                      style={{
+                        width: "100%",
+                        background: COLORS.panel2,
+                        border: `1px solid ${COLORS.border}`,
+                        borderRadius: 8,
+                        padding: "6px 10px",
+                        color: COLORS.text,
+                        fontSize: 13,
+                        marginTop: 4,
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : project.githubUrl && (
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
+                  <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.muted }}>
+                    <ExternalLink size={16} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11.5, color: COLORS.muted }}>GitHub Repository</div>
+                    <a
+                      href={project.githubUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ fontSize: 13.5, fontWeight: 600, marginTop: 2, color: COLORS.accent, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
+                    >
+                      Open GitHub <ExternalLink size={12} />
+                    </a>
+                  </div>
+                </div>
+              )}
+              {isAdmin ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
+                  <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.muted }}>
+                    <ExternalLink size={16} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11.5, color: COLORS.muted }}>GitLab Repository</div>
+                    <input
+                      value={gitlabUrlDraft}
+                      onChange={(e) => setGitlabUrlDraft(e.target.value)}
+                      onBlur={() => {
+                        const val = gitlabUrlDraft.trim();
+                        if (val !== (project.gitlabUrl || "")) {
+                          onUpdate({ ...project, gitlabUrl: val });
+                        }
+                      }}
+                      placeholder="https://gitlab.com/..."
+                      style={{
+                        width: "100%",
+                        background: COLORS.panel2,
+                        border: `1px solid ${COLORS.border}`,
+                        borderRadius: 8,
+                        padding: "6px 10px",
+                        color: COLORS.text,
+                        fontSize: 13,
+                        marginTop: 4,
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : project.gitlabUrl && (
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
+                  <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.muted }}>
+                    <ExternalLink size={16} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11.5, color: COLORS.muted }}>GitLab Repository</div>
+                    <a
+                      href={project.gitlabUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ fontSize: 13.5, fontWeight: 600, marginTop: 2, color: COLORS.accent, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
+                    >
+                      Open GitLab <ExternalLink size={12} />
                     </a>
                   </div>
                 </div>

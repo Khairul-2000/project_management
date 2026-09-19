@@ -20,6 +20,41 @@ function queryOf(req) {
   return new URLSearchParams(q);
 }
 
+export function resolveRedirectUri(req) {
+  const configured = (process.env.GOOGLE_REDIRECT_URI || "").trim();
+  if (!req) return configured || "http://localhost:8079/api/google/callback";
+
+  const hostHeader = (req.headers["x-forwarded-host"] || req.headers.host || "").trim();
+  const host = hostHeader.split(",")[0].trim();
+  if (!host) return configured || "http://localhost:8079/api/google/callback";
+
+  if (configured) {
+    try {
+      const u = new URL(configured);
+      if (u.host === host) {
+        return configured;
+      }
+    } catch {
+      /* ignore invalid URL */
+    }
+  }
+
+  const isLocal =
+    host.startsWith("localhost") ||
+    host.startsWith("127.0.0.1") ||
+    host.startsWith("0.0.0.0");
+  const protoHeader = req.headers["x-forwarded-proto"];
+  const proto = protoHeader
+    ? String(protoHeader).split(",")[0].trim()
+    : req.socket?.encrypted
+    ? "https"
+    : isLocal
+    ? "http"
+    : "https";
+
+  return `${proto}://${host}/api/google/callback`;
+}
+
 /**
  * Connect-style middleware for Google Sheets OAuth + sync.
  */
@@ -65,7 +100,8 @@ async function handle(req, res, pathname) {
       });
       return;
     }
-    redirect(res, getAuthUrl());
+    const redirectUri = resolveRedirectUri(req);
+    redirect(res, getAuthUrl(redirectUri));
     return;
   }
 
@@ -82,7 +118,8 @@ async function handle(req, res, pathname) {
       return;
     }
     try {
-      await exchangeCode(code);
+      const redirectUri = resolveRedirectUri(req);
+      await exchangeCode(code, redirectUri);
       redirect(res, "/?google=connected");
     } catch (err) {
       redirect(

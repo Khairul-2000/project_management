@@ -148,6 +148,16 @@
       "createdAt": "2026-08-12T10:36:10.382Z"
     },
     {
+      "id": "cp-averymarsh",
+      "projectName": "averymarsh",
+      "projectNameKey": "averymarsh",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-31T09:01:36.791Z"
+    },
+    {
       "id": "cp-awufiverr",
       "projectName": "awufiverr",
       "projectNameKey": "awufiverr",
@@ -195,6 +205,16 @@
       "membersRaw": "",
       "notes": "",
       "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-buildersai",
+      "projectName": "buildersai",
+      "projectNameKey": "buildersai",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-31T09:01:36.791Z"
     },
     {
       "id": "cp-caesar370",
@@ -457,6 +477,16 @@
       "createdAt": "2026-08-12T10:36:10.383Z"
     },
     {
+      "id": "cp-gary1966",
+      "projectName": "gary1966",
+      "projectNameKey": "gary1966",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-31T09:01:36.791Z"
+    },
+    {
       "id": "cp-getright92",
       "projectName": "getright92",
       "projectNameKey": "getright92",
@@ -550,6 +580,15 @@
             "UI/UX Designer"
           ],
           "role": "UI/UX Designer"
+        },
+        {
+          "id": "u-mslo41o8-487104",
+          "userId": "u-mslo41o8-487104",
+          "name": "Md. Arman Hosen",
+          "roles": [
+            "Backend Developer"
+          ],
+          "role": "Backend Developer"
         }
       ],
       "membersRaw": "",
@@ -857,6 +896,16 @@
       "membersRaw": "",
       "notes": "",
       "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-nander",
+      "projectName": "nander_",
+      "projectNameKey": "nander_",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-31T09:01:36.791Z"
     },
     {
       "id": "cp-navy-dxb",
@@ -1227,6 +1276,16 @@
       "membersRaw": "",
       "notes": "",
       "createdAt": "2026-08-12T10:36:10.383Z"
+    },
+    {
+      "id": "cp-umberlite",
+      "projectName": "umberlite",
+      "projectNameKey": "umberlite",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-08-31T09:01:36.791Z"
     },
     {
       "id": "cp-vasi1ias",

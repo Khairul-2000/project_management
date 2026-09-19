@@ -203,7 +203,7 @@ async function handle(req, res, pathname) {
 
   const patchMatch = pathname.match(/^\/api\/users\/([^/]+)$/);
   if (patchMatch && req.method === "PATCH") {
-    const actor = requireAdmin(req, res);
+    const actor = requireUser(req, res);
     if (!actor) return;
     const id = decodeURIComponent(patchMatch[1]);
     const body = await readJsonBody(req);
@@ -212,9 +212,29 @@ async function handle(req, res, pathname) {
       sendJson(res, 404, { error: "User not found" });
       return;
     }
+
+    if (!isAdminRole(actor) && actor.id !== id) {
+      sendJson(res, 403, { error: "Admin only" });
+      return;
+    }
+
+    let payload = body;
+    if (!isAdminRole(actor)) {
+      payload = {};
+      if (body.password !== undefined) payload.password = body.password;
+      if (body.githubUsername !== undefined) payload.githubUsername = body.githubUsername;
+      if (body.gitlabUsername !== undefined) payload.gitlabUsername = body.gitlabUsername;
+    } else {
+      try {
+        assertCanManageUser(actor, target, body);
+      } catch (err) {
+        sendJson(res, 403, { error: err.message });
+        return;
+      }
+    }
+
     try {
-      assertCanManageUser(actor, target, body);
-      const updated = updateUser(id, body);
+      const updated = updateUser(id, payload);
       sendJson(res, 200, { user: updated });
     } catch (err) {
       const status = err.message === "User not found" ? 404 : 403;

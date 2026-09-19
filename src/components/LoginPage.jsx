@@ -138,31 +138,7 @@ export default function LoginPage({ onLoggedIn }) {
           {busy ? "Signing in…" : "Sign in"}
         </button>
 
-        <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${colors.border}` }}>
-          <div style={{ fontSize: 11.5, color: colors.muted, fontWeight: 600, marginBottom: 8, textAlign: "center" }}>
-            Local development credentials:
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setUsername("khairul");
-              setPassword("admin123");
-            }}
-            style={{
-              width: "100%",
-              background: colors.panel2,
-              color: colors.text,
-              border: `1px solid ${colors.border}`,
-              borderRadius: 10,
-              padding: "8px 10px",
-              fontSize: 12,
-              fontWeight: 650,
-              cursor: "pointer",
-            }}
-          >
-            Fill Admin (<code style={{ color: colors.accent, fontWeight: 700 }}>khairul</code> / <code style={{ color: colors.accent, fontWeight: 700 }}>admin123</code>)
-          </button>
-        </div>
+
 
         {busy ? (
           <div style={{ display: "grid", placeItems: "center", marginTop: 16 }}>

@@ -21,6 +21,8 @@ import DashboardAlerts from "./components/DashboardAlerts";
 import AnalyticsDashboard from "./components/AnalyticsDashboard";
 import UserProfile from "./components/UserProfile";
 import HeroMetricStrip from "./components/HeroMetricStrip";
+import AgentChatModal, { SparkleAvatar } from "./components/AgentChatModal";
+import { Sparkles, Cpu } from "lucide-react";
 import {
   FONTS,
   PROFILES,
@@ -108,6 +110,20 @@ export default function Dashboard() {
   const isAdmin = isAdminRole(currentUser);
   const canAssignAdmins = isSuperAdmin(currentUser);
   const [memberOnlyView, setMemberOnlyView] = useState(false);
+  const [agentChatOpen, setAgentChatOpen] = useState(false);
+
+  // Global keyboard shortcut to toggle AI Assistant (Cmd+J or Ctrl+J) — Admin only
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        if (!isAdmin) return;
+        setAgentChatOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isAdmin]);
 
   // Only the Users Admin view is strictly restricted to admins
   useEffect(() => {
@@ -907,6 +923,7 @@ export default function Dashboard() {
           onImport={importJson}
           onLogout={handleLogout}
           onCloseMobile={() => setMobileOpen(false)}
+          onOpenAgent={isAdmin ? () => setAgentChatOpen(true) : null}
         />
 
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
@@ -939,6 +956,7 @@ export default function Dashboard() {
             onAdd={openAdd}
             memberOnlyView={memberOnlyView}
             onToggleMemberOnlyView={() => setMemberOnlyView((v) => !v)}
+            onOpenAgent={isAdmin ? () => setAgentChatOpen(true) : null}
             activeView={
               view === "users" && isAdmin
                 ? "users"
@@ -1191,6 +1209,222 @@ export default function Dashboard() {
           onConfirm={() => doDelete(confirmDelete)}
         />
       )}
+
+      {/* Floating Modern Action Button for AI Assistant — Admin only */}
+      {!agentChatOpen && currentUser && isAdmin && (
+        <>
+          <style>{`
+            @keyframes fabHaloPulse {
+              0% {
+                box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.45);
+              }
+              70% {
+                box-shadow: 0 0 0 14px rgba(236, 72, 153, 0);
+              }
+              100% {
+                box-shadow: 0 0 0 0 rgba(236, 72, 153, 0);
+              }
+            }
+          `}</style>
+          <button
+            type="button"
+            onClick={() => setAgentChatOpen(true)}
+            title="Open Crextio AI (Cmd+J / Ctrl+J)"
+            style={{
+              position: "fixed",
+              right: 24,
+              bottom: 24,
+              zIndex: 9998,
+              width: 58,
+              height: 58,
+              borderRadius: "50%",
+              background: isDark
+                ? "linear-gradient(135deg, #181A22 0%, #10121A 100%)"
+                : "linear-gradient(135deg, #FFFFFF 0%, #FAF7F0 100%)",
+              boxShadow: isDark
+                ? "0 12px 34px rgba(0,0,0,0.55), 0 0 20px rgba(236, 72, 153, 0.3)"
+                : "0 10px 30px rgba(45, 38, 20, 0.15), 0 0 18px rgba(168, 85, 247, 0.25)",
+              border: isDark
+                ? "1.5px solid rgba(244, 114, 182, 0.35)"
+                : "1.5px solid rgba(168, 85, 247, 0.3)",
+              cursor: "pointer",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+              padding: 0,
+              animation: "fabHaloPulse 3s infinite",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-4px) scale(1.06)";
+              e.currentTarget.style.boxShadow = isDark
+                ? "0 16px 44px rgba(0,0,0,0.7), 0 0 30px rgba(236, 72, 153, 0.5)"
+                : "0 14px 36px rgba(45, 38, 20, 0.22), 0 0 26px rgba(168, 85, 247, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0) scale(1)";
+              e.currentTarget.style.boxShadow = isDark
+                ? "0 12px 34px rgba(0,0,0,0.55), 0 0 20px rgba(236, 72, 153, 0.3)"
+                : "0 10px 30px rgba(45, 38, 20, 0.15), 0 0 18px rgba(168, 85, 247, 0.25)";
+            }}
+          >
+            <SparkleAvatar size={44} animated />
+          </button>
+        </>
+      )}
+
+      {/* AI Assistant Chat Modal — Admin only */}
+      <AgentChatModal
+        isOpen={agentChatOpen && isAdmin}
+        onClose={() => setAgentChatOpen(false)}
+        currentUser={currentUser}
+        onSelectProject={(projName) => {
+          setView("clientProjects");
+          setSearchQuery(projName);
+          setAgentChatOpen(false);
+        }}
+        onExecuteAction={async ({ type, data }) => {
+          if (!isAdmin) {
+            return { success: false, message: "Only administrators can perform actions in Work Mode." };
+          }
+
+          if (type === "create_project") {
+            const projectName = (data.projectName || "").trim();
+            if (!projectName) {
+              return { success: false, message: "Project name is required." };
+            }
+
+            const newPhase = {
+              id: `p-${Date.now()}`,
+              projectName,
+              phase: (data.phase || projectName).trim(),
+              profile: data.profile || "code_muse_Fiverr",
+              price: Number(data.price) || 0,
+              stack: data.stack || "Fullstack",
+              supervisor: (data.supervisor || "").trim(),
+              dateline: data.dateline || "5 Days",
+              shift: data.shift || "Day",
+              teamLeadStatus: "WIP",
+              salesStatus: "WIP",
+              possibility: "Yes",
+              date: new Date().toLocaleDateString("en-US"),
+              teamMembers: data.supervisor
+                ? [
+                    {
+                      id: `sup-${Date.now()}`,
+                      name: data.supervisor.trim(),
+                      role: "Supervisor",
+                    },
+                  ]
+                : [],
+              subtasks: [
+                { id: "1", text: "Requirements gathering & analysis", completed: false },
+                { id: "2", text: "UI/UX Mockup design", completed: false },
+                { id: "3", text: "Core API development", completed: false },
+                { id: "4", text: "Frontend integration & testing", completed: false },
+                { id: "5", text: "Client review & revisions", completed: false },
+                { id: "6", text: "Final deployment & delivery", completed: false },
+              ],
+            };
+
+            const next = [...projects, newPhase];
+            persistProjects(next);
+            setSaveState(`Created project ${projectName} via Work Mode`);
+            return { success: true, project: newPhase };
+          }
+
+          if (type === "assign_member") {
+            const targetName = String(data.projectName || "").trim().toLowerCase();
+            const memberName = String(data.memberName || "").trim();
+            const role = data.role || "Developer";
+
+            if (!targetName || !memberName) {
+              return { success: false, message: "Target project and member name are required." };
+            }
+
+            // 1. Update matching client project if exists
+            const targetCp = clientProjects.find(
+              (cp) => String(cp.projectName || "").trim().toLowerCase() === targetName
+            );
+
+            if (targetCp) {
+              const existingMembers = Array.isArray(targetCp.teamMembers) ? targetCp.teamMembers : [];
+              const roles = Array.isArray(role) ? role : [role];
+              const nextMembers = [
+                ...existingMembers.filter(
+                  (m) => String(m.name || "").trim().toLowerCase() !== memberName.toLowerCase()
+                ),
+                {
+                  id: `mem-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+                  name: memberName,
+                  roles,
+                  role: roles[0],
+                },
+              ];
+
+              try {
+                const { clientProject: saved } = await patchClientProject(targetCp.id, {
+                  teamMembers: nextMembers,
+                  ...(role === "Supervisor" ? { supervisor: memberName } : {}),
+                });
+                setClientProjects((prev) =>
+                  prev.map((cp) => (cp.id === saved.id ? saved : cp))
+                );
+              } catch (err) {
+                console.error("[Work Mode] Failed patching client project:", err);
+              }
+            }
+
+            // 2. Update phase developer or supervisor if matching
+            const nextProjects = projects.map((p) => {
+              if (String(p.projectName || "").trim().toLowerCase() === targetName) {
+                if (role === "Supervisor") {
+                  return { ...p, supervisor: memberName };
+                }
+                if (!p.developer || p.developer === "Unassigned") {
+                  return { ...p, developer: memberName };
+                }
+              }
+              return p;
+            });
+            persistProjects(nextProjects);
+
+            setSaveState(`Assigned ${memberName} to ${data.projectName}`);
+            return { success: true };
+          }
+
+          if (type === "update_status") {
+            const targetName = String(data.projectName || "").trim().toLowerCase();
+            const newStatus = data.status || "WIP";
+            const newDateline = data.dateline;
+
+            if (!targetName) {
+              return { success: false, message: "Target project name is required." };
+            }
+
+            const nextProjects = projects.map((p) => {
+              const match = data.phaseId
+                ? String(p.id) === String(data.phaseId)
+                : String(p.projectName || "").trim().toLowerCase() === targetName;
+              if (match) {
+                return {
+                  ...p,
+                  salesStatus: newStatus,
+                  ...(newStatus === "Delivered" ? { teamLeadStatus: "Delivered" } : {}),
+                  ...(newDateline ? { dateline: newDateline } : {}),
+                };
+              }
+              return p;
+            });
+
+            persistProjects(nextProjects);
+            setSaveState(`Updated status for ${data.projectName} to ${newStatus}`);
+            return { success: true };
+          }
+
+          return { success: false, message: `Unknown action type: ${type}` };
+        }}
+      />
     </div>
   );
 }

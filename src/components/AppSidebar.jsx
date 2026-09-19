@@ -12,6 +12,7 @@ import {
   Moon,
   LogOut,
   User,
+  Sparkles,
 } from "lucide-react";
 import { useTheme } from "../lib/theme";
 import {
@@ -137,6 +138,7 @@ export default function AppSidebar({
   onImport,
   onLogout,
   onCloseMobile,
+  onOpenAgent,
 }) {
   const { colors, mode, toggleTheme } = useTheme();
   const [userHovered, setUserHovered] = useState(false);
@@ -343,6 +345,33 @@ export default function AppSidebar({
           active={activeView === "profile"}
           onClick={() => go(onOpenProfile)}
         />
+
+        {onOpenAgent ? (
+          <NavButton
+            icon={Sparkles}
+            label="Ai-Assistant"
+            showLabel={showLabel}
+            active={false}
+            onClick={() => go(onOpenAgent)}
+            tint="#7C3AED"
+          >
+            {showLabel ? (
+              <span
+                style={{
+                  marginLeft: "auto",
+                  fontSize: 9,
+                  fontWeight: 800,
+                  padding: "2px 6px",
+                  borderRadius: 6,
+                  background: "rgba(124, 58, 237, 0.1)",
+                  color: "#7C3AED",
+                }}
+              >
+                ⌘J
+              </span>
+            ) : null}
+          </NavButton>
+        ) : null}
 
         <div style={{ flex: 1, minHeight: 12 }} />
 

@@ -1,4 +1,4 @@
-import { Plus, Menu, ChevronsLeft, ChevronsRight, UserCheck, Sun, Moon } from "lucide-react";
+import { Plus, Menu, ChevronsLeft, ChevronsRight, UserCheck, Sun, Moon, Sparkles, Cpu } from "lucide-react";
 import { useTheme } from "../lib/theme";
 import { roleLabel } from "../lib/roles";
 
@@ -18,6 +18,7 @@ export default function DashboardHeader({
   onToggleMemberOnlyView,
   activeView = "dashboard",
   onNavigate,
+  onOpenAgent,
 }) {
   const { colors, mode, toggleTheme } = useTheme();
   const warn = Boolean(saveState && (saveState.includes("fail") || saveState.includes("Read-only")));
@@ -199,6 +200,41 @@ export default function DashboardHeader({
             }}
           >
             <Plus size={15} strokeWidth={2.5} /> New project
+          </button>
+        ) : null}
+
+        {/* AI Assistant Button */}
+        {onOpenAgent ? (
+          <button
+            type="button"
+            onClick={onOpenAgent}
+            title="Open Ai-Assistant (Cmd+J)"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 7,
+              padding: "7px 14px",
+              borderRadius: 9999,
+              border: `1px solid ${colors.border}`,
+              background: colors.panel,
+              color: colors.text,
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
+              boxShadow: colors.shadowSoft,
+              transition: "all 0.18s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = colors.shadow;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = colors.shadowSoft;
+            }}
+          >
+            <Sparkles size={14} style={{ color: "#7C3AED" }} />
+            <span>Ai-Assistant</span>
           </button>
         ) : null}
 

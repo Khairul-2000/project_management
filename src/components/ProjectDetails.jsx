@@ -36,6 +36,7 @@ import {
   canViewFinancials,
   canChangeDeliveryStatus,
   canEditSchedule,
+  canLinkRepos,
 } from "../lib/roles";
 import { GitHubIcon, GitLabIcon } from "./GitIcons";
 
@@ -87,6 +88,7 @@ export default function ProjectDetails({
   const canSeePrice = canViewFinancials(currentUser);
   const canChangeStatus = canChangeDeliveryStatus(currentUser);
   const canChangeSchedule = canEditSchedule(currentUser);
+  const canEditRepo = isAdmin || canLinkRepos(currentUser);
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
   const [newMemberRoles, setNewMemberRoles] = useState(() => defaultRoleForProject(project));
@@ -215,6 +217,7 @@ export default function ProjectDetails({
 
   const handleAddMember = (e) => {
     e.preventDefault();
+    if (!isAdmin) return;
     setTeamError("");
     const user = directory.find((u) => String(u.id) === String(selectedUserId));
     if (!user) {
@@ -239,12 +242,14 @@ export default function ProjectDetails({
   };
 
   const handleStartEditMember = (member) => {
+    if (!isAdmin) return;
     setTeamError("");
     setEditingMemberId(member.id);
     setEditingRoles(normalizeMemberRoles(member));
   };
 
   const handleSaveMemberRoles = (memberId) => {
+    if (!isAdmin) return;
     if (!editingRoles.length) {
       setTeamError("Select at least one role.");
       return;
@@ -256,6 +261,7 @@ export default function ProjectDetails({
   };
 
   const handleRemoveMember = (memberId) => {
+    if (!isAdmin) return;
     persistTeam(team.filter((m) => m.id !== memberId));
     if (editingMemberId === memberId) {
       setEditingMemberId(null);
@@ -664,7 +670,7 @@ export default function ProjectDetails({
                   </div>
                 </div>
               )}
-              {isAdmin ? (
+              {canEditRepo ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
                   <div style={{ background: COLORS.panel2, borderRadius: 8, padding: 8, color: COLORS.text, display: "grid", placeItems: "center" }}>
                     <GitHubIcon size={16} />
@@ -724,7 +730,7 @@ export default function ProjectDetails({
                   </div>
                 </div>
               )}
-              {isAdmin ? (
+              {canEditRepo ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
                   <div style={{ background: "rgba(252, 109, 38, 0.12)", borderRadius: 8, padding: 8, display: "grid", placeItems: "center" }}>
                     <GitLabIcon size={16} />
@@ -864,14 +870,14 @@ export default function ProjectDetails({
                 ))}
               </div>
             ) : (
-              <div style={{ fontSize: 13, color: COLORS.muted, marginBottom: isAdmin ? 14 : 0 }}>
+              <div style={{ fontSize: 13, color: COLORS.muted, marginBottom: canChangeSchedule ? 14 : 0 }}>
                 No delivery date yet
                 {project.dateline ? ` — sheet shows “${project.dateline}”` : ""}.
-                {isAdmin ? " Set one below." : ""}
+                {canChangeSchedule ? " Set one below." : ""}
               </div>
             )}
 
-            {isAdmin && (
+            {canChangeSchedule && (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <form
                   onSubmit={handleSaveDeliveryDate}
@@ -1049,49 +1055,51 @@ export default function ProjectDetails({
                         ) : null}
                       </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
-                      {editing ? (
-                        <>
+                    {isAdmin ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
+                        {editing ? (
+                          <>
+                            <button
+                              type="button"
+                              title="Save roles"
+                              onClick={() => handleSaveMemberRoles(m.id)}
+                              style={{ background: "none", border: "none", color: COLORS.delivered, cursor: "pointer", padding: 4 }}
+                            >
+                              <Check size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              title="Cancel"
+                              onClick={() => { setEditingMemberId(null); setEditingRoles([]); setTeamError(""); }}
+                              style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", padding: 4 }}
+                            >
+                              <X size={15} />
+                            </button>
+                          </>
+                        ) : (
                           <button
                             type="button"
-                            title="Save roles"
-                            onClick={() => handleSaveMemberRoles(m.id)}
-                            style={{ background: "none", border: "none", color: COLORS.delivered, cursor: "pointer", padding: 4 }}
-                          >
-                            <Check size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            title="Cancel"
-                            onClick={() => { setEditingMemberId(null); setEditingRoles([]); setTeamError(""); }}
+                            title="Edit roles"
+                            onClick={() => handleStartEditMember(m)}
                             style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", padding: 4 }}
+                            onMouseEnter={(e) => { e.currentTarget.style.color = COLORS.accent; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.color = COLORS.muted; }}
                           >
-                            <X size={15} />
+                            <Pencil size={14} />
                           </button>
-                        </>
-                      ) : (
-                        <button
+                        )}
+                        <button 
                           type="button"
-                          title="Edit roles"
-                          onClick={() => handleStartEditMember(m)}
+                          title="Remove member"
+                          onClick={() => handleRemoveMember(m.id)} 
                           style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", padding: 4 }}
-                          onMouseEnter={(e) => { e.currentTarget.style.color = COLORS.accent; }}
+                          onMouseEnter={(e) => { e.currentTarget.style.color = COLORS.late; }}
                           onMouseLeave={(e) => { e.currentTarget.style.color = COLORS.muted; }}
                         >
-                          <Pencil size={14} />
+                          <Trash2 size={14} />
                         </button>
-                      )}
-                      <button 
-                        type="button"
-                        title="Remove member"
-                        onClick={() => handleRemoveMember(m.id)} 
-                        style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", padding: 4 }}
-                        onMouseEnter={(e) => { e.currentTarget.style.color = COLORS.late; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = COLORS.muted; }}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+                      </div>
+                    ) : null}
                   </div>
                   {editing ? (
                     <RoleMultiSelect roles={ROLES} value={editingRoles} onChange={setEditingRoles} />
@@ -1107,61 +1115,63 @@ export default function ProjectDetails({
             </div>
 
             {/* ADD MEMBER FORM */}
-            <form onSubmit={handleAddMember} style={{ display: "flex", flexDirection: "column", gap: 10, borderTop: `1px solid ${COLORS.border}`, paddingTop: 14 }}>
-              <div style={{ fontSize: 11.5, color: COLORS.muted, fontWeight: 600 }}>ASSIGN NEW MEMBER</div>
-              {includeStaff ? (
-                <div style={{ fontSize: 12, color: COLORS.muted }}>
-                  Super admin can assign an admin as Supervisor, or any member.
-                </div>
-              ) : null}
-              <select
-                value={selectedUserId}
-                onChange={(e) => {
-                  setSelectedUserId(e.target.value);
-                  setTeamError("");
-                }}
-                style={{
-                  background: COLORS.panel2,
-                  border: `1px solid ${COLORS.border}`,
-                  borderRadius: 8,
-                  padding: "8px 10px",
-                  color: COLORS.text,
-                  fontSize: 13,
-                  cursor: "pointer",
-                }}
-              >
-                <option value="">
-                  {availableUsers.length ? "Select user…" : "All users already assigned"}
-                </option>
-                {availableUsers.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {includeStaff && u.role !== "member" ? `${u.name} (${roleLabel(u.role)})` : u.name}
+            {isAdmin ? (
+              <form onSubmit={handleAddMember} style={{ display: "flex", flexDirection: "column", gap: 10, borderTop: `1px solid ${COLORS.border}`, paddingTop: 14 }}>
+                <div style={{ fontSize: 11.5, color: COLORS.muted, fontWeight: 600 }}>ASSIGN NEW MEMBER</div>
+                {includeStaff ? (
+                  <div style={{ fontSize: 12, color: COLORS.muted }}>
+                    Super admin can assign an admin as Supervisor, or any member.
+                  </div>
+                ) : null}
+                <select
+                  value={selectedUserId}
+                  onChange={(e) => {
+                    setSelectedUserId(e.target.value);
+                    setTeamError("");
+                  }}
+                  style={{
+                    background: COLORS.panel2,
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    color: COLORS.text,
+                    fontSize: 13,
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="">
+                    {availableUsers.length ? "Select user…" : "All users already assigned"}
                   </option>
-                ))}
-              </select>
-              {teamError && (
-                <div style={{ fontSize: 12, color: COLORS.late }}>{teamError}</div>
-              )}
-              <div style={{ display: "flex", gap: 8 }}>
-                <RoleMultiSelect roles={ROLES} value={newMemberRoles} onChange={setNewMemberRoles} />
-                <button type="submit" disabled={!selectedUserId} style={{ 
-                  background: selectedUserId ? COLORS.accent : COLORS.border, 
-                  color: selectedUserId ? "#fff" : COLORS.muted, 
-                  border: "none", 
-                  borderRadius: 8, 
-                  padding: "0 14px", height: 40,
-                  fontWeight: 600, 
-                  fontSize: 13, 
-                  display: "flex", 
-                  alignItems: "center", 
-                  gap: 4,
-                  cursor: selectedUserId ? "pointer" : "not-allowed",
-                  opacity: selectedUserId ? 1 : 0.7,
-                }}>
-                  <Plus size={15} strokeWidth={2.5} /> Assign
-                </button>
-              </div>
-            </form>
+                  {availableUsers.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {includeStaff && u.role !== "member" ? `${u.name} (${roleLabel(u.role)})` : u.name}
+                    </option>
+                  ))}
+                </select>
+                {teamError && (
+                  <div style={{ fontSize: 12, color: COLORS.late }}>{teamError}</div>
+                )}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <RoleMultiSelect roles={ROLES} value={newMemberRoles} onChange={setNewMemberRoles} />
+                  <button type="submit" disabled={!selectedUserId} style={{ 
+                    background: selectedUserId ? COLORS.accent : COLORS.border, 
+                    color: selectedUserId ? "#fff" : COLORS.muted, 
+                    border: "none", 
+                    borderRadius: 8, 
+                    padding: "0 14px", height: 40,
+                    fontWeight: 600, 
+                    fontSize: 13, 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 4,
+                    cursor: selectedUserId ? "pointer" : "not-allowed",
+                    opacity: selectedUserId ? 1 : 0.7,
+                  }}>
+                    <Plus size={15} strokeWidth={2.5} /> Assign
+                  </button>
+                </div>
+              </form>
+            ) : null}
           </div>
 
           {/* STATUS CONTROLLER */}
@@ -1172,8 +1182,12 @@ export default function ProjectDetails({
               <div>
                 <label style={{ fontSize: 12, color: COLORS.muted, display: "block", marginBottom: 6, fontWeight: 500 }}>Sales Status</label>
                 <select 
+                  disabled={!canChangeStatus}
                   value={project.salesStatus || "WIP"} 
-                  onChange={(e) => handleStatusChange("salesStatus", e.target.value)}
+                  onChange={(e) => {
+                    if (!canChangeStatus) return;
+                    handleStatusChange("salesStatus", e.target.value);
+                  }}
                   style={{ 
                     width: "100%", 
                     background: COLORS.panel2, 
@@ -1182,7 +1196,8 @@ export default function ProjectDetails({
                     padding: "9px 11px", 
                     color: COLORS.text, 
                     fontSize: 13.5,
-                    cursor: "pointer"
+                    cursor: canChangeStatus ? "pointer" : "default",
+                    opacity: canChangeStatus ? 1 : 0.8,
                   }}
                 >
                   <option value="WIP">WIP</option>

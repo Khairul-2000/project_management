@@ -3,7 +3,7 @@ import { useTheme } from "../lib/theme";
 import { fmtMoney } from "../lib/utils";
 
 export default function HeroMetricStrip({ kpis, currentUser, canViewFinancials = true }) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   const total = kpis.total || 0;
   const delivered = kpis.deliveredCount || 0;
@@ -85,8 +85,8 @@ export default function HeroMetricStrip({ kpis, currentUser, canViewFinancials =
               title={`WIP: ${wip} projects (${wipPct}%)`}
               style={{
                 flex: Math.max(wipPct, 12),
-                background: "#1A1B20",
-                color: "#FFFFFF",
+                background: isDark ? colors.panel2 : "#1A1B20",
+                color: "white",
                 borderRadius: 9999,
                 display: "flex",
                 alignItems: "center",
@@ -100,13 +100,13 @@ export default function HeroMetricStrip({ kpis, currentUser, canViewFinancials =
               {wipPct}%
             </div>
 
-            {/* Vibrant Yellow Pill for Delivered */}
+            {/* Vibrant Delivered Pill */}
             <div
               title={`Delivered: ${delivered} projects (${deliveredPct}%)`}
               style={{
                 flex: Math.max(deliveredPct, 12),
-                background: colors.accentSoft || "#F7CE46",
-                color: "#1A1B20",
+                background: colors.accentSoft || "#00E599",
+                color: colors.onAccent || "#041D14",
                 borderRadius: 9999,
                 display: "flex",
                 alignItems: "center",
@@ -247,11 +247,11 @@ export default function HeroMetricStrip({ kpis, currentUser, canViewFinancials =
               width: 32,
               height: 32,
               borderRadius: "50%",
-              background: "rgba(247, 206, 70, 0.2)",
-              border: "1px solid rgba(247, 206, 70, 0.4)",
+              background: `${colors.wip}22`,
+              border: `1px solid ${colors.wip}44`,
               display: "grid",
               placeItems: "center",
-              color: "#B88E00",
+              color: colors.wip,
             }}
           >
             <Clock3 size={15} strokeWidth={2.2} />

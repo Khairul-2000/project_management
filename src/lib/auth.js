@@ -201,6 +201,27 @@ export async function patchUser(id, payload) {
   return updated;
 }
 
+export async function deleteUser(id) {
+  try {
+    const res = await fetch(`/api/users/${encodeURIComponent(id)}`, {
+      ...opts,
+      method: "DELETE",
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Failed to delete user");
+  } catch (err) {
+    if (err.message && !err.message.includes("fetch")) {
+      throw err;
+    }
+    console.warn("[auth] Server deleteUser failed, updating client storage:", err.message);
+  }
+
+  const users = await getStoredUsers();
+  const nextUsers = users.filter((u) => u.id !== id);
+  await saveStoredUsers(nextUsers);
+  return { ok: true, id };
+}
+
 export async function syncAssignmentsFromProjects() {
   try {
     const res = await fetch("/api/users/sync-assignments", {

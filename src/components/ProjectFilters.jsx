@@ -100,9 +100,9 @@ export default function ProjectFilters({
 
   function chip(active) {
     return {
-      background: active ? (colors.accent || "#1A1B20") : colors.panel,
-      color: active ? "#FFFFFF" : colors.muted,
-      border: `1px solid ${active ? (colors.accent || "#1A1B20") : colors.border}`,
+      background: active ? (colors.accent || "#00E599") : colors.panel,
+      color: active ? (colors.onAccent || "#041D14") : colors.muted,
+      border: `1px solid ${active ? (colors.accent || "#00E599") : colors.border}`,
       borderRadius: 9999,
       padding: "5px 12px",
       fontSize: 11.5,
@@ -123,7 +123,7 @@ export default function ProjectFilters({
           fontSize: 10,
           fontWeight: 750,
           opacity: active ? 0.9 : 0.7,
-          background: active ? "rgba(255, 255, 255, 0.2)" : colors.panel2,
+          background: active ? (colors.onAccent === "#FFFFFF" ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.18)") : colors.panel2,
           padding: "1px 5px",
           borderRadius: 99,
         }}

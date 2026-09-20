@@ -20,7 +20,7 @@ export default function DashboardHeader({
   onNavigate,
   onOpenAgent,
 }) {
-  const { colors, mode, toggleTheme } = useTheme();
+  const { colors, mode, isDark, toggleTheme } = useTheme();
   const warn = Boolean(saveState && (saveState.includes("fail") || saveState.includes("Read-only")));
   const subtitle = saveState
     ? saveState
@@ -135,13 +135,14 @@ export default function DashboardHeader({
                   padding: "7px 16px",
                   borderRadius: 9999,
                   border: "none",
-                  background: isActive ? (colors.accent || "#1A1B20") : "transparent",
-                  color: isActive ? "#FFFFFF" : colors.muted,
+                  background: isActive ? (colors.accent || "#00E599") : "transparent",
+                  color: isActive ? colors.onAccent : colors.muted,
                   fontWeight: isActive ? 700 : 600,
                   fontSize: 12.5,
                   cursor: "pointer",
                   transition: "all 0.15s ease",
                   whiteSpace: "nowrap",
+                  boxShadow: isActive && isDark ? "0 0 12px rgba(0, 229, 153, 0.25)" : "none",
                 }}
               >
                 {tab.label}
@@ -164,9 +165,9 @@ export default function DashboardHeader({
               gap: 6,
               padding: "7px 14px",
               borderRadius: 9999,
-              border: `1px solid ${memberOnlyView ? (colors.accentSoft || "#F7CE46") : colors.border}`,
-              background: memberOnlyView ? (colors.accentSoft || "#F7CE46") : colors.panel,
-              color: memberOnlyView ? "#1A1B20" : colors.text,
+              border: `1px solid ${memberOnlyView ? colors.accent : colors.border}`,
+              background: memberOnlyView ? colors.accent : colors.panel,
+              color: memberOnlyView ? colors.onAccent : colors.text,
               fontSize: 12,
               fontWeight: 700,
               cursor: "pointer",
@@ -187,15 +188,15 @@ export default function DashboardHeader({
               display: "inline-flex",
               alignItems: "center",
               gap: 6,
-              background: colors.accent || "#1A1B20",
-              color: "#FFFFFF",
+              background: colors.accent || "#00E599",
+              color: colors.onAccent || "#041D14",
               border: "none",
               borderRadius: 9999,
               padding: "8px 16px",
               fontWeight: 700,
               fontSize: 12.5,
               cursor: "pointer",
-              boxShadow: colors.shadowSoft,
+              boxShadow: isDark ? "0 0 18px rgba(0, 229, 153, 0.35)" : colors.shadowSoft,
               flexShrink: 0,
             }}
           >
@@ -204,7 +205,7 @@ export default function DashboardHeader({
         ) : null}
 
         {/* AI Assistant Button */}
-        {onOpenAgent ? (
+        {/* {onOpenAgent ? (
           <button
             type="button"
             onClick={onOpenAgent}
@@ -233,10 +234,10 @@ export default function DashboardHeader({
               e.currentTarget.style.boxShadow = colors.shadowSoft;
             }}
           >
-            <Sparkles size={14} style={{ color: "#7C3AED" }} />
+            <Sparkles size={14} style={{ color: isDark ? colors.accent : "#7C3AED" }} />
             <span>Ai-Assistant</span>
           </button>
-        ) : null}
+        ) : null}*/}
 
         {/* Theme Toggle Circular Button */}
         <button

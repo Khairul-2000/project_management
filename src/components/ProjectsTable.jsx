@@ -248,18 +248,18 @@ export default function ProjectsTable({
             justifyContent: "space-between",
             flexWrap: "wrap",
             gap: 12,
-            background: "#1A1B20",
+            background: isDark ? colors.panel2 : "#1A1B20",
             color: "#FFFFFF",
             borderRadius: 9999,
-            border: "1px solid #2B2D38",
+            border: `1px solid ${colors.border}`,
             boxShadow: colors.shadow,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span
               style={{
-                background: colors.accentSoft || "#F7CE46",
-                color: "#1A1B20",
+                background: colors.accentSoft || "#00E599",
+                color: colors.onAccent || "#041D14",
                 padding: "2px 9px",
                 borderRadius: 9999,
                 fontSize: 12,

@@ -60,6 +60,8 @@ import {
   canViewFinancials,
   canChangeDeliveryStatus,
   canCreateProjects,
+  canExportCsv,
+  canImportCsv,
 } from "./lib/roles";
 import { exportProjectsToCsv, parseCsvToProjects } from "./lib/csvHelper";
 
@@ -807,7 +809,7 @@ export default function Dashboard() {
     <div
       style={{
         background: isDark
-          ? `radial-gradient(circle at 85% 15%, rgba(247, 206, 70, 0.08) 0%, transparent 50%), ${colors.bg}`
+          ? `radial-gradient(circle at 50% -10%, rgba(0, 229, 153, 0.09) 0%, transparent 60%), radial-gradient(circle at 85% 15%, rgba(0, 229, 153, 0.04) 0%, transparent 45%), ${colors.bg}`
           : `radial-gradient(circle at 85% 15%, rgba(247, 206, 70, 0.22) 0%, transparent 45%), radial-gradient(circle at 10% 90%, rgba(247, 206, 70, 0.14) 0%, transparent 40%), ${colors.bg}`,
         color: colors.text,
         minHeight: "100%",
@@ -823,7 +825,7 @@ export default function Dashboard() {
         input, select { font-family: 'Plus Jakarta Sans', sans-serif; }
         .chip { transition: all .15s ease; }
         .project-link { color: ${colors.accent}; text-decoration: none; font-weight: 700; transition: color .15s ease; }
-        .project-link:hover { color: ${isDark ? colors.accentSoft : "#3B4558"}; text-decoration: underline; }
+        .project-link:hover { color: ${isDark ? "#34D399" : "#3B4558"}; text-decoration: underline; }
         .month-scroll::-webkit-scrollbar { display: none; }
         .month-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -1075,6 +1077,8 @@ export default function Dashboard() {
                     supervisor: updated.supervisor,
                     membersRaw: updated.membersRaw,
                     notes: updated.notes,
+                    githubUrl: updated.githubUrl,
+                    gitlabUrl: updated.gitlabUrl,
                   });
                   setClientProjects((prev) => prev.map((cp) => (cp.id === saved.id ? saved : cp)));
                   // Reload phases so role-matched team push is visible immediately
@@ -1096,6 +1100,7 @@ export default function Dashboard() {
               clientProjects={clientProjects}
               phases={projects}
               isAdmin={isAdmin}
+              canViewFinancials={canViewFinancials(currentUser)}
               onOpen={(cp) => {
                 setActiveClientProjectId(cp.id);
                 setView("clientProjectDetail");
@@ -1159,8 +1164,8 @@ export default function Dashboard() {
                 value={searchQuery}
                 onChange={setSearchQuery}
                 resultCount={filtered.length}
-                onExportCsv={handleExportCsv}
-                onImportCsv={handleImportCsv}
+                onExportCsv={canExportCsv(currentUser) ? handleExportCsv : null}
+                onImportCsv={canImportCsv(currentUser) ? handleImportCsv : null}
               />
 
               <ProjectsTable
@@ -1216,13 +1221,13 @@ export default function Dashboard() {
           <style>{`
             @keyframes fabHaloPulse {
               0% {
-                box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.45);
+                box-shadow: 0 0 0 0 ${isDark ? "rgba(0, 229, 153, 0.45)" : "rgba(168, 85, 247, 0.45)"};
               }
               70% {
-                box-shadow: 0 0 0 14px rgba(236, 72, 153, 0);
+                box-shadow: 0 0 0 14px ${isDark ? "rgba(0, 229, 153, 0)" : "rgba(168, 85, 247, 0)"};
               }
               100% {
-                box-shadow: 0 0 0 0 rgba(236, 72, 153, 0);
+                box-shadow: 0 0 0 0 ${isDark ? "rgba(0, 229, 153, 0)" : "rgba(168, 85, 247, 0)"};
               }
             }
           `}</style>
@@ -1239,13 +1244,13 @@ export default function Dashboard() {
               height: 58,
               borderRadius: "50%",
               background: isDark
-                ? "linear-gradient(135deg, #181A22 0%, #10121A 100%)"
+                ? "linear-gradient(135deg, #121418 0%, #08090A 100%)"
                 : "linear-gradient(135deg, #FFFFFF 0%, #FAF7F0 100%)",
               boxShadow: isDark
-                ? "0 12px 34px rgba(0,0,0,0.55), 0 0 20px rgba(236, 72, 153, 0.3)"
+                ? "0 12px 34px rgba(0,0,0,0.65), 0 0 22px rgba(0, 229, 153, 0.35)"
                 : "0 10px 30px rgba(45, 38, 20, 0.15), 0 0 18px rgba(168, 85, 247, 0.25)",
               border: isDark
-                ? "1.5px solid rgba(244, 114, 182, 0.35)"
+                ? "1.5px solid rgba(0, 229, 153, 0.45)"
                 : "1.5px solid rgba(168, 85, 247, 0.3)",
               cursor: "pointer",
               display: "flex",
@@ -1258,13 +1263,13 @@ export default function Dashboard() {
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-4px) scale(1.06)";
               e.currentTarget.style.boxShadow = isDark
-                ? "0 16px 44px rgba(0,0,0,0.7), 0 0 30px rgba(236, 72, 153, 0.5)"
+                ? "0 16px 44px rgba(0,0,0,0.8), 0 0 30px rgba(0, 229, 153, 0.55)"
                 : "0 14px 36px rgba(45, 38, 20, 0.22), 0 0 26px rgba(168, 85, 247, 0.4)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(0) scale(1)";
               e.currentTarget.style.boxShadow = isDark
-                ? "0 12px 34px rgba(0,0,0,0.55), 0 0 20px rgba(236, 72, 153, 0.3)"
+                ? "0 12px 34px rgba(0,0,0,0.65), 0 0 22px rgba(0, 229, 153, 0.35)"
                 : "0 10px 30px rgba(45, 38, 20, 0.15), 0 0 18px rgba(168, 85, 247, 0.25)";
             }}
           >

@@ -132,7 +132,7 @@ async function handle(req, res, pathname) {
 
   if (pathname === "/api/sheets/sync" && (req.method === "POST" || req.method === "GET")) {
     if (req.method === "POST") await readBody(req).catch(() => "");
-    if (!requireSuperAdmin(req, res)) return;
+    if (!requireAdmin(req, res)) return;
     if (!isGoogleConfigured()) {
       sendJson(res, 400, { error: "Google OAuth is not configured in .env" });
       return;

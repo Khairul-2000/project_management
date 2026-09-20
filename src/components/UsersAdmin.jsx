@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Plus, X, Search, Check, FolderKanban, Shield, User, Trash2 } from "lucide-react";
 import { useTheme } from "../lib/theme";
-import { createUser, listUsers, patchUser, syncAssignmentsFromProjects } from "../lib/auth";
-import { isAdminRole, isSuperAdmin, roleLabel, roleBadgeColor } from "../lib/roles";
+import { createUser, deleteUser, listUsers, patchUser, syncAssignmentsFromProjects } from "../lib/auth";
+import { isAdminRole, isSuperAdmin, canDeleteUsers, roleLabel, roleBadgeColor } from "../lib/roles";
 import { GitHubIcon, GitLabIcon } from "./GitIcons";
 import { saveStoredUsers } from "../lib/clientStorage";
 
@@ -32,6 +32,7 @@ export default function UsersAdmin({ projects = [], clientProjects = [], current
   const [syncingAssignments, setSyncingAssignments] = useState(false);
 
   const canManageAdmins = isSuperAdmin(currentUser);
+  const canDelete = canDeleteUsers(currentUser);
 
   function projectNameKey(name) {
     return String(name || "").trim().toLowerCase();
@@ -451,45 +452,53 @@ export default function UsersAdmin({ projects = [], clientProjects = [], current
 
                       {/* Password Reset */}
                       <td style={{ padding: "10px 12px" }}>
-                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                          <input
-                            type="password"
-                            placeholder="New password…"
-                            value={resetPassword[u.id] || ""}
-                            onChange={(e) =>
-                              setResetPassword((prev) => ({ ...prev, [u.id]: e.target.value }))
-                            }
-                            style={{ ...field, width: 110, padding: "5px 7px", fontSize: 11.5 }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => applyResetPassword(u)}
-                            style={{
-                              background: colors.panel2,
-                              border: `1px solid ${colors.border}`,
-                              borderRadius: 6,
-                              color: colors.text,
-                              padding: "5px 8px",
-                              fontWeight: 650,
-                              fontSize: 11.5,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Set
-                          </button>
-                        </div>
+                        {canManageAdmins || !isAdminRole(u) ? (
+                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                            <input
+                              type="password"
+                              placeholder="New password…"
+                              value={resetPassword[u.id] || ""}
+                              onChange={(e) =>
+                                setResetPassword((prev) => ({ ...prev, [u.id]: e.target.value }))
+                              }
+                              style={{ ...field, width: 110, padding: "5px 7px", fontSize: 11.5 }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => applyResetPassword(u)}
+                              style={{
+                                background: colors.panel2,
+                                border: `1px solid ${colors.border}`,
+                                borderRadius: 6,
+                                color: colors.text,
+                                padding: "5px 8px",
+                                fontWeight: 650,
+                                fontSize: 11.5,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Set
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ color: colors.muted, fontSize: 11 }}>Admin only</span>
+                        )}
                       </td>
 
                       {/* Action */}
                       <td style={{ padding: "10px 12px", textAlign: "right" }}>
-                        {!isSuper && u.id !== currentUser?.id ? (
+                        {canDelete && !isSuper && u.id !== currentUser?.id ? (
                           <button
                             type="button"
                             onClick={async () => {
-                              if (confirm(`Remove user account @${u.username}?`)) {
-                                const next = users.filter((usr) => usr.id !== u.id);
-                                setUsers(next);
-                                await saveStoredUsers(next);
+                              if (confirm(`Permanently delete user account @${u.username}? This cannot be undone.`)) {
+                                try {
+                                  await deleteUser(u.id);
+                                  setUsers((prev) => prev.filter((usr) => usr.id !== u.id));
+                                  setStatus(`User @${u.username} permanently deleted`);
+                                } catch (err) {
+                                  setError(err.message || "Failed to delete user");
+                                }
                               }
                             }}
                             title="Delete user"
@@ -587,7 +596,7 @@ export default function UsersAdmin({ projects = [], clientProjects = [], current
                     style={field}
                   >
                     <option value="member">Team Member</option>
-                    <option value="admin">Admin / Team Lead</option>
+                    {canManageAdmins ? <option value="admin">Admin / Team Lead</option> : null}
                     {canManageAdmins ? <option value="super_admin">Super Admin</option> : null}
                   </select>
                 </div>

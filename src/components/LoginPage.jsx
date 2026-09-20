@@ -32,7 +32,7 @@ export default function LoginPage({ onLoggedIn }) {
         placeItems: "center",
         padding: 20,
         background: mode === "dark"
-          ? `radial-gradient(circle at 85% 15%, rgba(247, 206, 70, 0.1) 0%, transparent 50%), ${colors.bg}`
+          ? `radial-gradient(circle at 50% -10%, rgba(0, 229, 153, 0.1) 0%, transparent 60%), radial-gradient(circle at 85% 15%, rgba(0, 229, 153, 0.05) 0%, transparent 45%), ${colors.bg}`
           : `radial-gradient(circle at 85% 15%, rgba(247, 206, 70, 0.25) 0%, transparent 45%), radial-gradient(circle at 10% 90%, rgba(247, 206, 70, 0.15) 0%, transparent 40%), ${colors.bg}`,
         fontFamily: "'Plus Jakarta Sans', sans-serif",
         color: colors.text,

@@ -1,6 +1,7 @@
 import {
   authenticate,
   createUser,
+  deleteUser,
   findUserById,
   listUsers,
   publicUser,
@@ -250,6 +251,24 @@ async function handle(req, res, pathname) {
     } catch (err) {
       const status = err.message === "User not found" ? 404 : 403;
       sendJson(res, status, { error: err.message || "Failed to update user" });
+    }
+    return;
+  }
+
+  if (patchMatch && req.method === "DELETE") {
+    const actor = requireSuperAdmin(req, res);
+    if (!actor) return;
+    const id = decodeURIComponent(patchMatch[1]);
+    if (actor.id === id) {
+      sendJson(res, 403, { error: "Cannot delete your own account" });
+      return;
+    }
+    try {
+      const deleted = deleteUser(id);
+      sendJson(res, 200, { ok: true, user: deleted });
+    } catch (err) {
+      const status = err.message === "User not found" ? 404 : 403;
+      sendJson(res, status, { error: err.message || "Failed to delete user" });
     }
     return;
   }

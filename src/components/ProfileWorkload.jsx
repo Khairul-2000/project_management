@@ -94,8 +94,8 @@ export default function ProfileWorkload({ byProfile = [], onSelectProfile }) {
               }}
               style={{
                 border: "none",
-                background: filterMode === "active" ? (colors.accent || "#1A1B20") : "transparent",
-                color: filterMode === "active" ? "#FFFFFF" : colors.muted,
+                background: filterMode === "active" ? (colors.accent || "#00E599") : "transparent",
+                color: filterMode === "active" ? (colors.onAccent || "#041D14") : colors.muted,
                 borderRadius: 9999,
                 padding: "3px 10px",
                 fontSize: 11,
@@ -114,8 +114,8 @@ export default function ProfileWorkload({ byProfile = [], onSelectProfile }) {
               }}
               style={{
                 border: "none",
-                background: filterMode === "all" ? (colors.accent || "#1A1B20") : "transparent",
-                color: filterMode === "all" ? "#FFFFFF" : colors.muted,
+                background: filterMode === "all" ? (colors.accent || "#00E599") : "transparent",
+                color: filterMode === "all" ? (colors.onAccent || "#041D14") : colors.muted,
                 borderRadius: 9999,
                 padding: "3px 10px",
                 fontSize: 11,

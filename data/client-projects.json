@@ -8,7 +8,9 @@
       "teamMembers": [],
       "membersRaw": "",
       "notes": "",
-      "createdAt": "2026-08-12T10:36:10.383Z"
+      "createdAt": "2026-08-12T10:36:10.383Z",
+      "githubUrl": "",
+      "gitlabUrl": ""
     },
     {
       "id": "cp-ahmedhadhrami",
@@ -547,6 +549,16 @@
       "createdAt": "2026-08-12T10:36:10.383Z"
     },
     {
+      "id": "cp-ibrahimalfadala",
+      "projectName": "ibrahimalfadala",
+      "projectNameKey": "ibrahimalfadala",
+      "supervisor": "",
+      "teamMembers": [],
+      "membersRaw": "",
+      "notes": "",
+      "createdAt": "2026-09-20T06:08:54.199Z"
+    },
+    {
       "id": "cp-isarkoetje",
       "projectName": "isarkoetje",
       "projectNameKey": "isarkoetje",
@@ -838,34 +850,34 @@
       "teamMembers": [
         {
           "id": "u-mslo41o8-93a57a",
-          "userId": "u-mslo41o8-93a57a",
           "name": "Ovie Rahaman Sheikh",
           "roles": [
             "UI/UX Designer"
           ],
-          "role": "UI/UX Designer"
+          "role": "UI/UX Designer",
+          "userId": "u-mslo41o8-93a57a"
         },
         {
           "id": "u-mslo41o8-c41716",
-          "userId": "u-mslo41o8-c41716",
           "name": "Miraz Or Rashid Alvee",
           "roles": [
             "Frontend Developer"
           ],
-          "role": "Frontend Developer"
+          "role": "Frontend Developer",
+          "userId": "u-mslo41o8-c41716"
         },
         {
           "id": "u-mslo41o8-487104",
-          "userId": "u-mslo41o8-487104",
           "name": "Md. Arman Hosen",
           "roles": [
             "Backend Developer"
           ],
-          "role": "Backend Developer"
+          "role": "Backend Developer",
+          "userId": "u-mslo41o8-487104"
         }
       ],
       "membersRaw": "",
-      "notes": "",
+      "notes": [],
       "createdAt": "2026-08-12T10:36:10.382Z"
     },
     {

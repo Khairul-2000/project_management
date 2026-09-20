@@ -43,7 +43,7 @@ export default function KpiStrip({ kpis, canViewFinancials = true }) {
       sub: "of all orders",
       color: colors.accent,
       Icon: Percent,
-      tint: "rgba(232, 185, 35, 0.18)",
+      tint: `${colors.accent}22`,
     },
   ];
 

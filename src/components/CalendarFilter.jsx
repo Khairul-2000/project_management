@@ -14,8 +14,8 @@ export default function CalendarFilter({
 
   function segBtn(active) {
     return {
-      background: active ? (colors.accent || "#1A1B20") : "transparent",
-      color: active ? "#FFFFFF" : colors.muted,
+      background: active ? (colors.accent || "#00E599") : "transparent",
+      color: active ? (colors.onAccent || "#041D14") : colors.muted,
       border: "none",
       borderRadius: 9999,
       padding: "6px 14px",

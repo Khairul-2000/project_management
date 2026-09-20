@@ -28,47 +28,63 @@ import {
 import { useTheme } from "../lib/theme";
 
 // 4-Point Star / Sparkle Avatar matching the reference image
-export const SparkleAvatar = ({ size = 32, animated = false, style = {} }) => (
-  <div
-    style={{
-      width: size,
-      height: size,
-      borderRadius: "50%",
-      background: "radial-gradient(circle at 35% 35%, #2D1A38 0%, #14151F 100%)",
-      border: "1px solid rgba(244, 114, 182, 0.4)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      boxShadow: "0 0 16px rgba(236, 72, 153, 0.35)",
-      flexShrink: 0,
-      position: "relative",
-      ...style,
-    }}
-  >
-    <svg
-      width={size * 0.58}
-      height={size * 0.58}
-      viewBox="0 0 24 24"
-      fill="none"
+export const SparkleAvatar = ({ size = 32, animated = false, style = {} }) => {
+  const { isDark } = useTheme();
+  return (
+    <div
       style={{
-        filter: "drop-shadow(0 0 5px rgba(244, 114, 182, 0.75))",
-        animation: animated ? "sparkleSpin 10s linear infinite" : undefined,
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: isDark
+          ? "radial-gradient(circle at 35% 35%, #0F2D20 0%, #08090A 100%)"
+          : "radial-gradient(circle at 35% 35%, #2D1A38 0%, #14151F 100%)",
+        border: isDark
+          ? "1px solid rgba(0, 229, 153, 0.45)"
+          : "1px solid rgba(244, 114, 182, 0.4)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: isDark
+          ? "0 0 16px rgba(0, 229, 153, 0.35)"
+          : "0 0 16px rgba(236, 72, 153, 0.35)",
+        flexShrink: 0,
+        position: "relative",
+        ...style,
       }}
     >
-      <path
-        d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z"
-        fill="url(#sparkleGradModal)"
-      />
-      <defs>
-        <linearGradient id="sparkleGradModal" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#FDE047" />
-          <stop offset="0.45" stopColor="#FB7185" />
-          <stop offset="1" stopColor="#C084FC" />
-        </linearGradient>
-      </defs>
-    </svg>
-  </div>
-);
+      <svg
+        width={size * 0.58}
+        height={size * 0.58}
+        viewBox="0 0 24 24"
+        fill="none"
+        style={{
+          filter: isDark
+            ? "drop-shadow(0 0 5px rgba(0, 229, 153, 0.8))"
+            : "drop-shadow(0 0 5px rgba(244, 114, 182, 0.75))",
+          animation: animated ? "sparkleSpin 10s linear infinite" : undefined,
+        }}
+      >
+        <path
+          d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z"
+          fill={isDark ? "url(#sparkleGradModalDark)" : "url(#sparkleGradModal)"}
+        />
+        <defs>
+          <linearGradient id="sparkleGradModalDark" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#A7F3D0" />
+            <stop offset="0.5" stopColor="#00E599" />
+            <stop offset="1" stopColor="#059669" />
+          </linearGradient>
+          <linearGradient id="sparkleGradModal" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#FDE047" />
+            <stop offset="0.45" stopColor="#FB7185" />
+            <stop offset="1" stopColor="#C084FC" />
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+  );
+};
 
 // Backward-compatible export
 export const CuteAvatar = SparkleAvatar;
@@ -182,9 +198,9 @@ function MarkdownContent({ text, isDark, colors, onSelectProject }) {
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 4,
-                  background: isDark ? "rgba(236, 72, 153, 0.15)" : "rgba(168, 85, 247, 0.12)",
-                  color: isDark ? "#F472B6" : "#9333EA",
-                  border: `1px solid ${isDark ? "rgba(236, 72, 153, 0.3)" : "rgba(168, 85, 247, 0.25)"}`,
+                  background: isDark ? "rgba(0, 229, 153, 0.12)" : "rgba(168, 85, 247, 0.12)",
+                  color: isDark ? "#00E599" : "#9333EA",
+                  border: `1px solid ${isDark ? "rgba(0, 229, 153, 0.3)" : "rgba(168, 85, 247, 0.25)"}`,
                   padding: "2px 8px",
                   borderRadius: 6,
                   fontSize: "0.88em",
@@ -326,17 +342,17 @@ function InteractiveActionCard({
       style={{
         marginTop: 10,
         background: isDark
-          ? "linear-gradient(145deg, rgba(30, 24, 40, 0.7) 0%, rgba(20, 22, 32, 0.85) 100%)"
+          ? "linear-gradient(145deg, rgba(17, 19, 23, 0.85) 0%, rgba(11, 13, 17, 0.95) 100%)"
           : "linear-gradient(145deg, #FFFFFF 0%, #FAF5FF 100%)",
         border: isApplied
-          ? "1px solid rgba(16, 185, 129, 0.4)"
+          ? "1px solid rgba(0, 229, 153, 0.5)"
           : isDark
-          ? "1px solid rgba(236, 72, 153, 0.28)"
+          ? "1px solid rgba(0, 229, 153, 0.28)"
           : "1px solid rgba(168, 85, 247, 0.25)",
         borderRadius: 18,
         padding: "14px 16px",
         boxShadow: isDark
-          ? "0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(236, 72, 153, 0.1)"
+          ? "0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(0, 229, 153, 0.08)"
           : "0 6px 20px rgba(168, 85, 247, 0.08)",
         display: "flex",
         flexDirection: "column",
@@ -347,16 +363,16 @@ function InteractiveActionCard({
       {/* Header with Type badge and status */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-          {type === "create_project" && <FolderPlus size={16} color="#EC4899" />}
-          {type === "assign_member" && <UserPlus size={16} color="#A855F7" />}
-          {type === "update_status" && <RotateCw size={16} color="#3B82F6" />}
+          {type === "create_project" && <FolderPlus size={16} color={isDark ? "#00E599" : "#EC4899"} />}
+          {type === "assign_member" && <UserPlus size={16} color={isDark ? "#10B981" : "#A855F7"} />}
+          {type === "update_status" && <RotateCw size={16} color={isDark ? "#34D399" : "#3B82F6"} />}
           <span
             style={{
               fontSize: 11.5,
               fontWeight: 800,
               textTransform: "uppercase",
               letterSpacing: "0.5px",
-              color: isDark ? "#F472B6" : "#9333EA",
+              color: isDark ? "#00E599" : "#9333EA",
             }}
           >
             {type === "create_project" && "Proposed: Create Project"}
@@ -514,18 +530,24 @@ function InteractiveActionCard({
               justifyContent: "center",
               gap: 6,
               background: isAdmin
-                ? "linear-gradient(135deg, #EC4899 0%, #A855F7 100%)"
+                ? isDark
+                  ? "linear-gradient(135deg, #00F5A0 0%, #00D287 100%)"
+                  : "linear-gradient(135deg, #EC4899 0%, #A855F7 100%)"
                 : isDark
                 ? "#374151"
                 : "#D1D5DB",
-              color: "#FFFFFF",
+              color: isDark && isAdmin ? "#041D14" : "#FFFFFF",
               border: "none",
               borderRadius: 10,
               padding: "8px 14px",
               fontSize: 12.5,
               fontWeight: 700,
               cursor: isAdmin ? "pointer" : "not-allowed",
-              boxShadow: isAdmin ? "0 4px 14px rgba(236, 72, 153, 0.35)" : "none",
+              boxShadow: isAdmin
+                ? isDark
+                  ? "0 4px 14px rgba(0, 229, 153, 0.35)"
+                  : "0 4px 14px rgba(236, 72, 153, 0.35)"
+                : "none",
               transition: "all 0.18s ease",
             }}
             onMouseEnter={(e) => {
@@ -953,14 +975,14 @@ export default function AgentChatModal({
         }
         .ref-card:hover .arrow-icon {
           transform: translate(3px, -3px);
-          color: #EC4899 !important;
+          color: ${isDark ? "#00E599" : "#EC4899"} !important;
         }
         .action-btn {
           transition: all 0.16s ease;
         }
         .action-btn:hover {
           transform: scale(1.12);
-          color: #EC4899 !important;
+          color: ${isDark ? "#00E599" : "#EC4899"} !important;
         }
       `}</style>
 
@@ -972,18 +994,18 @@ export default function AgentChatModal({
           bottom: 24,
           width: "min(430px, calc(100vw - 32px))",
           height: "min(730px, calc(100vh - 48px))",
-          background: isDark ? "#0D0F15" : colors.bg,
+          background: isDark ? "#08090A" : colors.bg,
           color: isDark ? "#FFFFFF" : colors.text,
           borderRadius: 32,
           boxShadow: isDark
-            ? "0 28px 70px rgba(0, 0, 0, 0.65), 0 0 40px rgba(236, 72, 153, 0.15)"
+            ? "0 28px 70px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 229, 153, 0.14)"
             : "0 24px 60px rgba(45, 38, 20, 0.15), 0 0 30px rgba(168, 85, 247, 0.12)",
           display: "flex",
           flexDirection: "column",
           zIndex: 9999,
           overflow: "hidden",
           border: isDark
-            ? "1px solid rgba(255, 255, 255, 0.1)"
+            ? "1px solid rgba(255, 255, 255, 0.08)"
             : `1px solid ${colors.border}`,
           animation: "modalEnter 0.32s cubic-bezier(0.16, 1, 0.3, 1)",
           fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
@@ -1000,10 +1022,10 @@ export default function AgentChatModal({
             height: 280,
             background: mode === "work"
               ? isDark
-                ? "radial-gradient(circle at 60% 40%, rgba(236, 72, 153, 0.5) 0%, rgba(244, 63, 94, 0.35) 45%, transparent 70%)"
+                ? "radial-gradient(circle at 60% 40%, rgba(0, 229, 153, 0.35) 0%, rgba(16, 185, 129, 0.2) 45%, transparent 70%)"
                 : "radial-gradient(circle at 60% 40%, rgba(244, 114, 182, 0.4) 0%, rgba(251, 113, 133, 0.3) 45%, transparent 70%)"
               : isDark
-              ? "radial-gradient(circle at 60% 40%, rgba(168, 85, 247, 0.45) 0%, rgba(99, 102, 241, 0.3) 40%, transparent 70%)"
+              ? "radial-gradient(circle at 60% 40%, rgba(0, 229, 153, 0.28) 0%, rgba(5, 150, 105, 0.18) 40%, transparent 70%)"
               : "radial-gradient(circle at 60% 40%, rgba(192, 132, 252, 0.35) 0%, rgba(165, 180, 252, 0.25) 45%, transparent 70%)",
             filter: "blur(40px)",
             pointerEvents: "none",
@@ -1223,12 +1245,12 @@ export default function AgentChatModal({
                 border: "none",
                 background: mode === "chat"
                   ? isDark
-                    ? "#2D2640"
+                    ? "#171A20"
                     : "#FFFFFF"
                   : "transparent",
                 color: mode === "chat"
                   ? isDark
-                    ? "#C084FC"
+                    ? "#00E599"
                     : "#7C3AED"
                   : isDark
                   ? "rgba(255, 255, 255, 0.6)"
@@ -1236,7 +1258,7 @@ export default function AgentChatModal({
                 fontWeight: mode === "chat" ? 750 : 600,
                 fontSize: 12,
                 cursor: "pointer",
-                boxShadow: mode === "chat" ? "0 2px 8px rgba(0, 0, 0, 0.15)" : "none",
+                boxShadow: mode === "chat" ? (isDark ? "0 2px 10px rgba(0, 0, 0, 0.3)" : "0 2px 8px rgba(0, 0, 0, 0.15)") : "none",
                 transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
               }}
             >
@@ -1258,17 +1280,25 @@ export default function AgentChatModal({
                 borderRadius: 9999,
                 border: "none",
                 background: mode === "work"
-                  ? "linear-gradient(135deg, #EC4899 0%, #A855F7 100%)"
+                  ? isDark
+                    ? "linear-gradient(135deg, #00F5A0 0%, #00D287 100%)"
+                    : "linear-gradient(135deg, #EC4899 0%, #A855F7 100%)"
                   : "transparent",
                 color: mode === "work"
-                  ? "#FFFFFF"
+                  ? isDark
+                    ? "#041D14"
+                    : "#FFFFFF"
                   : isDark
                   ? "rgba(255, 255, 255, 0.6)"
                   : colors.muted,
                 fontWeight: mode === "work" ? 750 : 600,
                 fontSize: 12,
                 cursor: "pointer",
-                boxShadow: mode === "work" ? "0 2px 12px rgba(236, 72, 153, 0.35)" : "none",
+                boxShadow: mode === "work"
+                  ? isDark
+                    ? "0 2px 14px rgba(0, 229, 153, 0.4)"
+                    : "0 2px 12px rgba(236, 72, 153, 0.35)"
+                  : "none",
                 transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
               }}
             >
@@ -1311,7 +1341,9 @@ export default function AgentChatModal({
                       <br />
                       <span
                         style={{
-                          background: "linear-gradient(135deg, #EC4899 0%, #A855F7 60%, #6366F1 100%)",
+                          background: isDark
+                            ? "linear-gradient(135deg, #00F5A0 0%, #00E599 60%, #10B981 100%)"
+                            : "linear-gradient(135deg, #EC4899 0%, #A855F7 60%, #6366F1 100%)",
                           WebkitBackgroundClip: "text",
                           WebkitTextFillColor: "transparent",
                         }}
@@ -1325,7 +1357,9 @@ export default function AgentChatModal({
                       <br />
                       <span
                         style={{
-                          background: "linear-gradient(135deg, #EC4899 0%, #A855F7 60%, #6366F1 100%)",
+                          background: isDark
+                            ? "linear-gradient(135deg, #00F5A0 0%, #00E599 60%, #10B981 100%)"
+                            : "linear-gradient(135deg, #EC4899 0%, #A855F7 60%, #6366F1 100%)",
                           WebkitBackgroundClip: "text",
                           WebkitTextFillColor: "transparent",
                         }}
@@ -1484,14 +1518,17 @@ export default function AgentChatModal({
                   >
                     <div
                       style={{
-                        background:
-                          "linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #6366F1 100%)",
-                        color: "#FFFFFF",
+                        background: isDark
+                          ? "linear-gradient(135deg, #00F5A0 0%, #00D287 100%)"
+                          : "linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #6366F1 100%)",
+                        color: isDark ? "#041D14" : "#FFFFFF",
                         padding: "13px 18px",
                         borderRadius: "22px 22px 4px 22px",
-                        boxShadow: "0 8px 24px rgba(236, 72, 153, 0.25)",
+                        boxShadow: isDark
+                          ? "0 6px 20px rgba(0, 229, 153, 0.28)"
+                          : "0 8px 24px rgba(236, 72, 153, 0.25)",
                         fontSize: 14,
-                        fontWeight: 500,
+                        fontWeight: 600,
                         lineHeight: 1.5,
                         wordBreak: "break-word",
                       }}
@@ -1750,11 +1787,13 @@ export default function AgentChatModal({
                 borderRadius: "50%",
                 background:
                   input.trim() && !isStreaming
-                    ? "linear-gradient(135deg, #EC4899 0%, #A855F7 100%)"
+                    ? isDark
+                      ? "linear-gradient(135deg, #00F5A0 0%, #00D287 100%)"
+                      : "linear-gradient(135deg, #EC4899 0%, #A855F7 100%)"
                     : isDark
                     ? "rgba(255, 255, 255, 0.08)"
                     : "rgba(0, 0, 0, 0.06)",
-                color: "#FFFFFF",
+                color: input.trim() && !isStreaming && isDark ? "#041D14" : "#FFFFFF",
                 border: "none",
                 display: "grid",
                 placeItems: "center",
@@ -1763,7 +1802,9 @@ export default function AgentChatModal({
                 flexShrink: 0,
                 boxShadow:
                   input.trim() && !isStreaming
-                    ? "0 4px 14px rgba(236, 72, 153, 0.4)"
+                    ? isDark
+                      ? "0 4px 16px rgba(0, 229, 153, 0.45)"
+                      : "0 4px 14px rgba(236, 72, 153, 0.4)"
                     : "none",
               }}
               onMouseEnter={(e) => {

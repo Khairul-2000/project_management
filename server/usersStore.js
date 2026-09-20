@@ -274,6 +274,24 @@ export function updateUser(id, patch) {
   return publicUser(user);
 }
 
+export function deleteUser(id) {
+  const data = readUsersFile();
+  const idx = data.users.findIndex((u) => u.id === id);
+  if (idx < 0) throw new Error("User not found");
+
+  const target = data.users[idx];
+  if (isSuperAdmin(target)) {
+    const others = data.users.filter((user) => isSuperAdmin(user) && user.id !== target.id && user.active !== false);
+    if (!others.length) {
+      throw new Error("Cannot remove the last super admin");
+    }
+  }
+
+  const removed = data.users.splice(idx, 1)[0];
+  writeUsersFile(data);
+  return publicUser(removed);
+}
+
 export function replaceUsers(users) {
   if (!Array.isArray(users)) throw new Error("users must be an array");
   const data = readUsersFile();

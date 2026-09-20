@@ -70,6 +70,8 @@ function makeClientProject(projectName) {
     teamMembers: [],
     membersRaw: "",
     notes: "",
+    githubUrl: "",
+    gitlabUrl: "",
     createdAt: new Date().toISOString(),
   };
 }
@@ -150,18 +152,21 @@ function rolesForStack(roles, stack) {
   const list = memberRoles({ roles });
   const matching = list.filter((role) => {
     const targets = stacksForRole(role);
-    return targets.includes("*") || targets.includes(stack);
+    return targets.includes("*") || targets.includes(stack) || stack === "Other";
   });
-  return matching.length ? matching : [];
+  return matching.length ? matching : (stack === "Other" ? list : []);
 }
 
 function roleMatchesPhaseStack(roles, stack) {
   return rolesForStack(roles, stack).length > 0;
 }
 
-function phaseStack(phase) {
+export function phaseStack(phase) {
   if (phase?.stackLocked && phase?.stack) return phase.stack;
-  return deriveStackFromPhase(phase?.phase) || phase?.stack || "Other";
+  if (phase?.stack && phase.stack !== "Other") return phase.stack;
+  const derived = deriveStackFromPhase(phase?.phase || phase?.name);
+  if (derived && derived !== "Other") return derived;
+  return phase?.stack || derived || "Other";
 }
 
 function phaseHasMember(phase, member) {
@@ -207,6 +212,19 @@ export function applyClientTeamToSinglePhase(phase, clientProject, options = {})
     }
   } else if (syncRoles) {
     next.supervisor = "";
+  }
+
+  if (syncRoles) {
+    const clientMemberUids = new Set(clientMembers.map((m) => m.userId ? String(m.userId) : "").filter(Boolean));
+    const clientMemberNames = new Set(clientMembers.map((m) => String(m.name || "").trim().toLowerCase()).filter(Boolean));
+
+    next.teamMembers = next.teamMembers.filter((phaseMember) => {
+      const pUid = phaseMember.userId ? String(phaseMember.userId) : "";
+      const pName = String(phaseMember.name || "").trim().toLowerCase();
+      if (pUid && clientMemberUids.has(pUid)) return true;
+      if (pName && clientMemberNames.has(pName)) return true;
+      return false;
+    });
   }
 
   let added = 0;
@@ -408,18 +426,18 @@ export function ensureClientProjectsFromPhases(phases) {
     const existing = byKey.get(key);
     if (!existing.projectName) existing.projectName = name;
 
-    // Always roll phase teams into the client project so phase assigns appear at project level
+    // Seed client team from phase teams if client project has no team assigned yet
     const rolled = aggregateTeamFromPhases(group);
-    existing.teamMembers = mergeTeamMembers(existing.teamMembers, rolled.teamMembers);
-    if (!String(existing.supervisor || "").trim() && rolled.supervisor) {
+    if (!clientProjectHasTeam(existing)) {
+      existing.teamMembers = rolled.teamMembers;
+      if (!String(existing.supervisor || "").trim() && rolled.supervisor) {
+        existing.supervisor = rolled.supervisor;
+      }
+      if (rolled.membersRaw) {
+        existing.membersRaw = rolled.membersRaw;
+      }
+    } else if (!String(existing.supervisor || "").trim() && rolled.supervisor) {
       existing.supervisor = rolled.supervisor;
-    }
-    if (rolled.membersRaw) {
-      const parts = `${existing.membersRaw || ""},${rolled.membersRaw}`
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      existing.membersRaw = [...new Set(parts)].join(", ");
     }
 
     // Link phases → client project; keep admin-locked department, else derive from phase title
@@ -540,6 +558,8 @@ export function updateClientProject(id, patch) {
       }))
       .filter((m) => m.name);
   }
+  if (patch.githubUrl !== undefined) next.githubUrl = String(patch.githubUrl || "").trim();
+  if (patch.gitlabUrl !== undefined) next.gitlabUrl = String(patch.gitlabUrl || "").trim();
 
   data.clientProjects[idx] = next;
   writeClientProjectsFile(data);

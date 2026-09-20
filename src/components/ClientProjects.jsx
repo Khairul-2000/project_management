@@ -8,7 +8,7 @@ function projectNameKey(name) {
   return String(name || "").trim().toLowerCase();
 }
 
-export default function ClientProjects({ clientProjects, phases, onOpen, isAdmin = true }) {
+export default function ClientProjects({ clientProjects, phases, onOpen, isAdmin = true, canViewFinancials = true }) {
   const { colors, card } = useTheme();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -156,7 +156,8 @@ export default function ClientProjects({ clientProjects, phases, onOpen, isAdmin
                     </div>
                   </div>
                   <div style={{ fontSize: 12, color: colors.muted, fontWeight: 500 }}>
-                    {row.phaseCount} phase{row.phaseCount === 1 ? "" : "s"} · {fmtMoney(row.value)}
+                    {row.phaseCount} phase{row.phaseCount === 1 ? "" : "s"}
+                    {canViewFinancials ? ` · ${fmtMoney(row.value)}` : ""}
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", fontSize: 12, fontWeight: 650 }}>

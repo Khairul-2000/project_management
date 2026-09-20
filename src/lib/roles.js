@@ -45,7 +45,11 @@ export function canConnectGoogle(user) {
 }
 
 export function canSyncGoogle(user) {
-  return isSuperAdmin(user);
+  return isAdminRole(user);
+}
+
+export function canSyncGoogleSheets(user) {
+  return isAdminRole(user);
 }
 
 export function canManageAdmins(user) {
@@ -57,6 +61,10 @@ export function canManageUsers(user) {
 }
 
 export function canDeleteProjects(user) {
+  return isSuperAdmin(user);
+}
+
+export function canDeleteUsers(user) {
   return isSuperAdmin(user);
 }
 
@@ -80,9 +88,14 @@ export function canChangeDeliveryStatus(user) {
   return isAdminRole(user);
 }
 
+export const canSignOffMilestones = canChangeDeliveryStatus;
+
 export function canEditSchedule(user) {
   return isAdminRole(user);
 }
+
+export const canChangeSchedule = canEditSchedule;
+export const canAddNotes = (user) => Boolean(user);
 
 export function canExportFullBackup(user) {
   return isSuperAdmin(user);
@@ -91,6 +104,8 @@ export function canExportFullBackup(user) {
 export function canImportFullBackup(user) {
   return isSuperAdmin(user);
 }
+
+export const canRestoreDatabase = canImportFullBackup;
 
 export function canExportCsv(user) {
   return isAdminRole(user);
@@ -104,7 +119,15 @@ export function canEditChecklists(user) {
   return Boolean(user);
 }
 
+export function canEditChecklist(user) {
+  return Boolean(user);
+}
+
 export function canLinkPhaseRepo(user) {
+  return Boolean(user);
+}
+
+export function canLinkRepos(user) {
   return Boolean(user);
 }
 

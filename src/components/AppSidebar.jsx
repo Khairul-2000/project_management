@@ -18,7 +18,8 @@ import { useTheme } from "../lib/theme";
 import {
   roleLabel,
   canConnectGoogle,
-  canSyncGoogle,
+  canSyncGoogleSheets,
+  canExportFullBackup,
   canImportFullBackup,
 } from "../lib/roles";
 
@@ -149,7 +150,9 @@ export default function AppSidebar({
   const lastSync = formatSyncTime(googleStatus?.lastSyncAt);
 
   const isSuper = canConnectGoogle(currentUser);
-  const canSync = canSyncGoogle(currentUser);
+  const canSync = canSyncGoogleSheets(currentUser);
+  const canExportBackup = canExportFullBackup(currentUser);
+  const canRestoreBackup = canImportFullBackup(currentUser);
 
   let statusLabel = isSuper ? "Google: checking…" : "";
   let statusColor = colors.muted;
@@ -175,8 +178,8 @@ export default function AppSidebar({
     (isSuper && statusLabel) ||
     (isSuper && (configured || connected)) ||
     (canSync && connected) ||
-    isAdmin ||
-    canImportFullBackup(currentUser);
+    canExportBackup ||
+    canRestoreBackup;
 
   return (
     <div
@@ -481,7 +484,7 @@ export default function AppSidebar({
               />
             ) : null}
 
-            {/* Sync Now Button (SUPER ADMIN ONLY) */}
+            {/* Sync Now Button (Super Admin & Admin / Team Lead) */}
             {canSync && connected ? (
               <NavButton
                 icon={RefreshCw}
@@ -494,19 +497,19 @@ export default function AppSidebar({
               />
             ) : null}
 
-            {/* Export Backup */}
-            {isAdmin ? (
+            {/* Export Backup (SUPER ADMIN ONLY) */}
+            {canExportBackup ? (
               <NavButton
                 icon={Download}
-                label="Export"
+                label="Export Backup"
                 showLabel={showLabel}
                 onClick={onExport}
-                title="Export database backup JSON"
+                title="Export database backup JSON (Super Admin only)"
               />
             ) : null}
 
             {/* Restore Backup (SUPER ADMIN ONLY) */}
-            {canImportFullBackup(currentUser) ? (
+            {canRestoreBackup ? (
               <NavButton
                 as="label"
                 icon={Upload}

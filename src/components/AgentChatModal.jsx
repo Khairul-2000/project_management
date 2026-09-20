@@ -731,18 +731,20 @@ export default function AgentChatModal({
     const query = (textToSend || input).trim();
     if (!query || isStreaming) return;
 
+    const currentMode = mode;
+    const targetSetMessages = currentMode === "work" ? setWorkMessages : setChatMessages;
+    const currentList = currentMode === "work" ? workMessages : chatMessages;
+
     setInput("");
 
     const userMessageId = `u-${Date.now()}`;
     const botMessageId = `b-${Date.now() + 1}`;
 
-    const newMessages = [
-      ...messages,
-      { id: userMessageId, sender: "user", mode, text: query },
-      { id: botMessageId, sender: "assistant", mode, text: "" },
-    ];
-
-    setMessages(newMessages);
+    targetSetMessages((prev) => [
+      ...prev,
+      { id: userMessageId, sender: "user", mode: currentMode, text: query },
+      { id: botMessageId, sender: "assistant", mode: currentMode, text: "" },
+    ]);
     setIsStreaming(true);
 
     try {
@@ -751,14 +753,14 @@ export default function AgentChatModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: query,
-          mode,
-          history: messages.slice(-5),
+          mode: currentMode,
+          history: currentList.slice(-5),
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        setMessages((prev) =>
+        targetSetMessages((prev) =>
           prev.map((msg) =>
             msg.id === botMessageId
               ? { ...msg, text: `⚠️ Request failed: ${errorData.error || "Please authenticate."}` }
@@ -790,7 +792,7 @@ export default function AgentChatModal({
           try {
             const parsed = JSON.parse(payload);
             if (parsed.content) {
-              setMessages((prev) =>
+              targetSetMessages((prev) =>
                 prev.map((msg) =>
                   msg.id === botMessageId
                     ? { ...msg, text: msg.text + parsed.content }
@@ -804,7 +806,7 @@ export default function AgentChatModal({
         }
       }
     } catch (err) {
-      setMessages((prev) =>
+      targetSetMessages((prev) =>
         prev.map((msg) =>
           msg.id === botMessageId ? { ...msg, text: `⚠️ Error: ${err.message}` } : msg
         )

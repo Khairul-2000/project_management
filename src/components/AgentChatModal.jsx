@@ -696,6 +696,47 @@ export default function AgentChatModal({
   const [likedMap, setLikedMap] = useState({});
   const [menuOpen, setMenuOpen] = useState(false);
   const [actionStatusMap, setActionStatusMap] = useState({});
+  const [quota, setQuota] = useState(null);
+
+  const fetchQuota = async () => {
+    try {
+      const res = await fetch(`/api/agent/quota?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { Pragma: "no-cache", "Cache-Control": "no-cache" },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setQuota(data);
+      }
+    } catch (err) {
+      console.warn("[agent-quota] Failed to fetch quota:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    fetchQuota();
+    const interval = setInterval(() => {
+      fetchQuota();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [isOpen]);
+
+  const currentQuota = mode === "work" ? quota?.work : quota?.chat;
+  const isUnlimited = Boolean(quota?.isUnlimited);
+  const remaining = isUnlimited ? 999 : (currentQuota?.remaining ?? (mode === "work" ? 3 : 25));
+  const limit = currentQuota?.limit ?? (mode === "work" ? 3 : 25);
+  const resetInSeconds = currentQuota?.resetInSeconds || 0;
+  const windowHours = quota?.windowHours || 5;
+  const isExhausted = !isUnlimited && remaining <= 0;
+
+  const formatCountdown = (secs) => {
+    if (!secs || secs <= 0) return "";
+    const hours = Math.floor(secs / 3600);
+    const mins = Math.ceil((secs % 3600) / 60);
+    if (hours > 0) return `${hours}h ${mins}m`;
+    return `${mins}m`;
+  };
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -729,7 +770,7 @@ export default function AgentChatModal({
 
   const handleSend = async (textToSend) => {
     const query = (textToSend || input).trim();
-    if (!query || isStreaming) return;
+    if (!query || isStreaming || isExhausted) return;
 
     const currentMode = mode;
     const targetSetMessages = currentMode === "work" ? setWorkMessages : setChatMessages;
@@ -791,6 +832,9 @@ export default function AgentChatModal({
 
           try {
             const parsed = JSON.parse(payload);
+            if (parsed.quota) {
+              setQuota(parsed.quota);
+            }
             if (parsed.content) {
               targetSetMessages((prev) =>
                 prev.map((msg) =>
@@ -813,6 +857,7 @@ export default function AgentChatModal({
       );
     } finally {
       setIsStreaming(false);
+      fetchQuota();
     }
   };
 
@@ -882,6 +927,7 @@ export default function AgentChatModal({
         alert(res.message || "Failed to execute action.");
       } else {
         setActionStatusMap((prev) => ({ ...prev, [actionId]: "applied" }));
+        fetchQuota();
       }
     } catch (err) {
       setActionStatusMap((prev) => ({ ...prev, [actionId]: "pending" }));
@@ -1308,7 +1354,81 @@ export default function AgentChatModal({
               <span>Work Mode</span>
             </button>
           </div>
+
+          {/* Quota & Reset Indicator Strip */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "4px 8px 0 8px",
+              fontSize: 11,
+              fontWeight: 600,
+              color: isDark ? "rgba(255, 255, 255, 0.65)" : colors.muted,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  backgroundColor: isUnlimited
+                    ? "#3B82F6"
+                    : isExhausted
+                    ? "#EF4444"
+                    : remaining <= 1
+                    ? "#F59E0B"
+                    : "#10B981",
+                  boxShadow: isUnlimited
+                    ? "0 0 7px #3B82F6"
+                    : isExhausted
+                    ? "0 0 7px #EF4444"
+                    : "0 0 7px #10B981",
+                  display: "inline-block",
+                  flexShrink: 0,
+                }}
+              />
+              {isUnlimited ? (
+                <span>Super Admin: Unlimited {mode === "work" ? "Tasks" : "Queries"}</span>
+              ) : mode === "work" ? (
+                <span>
+                  Quota: <strong style={{ color: isExhausted ? "#EF4444" : isDark ? "#FFFFFF" : "#111827" }}>{remaining} of {limit}</strong> tasks left
+                </span>
+              ) : (
+                <span>
+                  Quota: <strong style={{ color: isExhausted ? "#EF4444" : isDark ? "#FFFFFF" : "#111827" }}>{remaining} of {limit}</strong> chats left
+                </span>
+              )}
+            </div>
+
+            {!isUnlimited && (
+              <div
+                title={
+                  isExhausted
+                    ? `Quota resets in ${formatCountdown(resetInSeconds)}`
+                    : `Rolling ${windowHours}-hour quota window`
+                }
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: 10.5,
+                  opacity: 0.85,
+                  color: isExhausted ? (isDark ? "#F87171" : "#DC2626") : undefined,
+                }}
+              >
+                <Clock size={11} strokeWidth={2.2} />
+                <span>
+                  {isExhausted && resetInSeconds > 0
+                    ? `Resets in ${formatCountdown(resetInSeconds)}`
+                    : `${windowHours}h window`}
+                </span>
+              </div>
+            )}
+          </div>
         </header>
+
 
         {/* Body Content */}
         <div
@@ -1397,7 +1517,7 @@ export default function AgentChatModal({
                   <div
                     key={i}
                     className="ref-card"
-                    onClick={() => handleSend(card.prompt)}
+                    onClick={() => !isExhausted && handleSend(card.prompt)}
                     style={{
                       background: isDark ? "rgba(255, 255, 255, 0.04)" : colors.panel,
                       border: isDark
@@ -1405,7 +1525,8 @@ export default function AgentChatModal({
                         : `1px solid ${colors.border}`,
                       borderRadius: 22,
                       padding: "16px 14px 14px 14px",
-                      cursor: "pointer",
+                      cursor: isExhausted ? "not-allowed" : "pointer",
+                      opacity: isExhausted ? 0.45 : 1,
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "space-between",
@@ -1764,8 +1885,14 @@ export default function AgentChatModal({
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={mode === "work" ? "Instruct an action (e.g. Create project, assign member)..." : "Ask anything about delivery ops..."}
-              disabled={isStreaming}
+              placeholder={
+                isExhausted
+                  ? `Limit reached (${limit}/${limit} in ${windowHours}h). Resets in ${formatCountdown(resetInSeconds)}...`
+                  : mode === "work"
+                  ? "Instruct an action (e.g. Create project, assign member)..."
+                  : "Ask anything about delivery ops..."
+              }
+              disabled={isStreaming || isExhausted}
               style={{
                 flex: 1,
                 border: "none",
@@ -1775,42 +1902,44 @@ export default function AgentChatModal({
                 fontSize: 13.5,
                 fontWeight: 500,
                 padding: "8px 0",
+                opacity: isExhausted ? 0.6 : 1,
+                cursor: isExhausted ? "not-allowed" : "text",
               }}
             />
 
             {/* Gradient Circular Send Button */}
             <button
               type="submit"
-              disabled={!input.trim() || isStreaming}
+              disabled={!input.trim() || isStreaming || isExhausted}
               title="Send message"
               style={{
                 width: 36,
                 height: 36,
                 borderRadius: "50%",
                 background:
-                  input.trim() && !isStreaming
+                  input.trim() && !isStreaming && !isExhausted
                     ? isDark
                       ? "linear-gradient(135deg, #00F5A0 0%, #00D287 100%)"
                       : "linear-gradient(135deg, #EC4899 0%, #A855F7 100%)"
                     : isDark
                     ? "rgba(255, 255, 255, 0.08)"
                     : "rgba(0, 0, 0, 0.06)",
-                color: input.trim() && !isStreaming && isDark ? "#041D14" : "#FFFFFF",
+                color: input.trim() && !isStreaming && !isExhausted && isDark ? "#041D14" : "#FFFFFF",
                 border: "none",
                 display: "grid",
                 placeItems: "center",
-                cursor: input.trim() && !isStreaming ? "pointer" : "default",
+                cursor: input.trim() && !isStreaming && !isExhausted ? "pointer" : "default",
                 transition: "all 0.2s ease",
                 flexShrink: 0,
                 boxShadow:
-                  input.trim() && !isStreaming
+                  input.trim() && !isStreaming && !isExhausted
                     ? isDark
                       ? "0 4px 16px rgba(0, 229, 153, 0.45)"
                       : "0 4px 14px rgba(236, 72, 153, 0.4)"
                     : "none",
               }}
               onMouseEnter={(e) => {
-                if (input.trim() && !isStreaming) {
+                if (input.trim() && !isStreaming && !isExhausted) {
                   e.currentTarget.style.transform = "scale(1.08)";
                 }
               }}
@@ -1821,6 +1950,58 @@ export default function AgentChatModal({
               <ArrowUp size={18} strokeWidth={2.6} />
             </button>
           </form>
+
+          {/* Exhaustion Notice Pill */}
+          {isExhausted && (
+            <div
+              style={{
+                marginTop: 8,
+                padding: "8px 12px",
+                borderRadius: 14,
+                background: isDark ? "rgba(239, 68, 68, 0.12)" : "rgba(254, 226, 226, 0.75)",
+                border: isDark ? "1px solid rgba(239, 68, 68, 0.3)" : "1px solid #FECACA",
+                fontSize: 11.5,
+                color: isDark ? "#FCA5A5" : "#B91C1C",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+                animation: "messageSlideUp 0.2s ease",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Clock size={13} strokeWidth={2.4} style={{ flexShrink: 0 }} />
+                <span>
+                  {mode === "work" ? "Work mode limit reached" : "Chat limit reached"} ({limit}/{limit}).{" "}
+                  {resetInSeconds > 0 ? `Unlocks in ~${formatCountdown(resetInSeconds)}.` : ""}
+                </span>
+              </div>
+
+              {mode === "work" && (quota?.chat?.remaining ?? 1) > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setMode("chat")}
+                  style={{
+                    background: isDark ? "rgba(0, 229, 153, 0.15)" : "rgba(124, 58, 237, 0.12)",
+                    border: isDark ? "1px solid rgba(0, 229, 153, 0.3)" : "1px solid rgba(124, 58, 237, 0.25)",
+                    color: isDark ? "#00E599" : "#7C3AED",
+                    padding: "3px 8px",
+                    borderRadius: 8,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    fontSize: 11,
+                    flexShrink: 0,
+                    transition: "all 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.04)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                >
+                  Switch to Chat 💬
+                </button>
+              )}
+            </div>
+          )}
+
         </div>
       </div>
     </>

@@ -7,6 +7,13 @@ import { isAdminRole } from "./roles.js";
 import { listClientProjects, projectNameKey } from "./clientProjectsStore.js";
 import { pathnameOf, readJsonBody, sendJson } from "./httpHelpers.js";
 import { listUsers } from "./usersStore.js";
+import {
+  getQuotaStatus,
+  checkAndConsumeChat,
+  checkAndConsumeWorkTask,
+  resetUserQuota,
+} from "./agentQuotaStore.js";
+
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -349,6 +356,47 @@ async function handleChat(req, res) {
   const baseUrl = (process.env.AI_BASE_URL || "https://api.groq.com/openai/v1").replace(/\/+$/, "");
   const model = process.env.AI_MODEL || "openai/gpt-oss-120b";
 
+  // Enforce quota limits for Work Mode vs Chat Mode
+  if (mode === "work") {
+    const quotaCheck = checkAndConsumeWorkTask(user, "work_mode_query", message);
+    if (!quotaCheck.allowed) {
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        "Connection": "keep-alive",
+      });
+      const resetMins = Math.max(1, Math.ceil((quotaCheck.status.work.resetInSeconds || 0) / 60));
+      const resetDateStr = quotaCheck.status.work.resetAt
+        ? new Date(quotaCheck.status.work.resetAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : "";
+      const limitText = `⏳ **Work Mode Quota Reached**\n\nYou have reached the limit of **${quotaCheck.status.work.limit} tasks** per **${quotaCheck.status.windowHours}-hour window**.\n\nNext task will unlock in approx **${resetMins} min**${resetDateStr ? ` (at ~${resetDateStr})` : ""}.\n\n*Tip: You can switch to **Chat Mode** to ask questions about projects and workload.*`;
+
+      res.write(`data: ${JSON.stringify({ content: limitText, quota: quotaCheck.status, limitReached: true })}\n\n`);
+      res.write(`data: [DONE]\n\n`);
+      res.end();
+      return;
+    }
+  } else {
+    const quotaCheck = checkAndConsumeChat(user);
+    if (!quotaCheck.allowed) {
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        "Connection": "keep-alive",
+      });
+      const resetMins = Math.max(1, Math.ceil((quotaCheck.status.chat.resetInSeconds || 0) / 60));
+      const resetDateStr = quotaCheck.status.chat.resetAt
+        ? new Date(quotaCheck.status.chat.resetAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : "";
+      const limitText = `⏳ **Chat Quota Reached**\n\nYou have used your allowance of **${quotaCheck.status.chat.limit} queries** for this **${quotaCheck.status.windowHours}-hour window**.\n\nNext query slot will unlock in approx **${resetMins} min**${resetDateStr ? ` (at ~${resetDateStr})` : ""}.`;
+
+      res.write(`data: ${JSON.stringify({ content: limitText, quota: quotaCheck.status, limitReached: true })}\n\n`);
+      res.write(`data: [DONE]\n\n`);
+      res.end();
+      return;
+    }
+  }
+
   // Prepare SSE Headers
   res.writeHead(200, {
     "Content-Type": "text/event-stream; charset=utf-8",
@@ -360,6 +408,9 @@ async function handleChat(req, res) {
     if (res.writableEnded) return;
     res.write(`data: ${typeof data === "string" ? data : JSON.stringify(data)}\n\n`);
   };
+
+  // Broadcast current real-time quota state so frontend updates instantly
+  sendEvent({ quota: getQuotaStatus(user) });
 
   // If no API key configured, use local intelligent parser
   if (!apiKey) {
@@ -589,11 +640,48 @@ export async function handleAgentApi(req, res) {
   return true;
 }
 
+function handleQuota(req, res) {
+  const user = getRequestUser(req);
+  if (!user) {
+    sendJson(res, 401, { error: "Unauthorized. Please log in first." });
+    return;
+  }
+  if (!isAdminRole(user)) {
+    sendJson(res, 403, { error: "Forbidden. The AI Agent is restricted to administrators." });
+    return;
+  }
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  sendJson(res, 200, getQuotaStatus(user));
+}
+
+
+async function handleResetQuota(req, res) {
+  const user = getRequestUser(req);
+  if (!user || !isAdminRole(user)) {
+    sendJson(res, 403, { error: "Forbidden. Admin access required." });
+    return;
+  }
+  const body = await readJsonBody(req);
+  const targetUserId = body?.userId || user.id;
+  resetUserQuota(targetUserId);
+  sendJson(res, 200, { success: true, quota: getQuotaStatus(user) });
+}
+
 async function handle(req, res) {
   const pathname = pathnameOf(req);
 
   if (pathname === "/api/agent/status" && req.method === "GET") {
     handleStatus(res);
+    return;
+  }
+
+  if (pathname === "/api/agent/quota" && req.method === "GET") {
+    handleQuota(req, res);
+    return;
+  }
+
+  if (pathname === "/api/agent/quota/reset" && req.method === "POST") {
+    await handleResetQuota(req, res);
     return;
   }
 

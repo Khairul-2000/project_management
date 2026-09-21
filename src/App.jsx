@@ -173,13 +173,23 @@ export default function Dashboard() {
 
   const activeProjectId = useMemo(() => {
     const match = currentHash.match(/^#\/project\/(.+)$/);
-    return match ? match[1] : null;
+    if (!match) return null;
+    const raw = match[1].split("?")[0].replace(/\/+$/, "");
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
   }, [currentHash]);
 
-  const activeProject = useMemo(
-    () => projects.find((p) => p.id === activeProjectId),
-    [projects, activeProjectId]
-  );
+  const activeProject = useMemo(() => {
+    if (!activeProjectId) return null;
+    return (
+      projects.find((p) => String(p.id) === String(activeProjectId)) ||
+      projects.find((p) => p.orderId && String(p.orderId) === String(activeProjectId)) ||
+      null
+    );
+  }, [projects, activeProjectId]);
 
   const activeClientProject = useMemo(
     () => clientProjects.find((cp) => cp.id === activeClientProjectId) || null,
@@ -1035,6 +1045,7 @@ export default function Dashboard() {
               }
               onBack={() => {
                 window.location.hash = "";
+                setCurrentHash("");
                 // Opened from Projects → client project → phase
                 if (activeClientProjectId) {
                   setView("clientProjectDetail");
@@ -1059,6 +1070,7 @@ export default function Dashboard() {
                 if (!canDeleteProjects(currentUser)) return;
                 persistProjects(projects.filter((p) => p.id !== id));
                 window.location.hash = "";
+                setCurrentHash("");
                 if (activeClientProjectId) {
                   setView("clientProjectDetail");
                   return;
@@ -1102,7 +1114,9 @@ export default function Dashboard() {
               onOpenPhase={(phaseId) => {
                 // Stay in Projects flow so Back returns to this client project
                 setView("clientProjectDetail");
-                window.location.hash = `#/project/${phaseId}`;
+                const targetHash = `#/project/${phaseId}`;
+                window.location.hash = targetHash;
+                setCurrentHash(targetHash);
               }}
             />
           ) : view === "clientProjects" ? (

@@ -629,11 +629,14 @@ export default function ClientProjectDetail({
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
                 <thead>
                   <tr style={{ textAlign: "left", color: colors.muted, background: colors.panel2 }}>
-                    {["Phase", "Dept", "Repos", "Dateline", "Price", "Status", ""].map((h) => (
+                    {["Phase", "Dept", "Repos", "Dateline", "Price", "Status"].map((h) => (
                       <th key={h} style={{ padding: "8px 10px", fontSize: 10.5, fontWeight: 700, textTransform: "uppercase" }}>
                         {h}
                       </th>
                     ))}
+                    <th style={{ padding: "8px 10px", fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", textAlign: "right" }}>
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -642,8 +645,54 @@ export default function ClientProjectDetail({
                     return (
                       <tr key={p.id} style={{ borderTop: `1px solid ${colors.border}` }}>
                         <td style={{ padding: "10px 10px", fontWeight: 700 }}>
-                          <div>{p.phase || "Main Phase"}</div>
-                          <div className="mono" style={{ fontSize: 11, color: colors.muted }}>
+                          <a
+                            href={`#/project/${p.id}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (typeof onOpenPhase === "function") {
+                                onOpenPhase(p.id);
+                              } else {
+                                window.location.hash = `#/project/${p.id}`;
+                              }
+                            }}
+                            style={{
+                              color: isDark ? "#A7F3D0" : colors.primary || "#059669",
+                              textDecoration: "none",
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                              fontWeight: 750,
+                              fontSize: 13,
+                              transition: "all 0.15s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.textDecoration = "underline";
+                              e.currentTarget.style.color = isDark ? "#34D399" : "#10B981";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.textDecoration = "none";
+                              e.currentTarget.style.color = isDark ? "#A7F3D0" : colors.primary || "#059669";
+                            }}
+                            title={`Open phase details for ${p.phase || "Main Phase"}`}
+                          >
+                            <span>{p.phase || "Main Phase"}</span>
+                            <ExternalLink size={11} style={{ opacity: 0.7, flexShrink: 0 }} />
+                          </a>
+                          <div
+                            className="mono"
+                            style={{
+                              fontSize: 11,
+                              color: colors.muted,
+                              marginTop: 2,
+                              cursor: "pointer",
+                            }}
+                            onClick={() => {
+                              if (typeof onOpenPhase === "function") onOpenPhase(p.id);
+                              else window.location.hash = `#/project/${p.id}`;
+                            }}
+                            title="Open phase details"
+                          >
                             {p.orderId || "No Order ID"}
                           </div>
                         </td>
@@ -673,27 +722,7 @@ export default function ClientProjectDetail({
                             phase={p}
                             size="sm"
                             label="Delivery"
-                            style={{ marginRight: 6 }}
                           />
-                          <button
-                            type="button"
-                            onClick={() => onOpenPhase(p.id)}
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: 4,
-                              background: colors.panel2,
-                              border: `1px solid ${colors.border}`,
-                              borderRadius: 8,
-                              color: colors.text,
-                              padding: "5px 9px",
-                              fontWeight: 700,
-                              fontSize: 11.5,
-                              cursor: "pointer",
-                            }}
-                          >
-                            Open <ExternalLink size={11} />
-                          </button>
                         </td>
                       </tr>
                     );

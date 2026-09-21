@@ -8,6 +8,12 @@ import { listClientProjects, projectNameKey } from "./clientProjectsStore.js";
 import { pathnameOf, readJsonBody, sendJson } from "./httpHelpers.js";
 import { listUsers } from "./usersStore.js";
 import {
+  DEFAULT_NAME_ALIASES,
+  normalizePersonName,
+  isFuzzyTokenMatch,
+  findUserByNameFuzzy,
+} from "./nameMatch.js";
+import {
   getQuotaStatus,
   checkAndConsumeChat,
   checkAndConsumeWorkTask,
@@ -81,32 +87,70 @@ function getAccessibleData(user) {
 /**
  * Extract concise, relevant context for the LLM prompt based on the user's question
  */
-function buildRelevantContext(message, user, projects, clientProjects) {
+export function buildRelevantContext(message, user, projects, clientProjects) {
   const q = (message || "").toLowerCase();
+  const qSlug = projectNameKey(message);
+  const cleanQ = q.replace(/[^a-z0-9\s]/g, " ");
+  const cleanQKey = q.replace(/[^a-z0-9]/g, "");
+  const qTokens = cleanQ.split(/\s+/).filter(Boolean);
   const matchedClientProjects = [];
   const matchedPhases = [];
 
-  // Search for project names mentioned in query
+  // Search for project names mentioned in query (fuzzy slug, direct name, token matching)
   for (const cp of clientProjects) {
-    const name = (cp.projectName || "").toLowerCase();
-    if (name && (q.includes(name) || name.includes(q.replace(/[^a-z0-9]/g, "")))) {
-      matchedClientProjects.push(cp);
+    const rawCpName = (cp.projectName || "").toLowerCase();
+    const cpSlug = cp.projectNameKey || projectNameKey(cp.projectName);
+    const cleanCpKey = cpSlug.replace(/[^a-z0-9]/g, "");
+    const isDirect = rawCpName && (q.includes(rawCpName) || cleanQKey.includes(cleanCpKey));
+    const isSlugMatch = cleanCpKey && cleanQKey && (cleanQKey.includes(cleanCpKey) || cleanCpKey.includes(cleanQKey));
+    const isTokenMatch =
+      cleanCpKey &&
+      cleanCpKey.length >= 3 &&
+      qTokens.some((tok) => tok.length >= 3 && (cleanCpKey.includes(tok) || tok.includes(cleanCpKey)));
+
+    if (isDirect || isSlugMatch || isTokenMatch) {
+      if (!matchedClientProjects.includes(cp)) {
+        matchedClientProjects.push(cp);
+      }
     }
   }
 
   // Search for team members mentioned in query
-  const memberMatches = new Set();
-  for (const cp of clientProjects) {
-    for (const m of cp.teamMembers || []) {
-      const memName = (m.name || "").toLowerCase();
-      if (memName && memName.length > 3 && q.includes(memName)) {
-        memberMatches.add(cp);
-      }
+  const allUsers = listUsers();
+  const mentionedUsers = [];
+  for (const u of allUsers) {
+    if (!u || !u.name) continue;
+    const uNorm = normalizePersonName(u.name);
+    const aliases = [
+      uNorm,
+      ...(DEFAULT_NAME_ALIASES[uNorm] || []),
+      ...(u.aliases || []).map(normalizePersonName),
+      ...uNorm.split(" ").filter((t) => t.length >= 3),
+    ];
+    const isMentioned = aliases.some((alias) => {
+      if (!alias) return false;
+      const regex = new RegExp(`\\b${alias}\\b`, "i");
+      if (regex.test(q)) return true;
+      return qTokens.some((tok) => tok.length >= 4 && isFuzzyTokenMatch(tok, alias));
+    });
+    if (isMentioned && !mentionedUsers.some((mu) => mu.id === u.id)) {
+      mentionedUsers.push(u);
     }
   }
-  for (const cp of memberMatches) {
-    if (!matchedClientProjects.includes(cp)) {
-      matchedClientProjects.push(cp);
+
+  // If users were mentioned, find their client projects
+  for (const mu of mentionedUsers) {
+    const muNameLower = mu.name.toLowerCase();
+    for (const cp of clientProjects) {
+      const hasMember = (cp.teamMembers || []).some(
+        (m) =>
+          String(m.userId || m.id) === String(mu.id) ||
+          (m.name && m.name.toLowerCase().includes(muNameLower))
+      );
+      const isSupervisor = cp.supervisor && cp.supervisor.toLowerCase().includes(muNameLower);
+      if ((hasMember || isSupervisor) && !matchedClientProjects.includes(cp)) {
+        matchedClientProjects.push(cp);
+      }
     }
   }
 
@@ -126,7 +170,9 @@ function buildRelevantContext(message, user, projects, clientProjects) {
   for (const p of projects) {
     const st = p.salesStatus || p.teamLeadStatus || p.status || "Unknown";
     statusCounts[st] = (statusCounts[st] || 0) + 1;
-    if (String(p.dateline || "").toLowerCase().includes("late")) {
+    const dlStr = String(p.dateline || "").toLowerCase();
+    const isLate = dlStr.includes("late") || dlStr === "order late";
+    if (isLate && st !== "Delivered") {
       lateCount++;
     }
   }
@@ -135,6 +181,33 @@ function buildRelevantContext(message, user, projects, clientProjects) {
   context += `Total accessible client projects: ${clientProjects.length}\n`;
   context += `Total phase entries: ${projects.length} (Late/Overdue: ${lateCount})\n`;
   context += `Status breakdown: ${JSON.stringify(statusCounts)}\n\n`;
+
+  if (mentionedUsers.length > 0) {
+    context += `### MENTIONED TEAM MEMBERS WORKLOAD:\n`;
+    for (const mu of mentionedUsers) {
+      const userPhases = projects.filter((p) => {
+        const isDev = p.developer && p.developer.toLowerCase().includes(mu.name.toLowerCase());
+        const isTeam =
+          Array.isArray(p.teamMembers) &&
+          p.teamMembers.some(
+            (m) =>
+              String(m.userId || m.id) === String(mu.id) ||
+              (m.name && m.name.toLowerCase().includes(mu.name.toLowerCase()))
+          );
+        return isDev || isTeam;
+      });
+      context += `Team Member: ${mu.name} (Role: ${mu.role || "member"})\n`;
+      context += `  - Total Assigned Phases: ${userPhases.length}\n`;
+      if (userPhases.length > 0) {
+        for (const up of userPhases.slice(0, 5)) {
+          context += `    * ${up.projectName} (${up.phase || up.stack || "Phase"}) - Status: ${up.salesStatus || up.status || "WIP"}, Dateline: ${up.dateline || "N/A"}\n`;
+        }
+      } else {
+        context += `    * No active phases currently assigned.\n`;
+      }
+      context += `\n`;
+    }
+  }
 
   if (matchedClientProjects.length > 0) {
     context += `### MATCHED PROJECT DETAILS:\n`;
@@ -181,7 +254,120 @@ function handleStatus(res) {
   });
 }
 
-function parseWorkModeOffline(message, user, projects, clientProjects, allUsers) {
+/**
+ * Extract all mentioned members and their respective roles from a natural language string.
+ * Supports multiple members ("assign ovie as ui/ux and hossina as frontend developer in umberlite project")
+ */
+function extractMembersAndRoles(query, allUsers, targetProjectName) {
+  let text = query;
+  if (targetProjectName) {
+    const escapedProj = targetProjectName.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+    const projRegex = new RegExp(`(?:in|to|for|on)\\s+(?:the\\s+)?["']?${escapedProj}["']?(?:\\s+project|\\s+phase)?`, "i");
+    text = text.replace(projRegex, " ");
+  }
+  text = text.replace(/(?:in|to|for|on)\s+(?:the\\s+)?project\b/gi, " ");
+
+  const foundMentions = [];
+  const words = text.split(/[\s,]+/);
+
+  for (const u of allUsers) {
+    if (!u || !u.name) continue;
+    const uNorm = normalizePersonName(u.name);
+    const aliases = [
+      uNorm,
+      ...(DEFAULT_NAME_ALIASES[uNorm] || []),
+      ...(u.aliases || []).map(normalizePersonName),
+      ...uNorm.split(" ").filter((t) => t.length >= 3),
+    ];
+
+    let foundIndex = -1;
+    let matchWord = "";
+
+    for (const alias of aliases) {
+      if (!alias) continue;
+      const regex = new RegExp(`\\b${alias}\\b`, "i");
+      const match = text.match(regex);
+      if (match) {
+        foundIndex = match.index;
+        matchWord = match[0];
+        break;
+      }
+    }
+
+    if (foundIndex === -1) {
+      for (let wIdx = 0; wIdx < words.length; wIdx++) {
+        const word = words[wIdx].toLowerCase();
+        if (word.length < 4) continue;
+        for (const alias of aliases) {
+          if (!alias || alias.length < 4) continue;
+          if (isFuzzyTokenMatch(word, alias)) {
+            const idx = text.toLowerCase().indexOf(word);
+            if (idx !== -1) {
+              foundIndex = idx;
+              matchWord = word;
+              break;
+            }
+          }
+        }
+        if (foundIndex !== -1) break;
+      }
+    }
+
+    if (foundIndex !== -1) {
+      if (!foundMentions.some((m) => m.user.id === u.id)) {
+        foundMentions.push({
+          user: u,
+          startIndex: foundIndex,
+          matchWord,
+        });
+      }
+    }
+  }
+
+  foundMentions.sort((a, b) => a.startIndex - b.startIndex);
+
+  if (foundMentions.length === 0) {
+    return [];
+  }
+
+  const members = [];
+  for (let i = 0; i < foundMentions.length; i++) {
+    const current = foundMentions[i];
+    const nextStart = i + 1 < foundMentions.length ? foundMentions[i + 1].startIndex : text.length;
+    const segment = text.slice(current.startIndex + current.matchWord.length, nextStart).toLowerCase();
+
+    let role = "Developer";
+    if (segment.includes("ui/ux") || segment.includes("ui") || segment.includes("ux") || segment.includes("design")) {
+      role = "UI/UX Designer";
+    } else if (segment.includes("frontend") || segment.includes("front-end") || segment.includes("front end") || segment.includes("react")) {
+      role = "Frontend Developer";
+    } else if (segment.includes("backend") || segment.includes("back-end") || segment.includes("back end") || segment.includes("node") || segment.includes("python")) {
+      role = "Backend Developer";
+    } else if (segment.includes("fullstack") || segment.includes("full stack") || segment.includes("full-stack") || segment.includes("mern")) {
+      role = "Fullstack Developer";
+    } else if (segment.includes("app dev") || segment.includes("flutter") || segment.includes("react native") || segment.includes("mobile")) {
+      role = "App Developer";
+    } else if (segment.includes("supervisor")) {
+      role = "Supervisor";
+    } else if (segment.includes("lead") || segment.includes("team lead")) {
+      role = "Project Lead";
+    } else if (segment.includes("qa") || segment.includes("tester") || segment.includes("test")) {
+      role = "QA Engineer";
+    } else if (segment.includes("devops") || segment.includes("deploy")) {
+      role = "DevOps Engineer";
+    }
+
+    members.push({
+      userId: current.user.id,
+      name: current.user.name,
+      role,
+    });
+  }
+
+  return members;
+}
+
+export function parseWorkModeOffline(message, user, projects, clientProjects, allUsers) {
   const q = message.trim();
   const lower = q.toLowerCase();
 
@@ -255,49 +441,62 @@ function parseWorkModeOffline(message, user, projects, clientProjects, allUsers)
     return `I've prepared the operational draft for **${projectName}**.\n\nPlease review the configuration below and click confirm to create this project:\n\n\`\`\`action:create_project\n${JSON.stringify(actionJson, null, 2)}\n\`\`\``;
   }
 
-  // 2. Assign Member check
+  // 2. Assign Member check (supports single or multiple assignments)
   if (lower.includes("assign") || lower.includes("add member") || lower.includes("assign member")) {
-    let memberName = "";
-    for (const u of allUsers) {
-      if (u.name && lower.includes(u.name.toLowerCase())) {
-        memberName = u.name;
-        break;
-      }
-    }
-    if (!memberName) {
-      const match = q.match(/assign\s+([A-Za-z ]+)\s+to/i);
-      if (match) memberName = match[1].trim();
-    }
-    if (!memberName) memberName = "Pritom Banerjee";
-
     let targetProject = "";
-    for (const cp of clientProjects) {
-      if (cp.projectName && lower.includes(cp.projectName.toLowerCase())) {
-        targetProject = cp.projectName;
-        break;
+    const projMatch = q.match(/(?:in|to|for|on)\s+(?:the\s+)?["']?([A-Za-z0-9 _-]+?)["']?(?:\s+project|\s+phase|\s*$)/i);
+    if (projMatch && projMatch[1]) {
+      const candidate = projMatch[1].trim();
+      const candSlug = projectNameKey(candidate);
+      const foundCp = clientProjects.find((cp) => {
+        const cpSlug = cp.projectNameKey || projectNameKey(cp.projectName);
+        return cpSlug === candSlug || cp.projectName.toLowerCase() === candidate.toLowerCase();
+      });
+      if (foundCp) {
+        targetProject = foundCp.projectName;
+      } else {
+        targetProject = candidate;
       }
     }
+
     if (!targetProject) {
-      const matchProj = q.match(/to\s+([A-Za-z0-9 _-]+)/i);
-      if (matchProj) targetProject = matchProj[1].trim();
+      for (const cp of clientProjects) {
+        const cpSlug = cp.projectNameKey || projectNameKey(cp.projectName);
+        if (cp.projectName && (lower.includes(cp.projectName.toLowerCase()) || (cpSlug && lower.includes(cpSlug)))) {
+          targetProject = cp.projectName;
+          break;
+        }
+      }
     }
     if (!targetProject) targetProject = clientProjects[0]?.projectName || "Active Project";
 
-    let role = "Developer";
-    if (lower.includes("frontend")) role = "Frontend Developer";
-    else if (lower.includes("backend")) role = "Backend Developer";
-    else if (lower.includes("fullstack") || lower.includes("full stack")) role = "Fullstack Developer";
-    else if (lower.includes("supervisor")) role = "Supervisor";
-    else if (lower.includes("lead")) role = "Team Lead";
-    else if (lower.includes("qa") || lower.includes("tester")) role = "QA Engineer";
+    const members = extractMembersAndRoles(q, allUsers, targetProject);
+
+    if (members.length === 0) {
+      const fallbackUser = allUsers.find((u) => u.name && lower.includes(u.name.toLowerCase())) || allUsers[0];
+      members.push({
+        userId: fallbackUser?.id,
+        name: fallbackUser?.name || "Pritom Banerjee",
+        role: "Developer",
+      });
+    }
 
     const actionJson = {
       projectName: targetProject,
-      memberName,
-      role
+      members: members.map((m) => ({ name: m.name, role: m.role, userId: m.userId })),
+      memberName: members[0].name,
+      role: members[0].role,
     };
 
-    return `I've prepared the team assignment for **${memberName}** to **${targetProject}** as **${role}**.\n\nPlease verify and click confirm to apply this change:\n\n\`\`\`action:assign_member\n${JSON.stringify(actionJson, null, 2)}\n\`\`\``;
+    let replyText = "";
+    if (members.length === 1) {
+      replyText = `I've prepared the team assignment for **${members[0].name}** to **${targetProject}** as **${members[0].role}**.\n\nPlease verify and click confirm to apply this change:\n\n\`\`\`action:assign_member\n${JSON.stringify(actionJson, null, 2)}\n\`\`\``;
+    } else {
+      const rosterList = members.map((m) => `- **${m.name}** as **${m.role}**`).join("\n");
+      replyText = `I've prepared the team assignment for **${targetProject}**:\n${rosterList}\n\nPlease verify and click confirm to apply all changes:\n\n\`\`\`action:assign_member\n${JSON.stringify(actionJson, null, 2)}\n\`\`\``;
+    }
+
+    return replyText;
   }
 
   // 3. Update Status check
@@ -488,15 +687,30 @@ For creating a project:
 }
 \`\`\`
 
-For assigning a member:
+For assigning team member(s) (SINGLE OR MULTIPLE):
 \`\`\`action:assign_member
 {
   "projectName": "Target project name",
-  "memberName": "Team member name",
-  "role": "Role (e.g. Frontend Developer, Fullstack Developer, Supervisor)",
-  "phase": "Optional phase name"
+  "members": [
+    { "name": "Exact Registered Full Name", "role": "Role (e.g. UI/UX Designer, Frontend Developer, Backend Developer, Fullstack Developer, Supervisor, QA Engineer)" }
+  ],
+  "memberName": "Exact Registered Full Name",
+  "role": "Role"
 }
 \`\`\`
+CRITICAL ASSIGNMENT INSTRUCTIONS:
+- If the user assigns multiple members in a single sentence (e.g. "assign ovie as ui/ux and hossina as frontend developer in umberlite project"), YOU MUST output ALL members inside the "members" array.
+- Resolve any nicknames, short names, or common typos to their exact registered full names:
+  * "ovie" -> "Ovie Rahaman Sheikh"
+  * "hossina" / "hossain" -> "Hossain Ahamed Khan"
+  * "pritom" -> "Pritom Banerjee"
+  * "siam" / "fardin" -> "Fardin Ahammed Siam"
+  * "sifat" -> "Sifat Rahman"
+  * "khairul" -> "Khairul Islam"
+  * "pronay" -> "Pronay Debnath"
+  * "alvee" / "alvi" -> "Miraz Or Rashid Alvee"
+  * "arman" -> "Md Arman Hosen"
+  * "sawjal" -> "Md Sawjal Sikder"
 
 For updating status or dateline:
 \`\`\`action:update_status
@@ -524,12 +738,17 @@ Rules:
 ${context}`;
   }
 
-  // Format messages array
+  // Format messages array (strip previous action blocks so LLM receives clean conversational context)
   const formattedHistory = Array.isArray(history)
-    ? history.slice(-6).map((h) => ({
-        role: h.sender === "user" ? "user" : "assistant",
-        content: String(h.text || h.content || ""),
-      }))
+    ? history
+        .slice(-6)
+        .map((h) => ({
+          role: h.sender === "user" ? "user" : "assistant",
+          content: String(h.text || h.content || "")
+            .replace(/```action:[a-z_]+[\s\S]*?```/gi, "")
+            .trim(),
+        }))
+        .filter((h) => h.content.length > 0)
     : [];
 
   const messages = [

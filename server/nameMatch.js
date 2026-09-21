@@ -21,7 +21,7 @@ export const DEFAULT_NAME_ALIASES = {
   "iman emon": ["emon", "iman"],
   "fardin ahammed siam": ["fardin", "siam"],
   "galib mahmud": ["galib"],
-  "hossain ahamed khan": ["hossain"],
+  "hossain ahamed khan": ["hossain", "hossina", "hossan"],
   "kawsar al hasan": ["kawsar"],
   "md sawjal sikder": ["sawjal", "md sawjal"],
   "miraz or rashid alvee": ["alvee", "alvi", "miraz"],
@@ -30,6 +30,115 @@ export const DEFAULT_NAME_ALIASES = {
   "faysal hasan": ["faysal"],
   sishir: ["sishir"],
 };
+
+/**
+ * Compute Levenshtein distance between two strings
+ */
+export function levenshteinDistance(s1, s2) {
+  const a = String(s1 || "").toLowerCase();
+  const b = String(s2 || "").toLowerCase();
+  const m = a.length;
+  const n = b.length;
+  if (!m) return n;
+  if (!n) return m;
+
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+    }
+  }
+  return dp[m][n];
+}
+
+/**
+ * Fuzzy check if token is close to target (distance <= 2 for >= 5 chars, distance <= 1 for 4 chars)
+ */
+export function isFuzzyTokenMatch(queryToken, targetToken) {
+  const q = String(queryToken || "").toLowerCase().trim();
+  const t = String(targetToken || "").toLowerCase().trim();
+  if (!q || !t) return false;
+  if (q === t) return true;
+  if (q.length >= 4 && t.startsWith(q)) return true;
+  if (t.length >= 4 && q.startsWith(t)) return true;
+  const minLen = Math.min(q.length, t.length);
+  if (minLen >= 4 && Math.abs(q.length - t.length) <= 2) {
+    const maxDist = minLen >= 5 ? 2 : 1;
+    return levenshteinDistance(q, t) <= maxDist;
+  }
+  return false;
+}
+
+/**
+ * Find user by name, nickname, or typo fuzzy matching
+ */
+export function findUserByNameFuzzy(nameStr, users) {
+  const raw = String(nameStr || "").trim();
+  if (!raw) return null;
+  const norm = normalizePersonName(raw);
+  const matchIndex = buildUserMatchIndex(users);
+
+  // 1. Direct index lookup (exact full name, alias, unique first name)
+  const directId = resolveUserIdForName(norm, matchIndex);
+  if (directId) {
+    const found = users.find((u) => String(u.id) === String(directId));
+    if (found) return found;
+  }
+
+  // 2. Token-level & alias fuzzy search across all users
+  const qTokens = norm.split(/[^a-z0-9]+/).filter((t) => t.length >= 3);
+  let bestUser = null;
+  let bestScore = Infinity;
+
+  for (const u of users || []) {
+    if (!u || !u.name) continue;
+    const uNorm = normalizePersonName(u.name);
+    const uTokens = uNorm.split(/[^a-z0-9]+/).filter((t) => t.length >= 3);
+    const aliases = [
+      uNorm,
+      ...(DEFAULT_NAME_ALIASES[uNorm] || []),
+      ...(u.aliases || []).map(normalizePersonName),
+    ];
+
+    for (const alias of aliases) {
+      if (!alias) continue;
+      if (alias === norm) return u;
+      for (const qTok of qTokens) {
+        if (qTok === alias) return u;
+        if (isFuzzyTokenMatch(qTok, alias)) {
+          const dist = levenshteinDistance(qTok, alias);
+          if (dist < bestScore) {
+            bestScore = dist;
+            bestUser = u;
+          }
+        }
+      }
+    }
+
+    for (const qTok of qTokens) {
+      for (const uTok of uTokens) {
+        if (qTok === uTok) return u;
+        if (isFuzzyTokenMatch(qTok, uTok)) {
+          const dist = levenshteinDistance(qTok, uTok);
+          if (dist < bestScore) {
+            bestScore = dist;
+            bestUser = u;
+          }
+        }
+      }
+    }
+  }
+
+  return bestUser;
+}
 
 export function collectProjectMemberNames(project) {
   const names = [];

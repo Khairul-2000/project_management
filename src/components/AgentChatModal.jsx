@@ -337,6 +337,10 @@ function InteractiveActionCard({
   const isApplied = status === "applied";
   const isCancelled = status === "cancelled";
 
+  const membersList = Array.isArray(data?.members) && data.members.length > 0
+    ? data.members
+    : (data?.memberName ? [{ name: data.memberName, role: data.role || "Developer" }] : []);
+
   return (
     <div
       style={{
@@ -376,7 +380,7 @@ function InteractiveActionCard({
             }}
           >
             {type === "create_project" && "Proposed: Create Project"}
-            {type === "assign_member" && "Proposed: Assign Member"}
+            {type === "assign_member" && (membersList.length > 1 ? `Proposed: Assign ${membersList.length} Members` : "Proposed: Assign Member")}
             {type === "update_status" && "Proposed: Update Status"}
           </span>
         </div>
@@ -462,24 +466,84 @@ function InteractiveActionCard({
 
         {type === "assign_member" && (
           <>
-            <div>
+            <div style={{ gridColumn: membersList.length > 1 ? "1 / -1" : undefined }}>
               <span style={{ fontSize: 10, color: colors.muted, display: "block" }}>Target Project</span>
               <span style={{ fontSize: 12.5, fontWeight: 700, color: isDark ? "#FFFFFF" : colors.text }}>
                 {data.projectName}
               </span>
             </div>
-            <div>
-              <span style={{ fontSize: 10, color: colors.muted, display: "block" }}>Team Member</span>
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: "#A855F7" }}>
-                {data.memberName}
-              </span>
-            </div>
-            <div>
-              <span style={{ fontSize: 10, color: colors.muted, display: "block" }}>Assigned Role</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: isDark ? "#E5E7EB" : colors.text }}>
-                {data.role || "Developer"}
-              </span>
-            </div>
+            {membersList.length <= 1 ? (
+              <>
+                <div>
+                  <span style={{ fontSize: 10, color: colors.muted, display: "block" }}>Team Member</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: "#A855F7" }}>
+                    {membersList[0]?.name || data.memberName || "Member"}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ fontSize: 10, color: colors.muted, display: "block" }}>Assigned Role</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: isDark ? "#E5E7EB" : colors.text }}>
+                    {membersList[0]?.role || data.role || "Developer"}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: 6, marginTop: 2 }}>
+                <span style={{ fontSize: 10.5, color: colors.muted, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  Team Members to Assign ({membersList.length})
+                </span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  {membersList.map((m, mIdx) => (
+                    <div
+                      key={mIdx}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "6px 10px",
+                        borderRadius: 8,
+                        background: isDark ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.03)",
+                        border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(0, 0, 0, 0.06)",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div
+                          style={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: "50%",
+                            background: isDark ? "rgba(0, 229, 153, 0.2)" : "rgba(168, 85, 247, 0.15)",
+                            color: isDark ? "#00E599" : "#9333EA",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 10,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {(m.name || "M").charAt(0).toUpperCase()}
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: isDark ? "#FFFFFF" : colors.text }}>
+                          {m.name}
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: 6,
+                          background: isDark ? "rgba(16, 185, 129, 0.15)" : "rgba(168, 85, 247, 0.12)",
+                          color: isDark ? "#34D399" : "#7C3AED",
+                        }}
+                      >
+                        {m.role || "Developer"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
 
@@ -558,7 +622,7 @@ function InteractiveActionCard({
             }}
           >
             <Check size={14} strokeWidth={2.6} />
-            <span>Confirm & Apply</span>
+            <span>{type === "assign_member" && membersList.length > 1 ? `Confirm & Assign All (${membersList.length})` : "Confirm & Apply"}</span>
           </button>
 
           <button
@@ -789,13 +853,21 @@ export default function AgentChatModal({
     setIsStreaming(true);
 
     try {
+      const cleanHistory = currentList
+        .slice(-5)
+        .map((msg) => ({
+          ...msg,
+          text: String(msg.text || "").replace(/```action:[a-z_]+[\s\S]*?```/gi, "").trim(),
+        }))
+        .filter((m) => m.text);
+
       const response = await fetch("/api/agent/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: query,
           mode: currentMode,
-          history: currentList.slice(-5),
+          history: cleanHistory,
         }),
       });
 
@@ -939,21 +1011,27 @@ export default function AgentChatModal({
     setActionStatusMap((prev) => ({ ...prev, [actionId]: "cancelled" }));
   };
 
-  // Helper to parse action block from assistant text
+  // Helper to parse action block(s) from assistant text
   const parseActionBlock = (fullText) => {
-    if (!fullText) return { cleanText: "", action: null };
-    const regex = /```action:([a-z_]+)\s*\n([\s\S]*?)\n```/i;
-    const match = fullText.match(regex);
-    if (!match) return { cleanText: fullText, action: null };
-
-    try {
-      const actionType = match[1].toLowerCase();
-      const actionData = JSON.parse(match[2]);
-      const cleanText = fullText.replace(regex, "").trim();
-      return { cleanText, action: { type: actionType, data: actionData } };
-    } catch {
-      return { cleanText: fullText, action: null };
+    if (!fullText) return { cleanText: "", actions: [], action: null };
+    const regex = /```action:([a-z_]+)\s*\n([\s\S]*?)\n```/gi;
+    const actions = [];
+    let match;
+    while ((match = regex.exec(fullText)) !== null) {
+      try {
+        const actionType = match[1].toLowerCase();
+        const actionData = JSON.parse(match[2]);
+        actions.push({ type: actionType, data: actionData });
+      } catch (err) {
+        console.warn("[AgentChatModal] Failed parsing action block JSON:", err);
+      }
     }
+    const cleanText = fullText.replace(regex, "").trim();
+    return {
+      cleanText,
+      actions,
+      action: actions[0] || null,
+    };
   };
 
   if (!isOpen) return null;
@@ -1588,10 +1666,9 @@ export default function AgentChatModal({
 
             if (idx === 0 && showHeroView) return null;
 
-            // Parse action block if assistant message
-            const { cleanText, action } = !isUser ? parseActionBlock(msg.text) : { cleanText: msg.text, action: null };
+            // Parse action block(s) if assistant message
+            const { cleanText, actions } = !isUser ? parseActionBlock(msg.text) : { cleanText: msg.text, actions: [] };
             const actionId = `act-${msg.id}`;
-            const actionStatus = actionStatusMap[actionId] || "pending";
 
             return (
               <div
@@ -1746,20 +1823,25 @@ export default function AgentChatModal({
                       </div>
                     )}
 
-                    {/* Interactive Action Card in Work Mode */}
-                    {action && (
-                      <InteractiveActionCard
-                        actionId={actionId}
-                        type={action.type}
-                        data={action.data}
-                        status={actionStatus}
-                        isAdmin={isAdmin}
-                        isDark={isDark}
-                        colors={colors}
-                        onExecute={handleExecuteAction}
-                        onCancel={handleCancelAction}
-                      />
-                    )}
+                    {/* Interactive Action Card(s) in Work Mode */}
+                    {actions && actions.length > 0 && actions.map((act, actIdx) => {
+                      const itemActionId = actions.length === 1 ? actionId : `${actionId}-${actIdx}`;
+                      const itemActionStatus = actionStatusMap[itemActionId] || "pending";
+                      return (
+                        <InteractiveActionCard
+                          key={itemActionId}
+                          actionId={itemActionId}
+                          type={act.type}
+                          data={act.data}
+                          status={itemActionStatus}
+                          isAdmin={isAdmin}
+                          isDark={isDark}
+                          colors={colors}
+                          onExecute={handleExecuteAction}
+                          onCancel={handleCancelAction}
+                        />
+                      );
+                    })}
 
                     {/* Action Footer Bar */}
                     {msg.text && (

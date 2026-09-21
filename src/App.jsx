@@ -52,7 +52,7 @@ import {
   loadClientProjects,
   patchClientProject,
 } from "./lib/db";
-import { fetchMe, logout as apiLogout } from "./lib/auth";
+import { fetchMe, logout as apiLogout, listTeamDirectory } from "./lib/auth";
 import {
   isAdminRole,
   isSuperAdmin,
@@ -68,6 +68,13 @@ import { exportProjectsToCsv, parseCsvToProjects } from "./lib/csvHelper";
 const SHEETS_POLL_MS = 2 * 60 * 1000;
 const SIDEBAR_STORAGE_KEY = "delivery-ops-sidebar";
 const MOBILE_MQ = "(max-width: 900px)";
+
+function normalizeProjectKey(name) {
+  return String(name || "")
+    .toLowerCase()
+    .replace(/(?:_|\s+)?project$/i, "")
+    .replace(/[^a-z0-9]/g, "");
+}
 
 export default function Dashboard() {
   const { colors, isDark } = useTheme();
@@ -1319,6 +1326,7 @@ export default function Dashboard() {
                       id: `sup-${Date.now()}`,
                       name: data.supervisor.trim(),
                       role: "Supervisor",
+                      roles: ["Supervisor"],
                     },
                   ]
                 : [],
@@ -1333,84 +1341,195 @@ export default function Dashboard() {
             };
 
             const next = [...projects, newPhase];
-            persistProjects(next);
+            await persistProjects(next);
+            try {
+              const { projects: syncedRows } = await loadProjectsFromDb();
+              if (Array.isArray(syncedRows) && syncedRows.length > 0) {
+                setProjects(syncedRows);
+              }
+              await refreshClientProjects().catch(() => {});
+            } catch (syncErr) {
+              console.warn("[Work Mode] Post-create re-sync warning:", syncErr);
+            }
             setSaveState(`Created project ${projectName} via Work Mode`);
             return { success: true, project: newPhase };
           }
 
           if (type === "assign_member") {
-            const targetName = String(data.projectName || "").trim().toLowerCase();
-            const memberName = String(data.memberName || "").trim();
-            const role = data.role || "Developer";
+            const rawProjName = String(data.projectName || "").trim();
+            const targetNormKey = normalizeProjectKey(rawProjName);
+            const targetNameLower = rawProjName.toLowerCase();
 
-            if (!targetName || !memberName) {
-              return { success: false, message: "Target project and member name are required." };
+            // Extract members: support both array `members` and legacy `memberName`
+            const rawMembers = Array.isArray(data.members) && data.members.length > 0
+              ? data.members
+              : (data.memberName ? [{ name: data.memberName, role: data.role || "Developer" }] : []);
+
+            if (!rawProjName || rawMembers.length === 0) {
+              return { success: false, message: "Target project and team member(s) are required." };
             }
 
+            // Fetch directory users to resolve real user IDs
+            const directory = await listTeamDirectory({ includeStaff: true }).catch(() => []);
+
+            const normalizedMembers = rawMembers.map((m) => {
+              const mName = String(m.name || "").trim();
+              const mRole = m.role || "Developer";
+              // Match against directory to resolve real user ID
+              const foundUser = directory.find((u) => {
+                const uName = String(u.name || "").trim().toLowerCase();
+                if (uName === mName.toLowerCase()) return true;
+                const uFirst = uName.split(" ")[0];
+                const mFirst = mName.toLowerCase().split(" ")[0];
+                return uFirst && mFirst && uFirst === mFirst;
+              });
+
+              const resolvedName = foundUser?.name || mName;
+              const resolvedUserId = m.userId || foundUser?.id || undefined;
+              const roles = Array.isArray(m.roles) ? m.roles : [mRole];
+
+              return {
+                id: resolvedUserId || `mem-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+                userId: resolvedUserId,
+                name: resolvedName,
+                role: mRole,
+                roles,
+              };
+            });
+
             // 1. Update matching client project if exists
-            const targetCp = clientProjects.find(
-              (cp) => String(cp.projectName || "").trim().toLowerCase() === targetName
-            );
+            let targetCp = clientProjects.find((cp) => {
+              const cpKey = normalizeProjectKey(cp.projectNameKey || cp.projectName);
+              if (targetNormKey && cpKey === targetNormKey) return true;
+              const cpName = String(cp.projectName || "").trim().toLowerCase();
+              if (cpName === targetNameLower) return true;
+              if (targetNormKey && cpKey && (cpKey.includes(targetNormKey) || targetNormKey.includes(cpKey))) return true;
+              return false;
+            });
 
             if (targetCp) {
-              const existingMembers = Array.isArray(targetCp.teamMembers) ? targetCp.teamMembers : [];
-              const roles = Array.isArray(role) ? role : [role];
-              const nextMembers = [
-                ...existingMembers.filter(
-                  (m) => String(m.name || "").trim().toLowerCase() !== memberName.toLowerCase()
-                ),
-                {
-                  id: `mem-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-                  name: memberName,
-                  roles,
-                  role: roles[0],
-                },
-              ];
+              let existingMembers = Array.isArray(targetCp.teamMembers) ? [...targetCp.teamMembers] : [];
+              let newSupervisor = targetCp.supervisor;
+
+              for (const nm of normalizedMembers) {
+                // Filter out previous entry if user already existed
+                existingMembers = existingMembers.filter((m) => {
+                  if (nm.userId && String(m.userId || m.id) === String(nm.userId)) return false;
+                  return String(m.name || "").trim().toLowerCase() !== nm.name.toLowerCase();
+                });
+
+                existingMembers.push({
+                  id: nm.id,
+                  userId: nm.userId,
+                  name: nm.name,
+                  roles: nm.roles,
+                  role: nm.role,
+                });
+
+                if (nm.roles.some((r) => r.toLowerCase().includes("supervisor"))) {
+                  newSupervisor = nm.name;
+                }
+              }
 
               try {
                 const { clientProject: saved } = await patchClientProject(targetCp.id, {
-                  teamMembers: nextMembers,
-                  ...(role === "Supervisor" ? { supervisor: memberName } : {}),
+                  teamMembers: existingMembers,
+                  ...(newSupervisor ? { supervisor: newSupervisor } : {}),
                 });
-                setClientProjects((prev) =>
-                  prev.map((cp) => (cp.id === saved.id ? saved : cp))
-                );
+                if (saved) {
+                  setClientProjects((prev) =>
+                    prev.map((cp) => (cp.id === saved.id ? saved : cp))
+                  );
+                }
               } catch (err) {
                 console.error("[Work Mode] Failed patching client project:", err);
               }
             }
 
-            // 2. Update phase developer or supervisor if matching
+            // 2. Update all matching phases in projects state (both p.teamMembers and p.developer)
             const nextProjects = projects.map((p) => {
-              if (String(p.projectName || "").trim().toLowerCase() === targetName) {
-                if (role === "Supervisor") {
-                  return { ...p, supervisor: memberName };
+              const pKey = normalizeProjectKey(p.projectName);
+              const pName = String(p.projectName || "").trim().toLowerCase();
+              const isMatch = (targetNormKey && pKey === targetNormKey) ||
+                              pName === targetNameLower ||
+                              (targetNormKey && pKey && (pKey.includes(targetNormKey) || targetNormKey.includes(pKey)));
+              if (!isMatch) return p;
+
+              let phaseTeam = Array.isArray(p.teamMembers) ? [...p.teamMembers] : [];
+              let updatedDeveloper = p.developer;
+              let updatedSupervisor = p.supervisor;
+
+              for (const nm of normalizedMembers) {
+                // Remove existing entry for same user/name if present
+                phaseTeam = phaseTeam.filter(
+                  (existing) =>
+                    !(
+                      (nm.userId && String(existing.userId || existing.id) === String(nm.userId)) ||
+                      String(existing.name || "").trim().toLowerCase() === nm.name.toLowerCase()
+                    )
+                );
+
+                phaseTeam.push({
+                  id: nm.id,
+                  userId: nm.userId,
+                  name: nm.name,
+                  roles: nm.roles,
+                  role: nm.role,
+                });
+
+                if (nm.roles.some((r) => r.toLowerCase().includes("supervisor"))) {
+                  updatedSupervisor = nm.name;
                 }
-                if (!p.developer || p.developer === "Unassigned") {
-                  return { ...p, developer: memberName };
+                if (!updatedDeveloper || updatedDeveloper === "Unassigned") {
+                  updatedDeveloper = nm.name;
                 }
               }
-              return p;
-            });
-            persistProjects(nextProjects);
 
-            setSaveState(`Assigned ${memberName} to ${data.projectName}`);
-            return { success: true };
+              return {
+                ...p,
+                teamMembers: phaseTeam,
+                developer: updatedDeveloper,
+                ...(updatedSupervisor ? { supervisor: updatedSupervisor } : {}),
+              };
+            });
+
+            await persistProjects(nextProjects);
+
+            // 3. Immediately re-sync projects & clientProjects from DB to ensure UI is 100% refreshed
+            try {
+              const { projects: syncedRows } = await loadProjectsFromDb();
+              if (Array.isArray(syncedRows) && syncedRows.length > 0) {
+                setProjects(syncedRows);
+              }
+              await refreshClientProjects().catch(() => {});
+            } catch (syncErr) {
+              console.warn("[Work Mode] Post-assign re-sync warning:", syncErr);
+            }
+
+            const memberNamesStr = normalizedMembers.map((m) => `${m.name} (${m.role})`).join(", ");
+            setSaveState(`Assigned ${memberNamesStr} to ${data.projectName}`);
+            return { success: true, count: normalizedMembers.length };
           }
 
           if (type === "update_status") {
-            const targetName = String(data.projectName || "").trim().toLowerCase();
+            const rawProjName = String(data.projectName || "").trim();
+            const targetNormKey = normalizeProjectKey(rawProjName);
+            const targetNameLower = rawProjName.toLowerCase();
             const newStatus = data.status || "WIP";
             const newDateline = data.dateline;
 
-            if (!targetName) {
+            if (!rawProjName && !data.phaseId) {
               return { success: false, message: "Target project name is required." };
             }
 
             const nextProjects = projects.map((p) => {
+              const pKey = normalizeProjectKey(p.projectName);
+              const pName = String(p.projectName || "").trim().toLowerCase();
               const match = data.phaseId
                 ? String(p.id) === String(data.phaseId)
-                : String(p.projectName || "").trim().toLowerCase() === targetName;
+                : (targetNormKey && pKey === targetNormKey) ||
+                  pName === targetNameLower ||
+                  (targetNormKey && pKey && (pKey.includes(targetNormKey) || targetNormKey.includes(pKey)));
               if (match) {
                 return {
                   ...p,
@@ -1422,7 +1541,16 @@ export default function Dashboard() {
               return p;
             });
 
-            persistProjects(nextProjects);
+            await persistProjects(nextProjects);
+            try {
+              const { projects: syncedRows } = await loadProjectsFromDb();
+              if (Array.isArray(syncedRows) && syncedRows.length > 0) {
+                setProjects(syncedRows);
+              }
+              await refreshClientProjects().catch(() => {});
+            } catch (syncErr) {
+              console.warn("[Work Mode] Post-status re-sync warning:", syncErr);
+            }
             setSaveState(`Updated status for ${data.projectName} to ${newStatus}`);
             return { success: true };
           }

@@ -124,11 +124,11 @@ export function canEditChecklist(user) {
 }
 
 export function canLinkPhaseRepo(user) {
-  return Boolean(user);
+  return isAdminRole(user);
 }
 
 export function canLinkRepos(user) {
-  return Boolean(user);
+  return isAdminRole(user);
 }
 
 export function canLinkGlobalRepo(user) {

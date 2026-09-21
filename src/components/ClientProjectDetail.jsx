@@ -38,7 +38,7 @@ import {
   supervisorNameFromTeam,
 } from "../lib/projectMetadata";
 import RoleMultiSelect from "./RoleMultiSelect";
-import { roleLabel, canViewFinancials } from "../lib/roles";
+import { roleLabel, canViewFinancials, canLinkRepos, canLinkGlobalRepo } from "../lib/roles";
 import { GitHubIcon, GitLabIcon, GitRepoBadges } from "./GitIcons";
 
 const ROLES = PROJECT_ROLES;
@@ -60,6 +60,7 @@ export default function ClientProjectDetail({
 }) {
   const { colors, card, isDark } = useTheme();
   const canSeePrice = canViewFinancials(currentUser);
+  const canEditRepo = isAdmin || canLinkRepos(currentUser) || canLinkGlobalRepo(currentUser);
   const [deliveryModalPhase, setDeliveryModalPhase] = useState(null);
   const [directory, setDirectory] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -265,7 +266,7 @@ export default function ClientProjectDetail({
           <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 260 }}>
             <div style={{ fontSize: 11.5, fontWeight: 700, color: colors.muted }}>Project Repositories</div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {isAdmin ? (
+              {canEditRepo ? (
                 <>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
                     <GitHubIcon size={16} />
@@ -273,6 +274,9 @@ export default function ClientProjectDetail({
                       placeholder="GitHub URL…"
                       value={githubUrl}
                       onChange={(e) => setGithubUrl(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.currentTarget.blur();
+                      }}
                       onBlur={() => {
                         if (githubUrl !== (clientProject.githubUrl || "")) {
                           persist({ githubUrl });
@@ -319,7 +323,7 @@ export default function ClientProjectDetail({
             </div>
 
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {isAdmin ? (
+              {canEditRepo ? (
                 <>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1 }}>
                     <GitLabIcon size={16} />
@@ -327,6 +331,9 @@ export default function ClientProjectDetail({
                       placeholder="GitLab URL…"
                       value={gitlabUrl}
                       onChange={(e) => setGitlabUrl(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.currentTarget.blur();
+                      }}
                       onBlur={() => {
                         if (gitlabUrl !== (clientProject.gitlabUrl || "")) {
                           persist({ gitlabUrl });
@@ -371,6 +378,12 @@ export default function ClientProjectDetail({
                 </a>
               ) : null}
             </div>
+
+            {!canEditRepo && !clientProject.githubUrl && !clientProject.gitlabUrl ? (
+              <div style={{ fontSize: 11.5, color: colors.muted, fontStyle: "italic" }}>
+                No repository links configured
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

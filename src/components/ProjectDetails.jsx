@@ -703,6 +703,9 @@ export default function ProjectDetails({
                     <input
                       value={githubUrlDraft}
                       onChange={(e) => setGithubUrlDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.currentTarget.blur();
+                      }}
                       onBlur={() => {
                         const val = githubUrlDraft.trim();
                         if (val !== (project.githubUrl || "")) {
@@ -763,6 +766,9 @@ export default function ProjectDetails({
                     <input
                       value={gitlabUrlDraft}
                       onChange={(e) => setGitlabUrlDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.currentTarget.blur();
+                      }}
                       onBlur={() => {
                         const val = gitlabUrlDraft.trim();
                         if (val !== (project.gitlabUrl || "")) {
@@ -799,6 +805,11 @@ export default function ProjectDetails({
                       Open GitLab <ExternalLink size={12} />
                     </a>
                   </div>
+                </div>
+              )}
+              {!canEditRepo && !project.githubUrl && !project.gitlabUrl && (
+                <div style={{ fontSize: 12, color: COLORS.muted, fontStyle: "italic", marginTop: 12 }}>
+                  No repository links configured
                 </div>
               )}
             </div>

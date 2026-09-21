@@ -75,8 +75,16 @@ function assertWriteAllowed(user, nextProjects, prevProjects) {
       }
     } else {
       const prev = prevById.get(id);
-      if (prev && String(prev.price) !== String(next.price)) {
-        throw new Error("Members cannot edit project prices");
+      if (prev) {
+        if (String(prev.price) !== String(next.price)) {
+          throw new Error("Members cannot edit project prices");
+        }
+        if (
+          (next.githubUrl !== undefined && next.githubUrl !== (prev.githubUrl || "")) ||
+          (next.gitlabUrl !== undefined && next.gitlabUrl !== (prev.gitlabUrl || ""))
+        ) {
+          throw new Error("Members cannot edit repository links");
+        }
       }
     }
   }
@@ -138,12 +146,20 @@ async function handle(req, res) {
     if (isAdminRole(user)) {
       writeProjects(body);
     } else {
-      // Merge member edits into full DB for assigned ids only
+      // Merge member edits into full DB for assigned ids only (preserve price and repo links)
       const allowed = new Set((user.assignedProjectIds || []).map(String));
       const nextById = new Map(body.map((p) => [String(p.id), p]));
       const merged = prev.map((p) => {
         const id = String(p.id);
-        if (allowed.has(id) && nextById.has(id)) return nextById.get(id);
+        if (allowed.has(id) && nextById.has(id)) {
+          const next = nextById.get(id);
+          return {
+            ...next,
+            price: p.price,
+            githubUrl: p.githubUrl,
+            gitlabUrl: p.gitlabUrl,
+          };
+        }
         return p;
       });
       writeProjects(merged);

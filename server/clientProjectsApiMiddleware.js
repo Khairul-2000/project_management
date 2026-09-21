@@ -1,4 +1,4 @@
-import { getRequestUser, requireAdmin } from "./authApiMiddleware.js";
+import { getRequestUser, requireAdmin, requireUser } from "./authApiMiddleware.js";
 import { isAdminRole } from "./roles.js";
 import { pathnameOf, readJsonBody, sendJson } from "./httpHelpers.js";
 import {
@@ -93,28 +93,49 @@ async function handle(req, res) {
 
   const patchMatch = pathname.match(/^\/api\/client-projects\/([^/]+)$/);
   if (patchMatch && req.method === "PATCH") {
-    if (!requireAdmin(req, res)) return;
+    const user = requireUser(req, res);
+    if (!user) return;
     const id = decodeURIComponent(patchMatch[1]);
     const body = await readJsonBody(req);
     const prev = findClientProjectById(id);
-    const updated = updateClientProject(id, body);
-    const teamChanged = JSON.stringify(prev?.teamMembers || []) !== JSON.stringify(updated.teamMembers || []);
+    if (!prev) {
+      sendJson(res, 404, { error: "Client project not found" });
+      return;
+    }
 
-    // Push role-matched client team onto phases. When roles are edited, replace
-    // instead of merge so members move to the phases that match their new roles.
-    const { phases: nextPhases, changed } = applyClientTeamToPhases(phases, updated, {
-      syncRoles: teamChanged,
-    });
-    const stamped = nextPhases.map((p) =>
-      projectNameKey(p.projectName) === (updated.projectNameKey || projectNameKey(updated.projectName))
-        ? { ...p, clientProjectId: updated.id }
-        : p
-    );
-    writePhasesJson(stamped);
-    try {
-      syncAssignmentsFromProjects(stamped);
-    } catch (err) {
-      console.error("[client-projects] assignment sync failed:", err.message);
+    let patch = body;
+    if (!isAdminRole(user)) {
+      // Team members cannot update repository links or team assignments
+      if (body.githubUrl !== undefined || body.gitlabUrl !== undefined || body.teamMembers !== undefined || body.supervisor !== undefined) {
+        sendJson(res, 403, { error: "Only admins can edit repository links and team assignments" });
+        return;
+      }
+      patch = {};
+      if (body.notes !== undefined) patch.notes = body.notes;
+    }
+
+    const updated = updateClientProject(id, patch);
+    const teamChanged =
+      isAdminRole(user) &&
+      JSON.stringify(prev?.teamMembers || []) !== JSON.stringify(updated.teamMembers || []);
+
+    let changed = 0;
+    if (teamChanged) {
+      const { phases: nextPhases, changed: c } = applyClientTeamToPhases(phases, updated, {
+        syncRoles: teamChanged,
+      });
+      changed = c;
+      const stamped = nextPhases.map((p) =>
+        projectNameKey(p.projectName) === (updated.projectNameKey || projectNameKey(updated.projectName))
+          ? { ...p, clientProjectId: updated.id }
+          : p
+      );
+      writePhasesJson(stamped);
+      try {
+        syncAssignmentsFromProjects(stamped);
+      } catch (err) {
+        console.error("[client-projects] assignment sync failed:", err.message);
+      }
     }
     sendJson(res, 200, { clientProject: updated, phasesUpdated: changed });
     return;

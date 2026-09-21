@@ -7,6 +7,7 @@ import { handleAuthApi } from "./server/authApiMiddleware.js";
 import { handleProjectsApi } from "./server/projectsApiMiddleware.js";
 import { handleClientProjectsApi } from "./server/clientProjectsApiMiddleware.js";
 import { handleAgentApi } from "./server/agentApiMiddleware.js";
+import { handleDeliveryMessageApi } from "./server/deliveryMessageApiMiddleware.js";
 import { sendJson } from "./server/httpHelpers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -82,6 +83,7 @@ const server = http.createServer(async (req, res) => {
     if (await handleProjectsApi(req, res)) return;
     if (await handleClientProjectsApi(req, res)) return;
     if (await handleAgentApi(req, res)) return;
+    if (await handleDeliveryMessageApi(req, res)) return;
   } catch (err) {
     sendJson(res, 500, { error: err.message || "API error" });
     return;

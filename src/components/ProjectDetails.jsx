@@ -2,8 +2,10 @@ import { useState, useEffect, useMemo } from "react";
 import { 
   ArrowLeft, Calendar, User, DollarSign, Tag, CheckSquare, 
   Trash2, Plus, Clock, Clock3, FileText, CheckCircle2, AlertTriangle, Users, ExternalLink,
-  Pencil, Check, X
+  Pencil, Check, X, Sparkles
 } from "lucide-react";
+import PhaseDeliveryModal from "./PhaseDeliveryModal";
+import DeliveryMessageButton from "./DeliveryMessageButton";
 import { STACK_COLOR, PROFILE_SHORT, formatProfileName, STACKS } from "../lib/constants";
 import { useTheme } from "../lib/theme";
 import { listTeamDirectory } from "../lib/auth";
@@ -105,6 +107,7 @@ export default function ProjectDetails({
   const [phaseDraft, setPhaseDraft] = useState(project.phase || "");
   const [githubUrlDraft, setGithubUrlDraft] = useState(project.githubUrl || "");
   const [gitlabUrlDraft, setGitlabUrlDraft] = useState(project.gitlabUrl || "");
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
 
   // Sync notes / schedule inputs when project changes
   useEffect(() => {
@@ -606,11 +609,19 @@ export default function ProjectDetails({
             )}
           </p>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ color: COLORS.muted, fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Project Budget</div>
-          <div className="disp" style={{ fontSize: 32, fontWeight: 700, color: COLORS.delivered, marginTop: 4 }}>
-            {canSeePrice ? fmtMoney(project.price) : "—"}
+        <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+          <div>
+            <div style={{ color: COLORS.muted, fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Project Budget</div>
+            <div className="disp" style={{ fontSize: 32, fontWeight: 700, color: COLORS.delivered, marginTop: 4 }}>
+              {canSeePrice ? fmtMoney(project.price) : "—"}
+            </div>
           </div>
+          <DeliveryMessageButton
+            onClick={() => setShowDeliveryModal(true)}
+            phase={project}
+            size="md"
+            label="Delivery Message"
+          />
         </div>
       </div>
 
@@ -1398,6 +1409,17 @@ export default function ProjectDetails({
 
         </div>
       </div>
+
+      {showDeliveryModal && (
+        <PhaseDeliveryModal
+          phase={project}
+          currentUser={currentUser}
+          onClose={() => setShowDeliveryModal(false)}
+          onUpdatePhase={(updated) => {
+            onUpdate(updated);
+          }}
+        />
+      )}
 
       </div>
     </div>

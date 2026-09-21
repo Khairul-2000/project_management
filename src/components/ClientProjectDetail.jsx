@@ -10,7 +10,10 @@ import {
   X,
   FolderKanban,
   GitBranch,
+  Sparkles,
 } from "lucide-react";
+import PhaseDeliveryModal from "./PhaseDeliveryModal";
+import DeliveryMessageButton from "./DeliveryMessageButton";
 import { useTheme } from "../lib/theme";
 import { listTeamDirectory } from "../lib/auth";
 import {
@@ -52,10 +55,12 @@ export default function ClientProjectDetail({
   includeStaff = false,
   onBack,
   onUpdate,
+  onUpdatePhase,
   onOpenPhase,
 }) {
   const { colors, card, isDark } = useTheme();
   const canSeePrice = canViewFinancials(currentUser);
+  const [deliveryModalPhase, setDeliveryModalPhase] = useState(null);
   const [directory, setDirectory] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState("");
   const [newMemberRoles, setNewMemberRoles] = useState([ROLES[0]]);
@@ -662,7 +667,14 @@ export default function ClientProjectDetail({
                         <td style={{ padding: "10px 10px" }}>
                           <StatusBadge status={statusOf(p)} compact />
                         </td>
-                        <td style={{ padding: "10px 10px", textAlign: "right" }}>
+                        <td style={{ padding: "10px 10px", textAlign: "right", whiteSpace: "nowrap" }}>
+                          <DeliveryMessageButton
+                            onClick={() => setDeliveryModalPhase(p)}
+                            phase={p}
+                            size="sm"
+                            label="Delivery"
+                            style={{ marginRight: 6 }}
+                          />
                           <button
                             type="button"
                             onClick={() => onOpenPhase(p.id)}
@@ -692,6 +704,20 @@ export default function ClientProjectDetail({
           )}
         </div>
       </div>
+
+      {deliveryModalPhase && (
+        <PhaseDeliveryModal
+          phase={deliveryModalPhase}
+          currentUser={currentUser}
+          onClose={() => setDeliveryModalPhase(null)}
+          onUpdatePhase={(updated) => {
+            setDeliveryModalPhase(updated);
+            if (typeof onUpdatePhase === "function") {
+              onUpdatePhase(updated);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

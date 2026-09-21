@@ -1096,6 +1096,9 @@ export default function Dashboard() {
                   setSaveState(err.message || "Failed to save client project");
                 }
               }}
+              onUpdatePhase={(updated) => {
+                persistProjects(projects.map((p) => (p.id === updated.id ? updated : p)));
+              }}
               onOpenPhase={(phaseId) => {
                 // Stay in Projects flow so Back returns to this client project
                 setView("clientProjectDetail");

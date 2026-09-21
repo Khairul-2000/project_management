@@ -5,6 +5,7 @@ import { authApiMiddleware } from "./server/authApiMiddleware.js";
 import { projectsApiMiddleware } from "./server/projectsApiMiddleware.js";
 import { clientProjectsApiMiddleware } from "./server/clientProjectsApiMiddleware.js";
 import { agentApiMiddleware } from "./server/agentApiMiddleware.js";
+import { deliveryMessageApiMiddleware } from "./server/deliveryMessageApiMiddleware.js";
 import { getRequestUser } from "./server/authApiMiddleware.js";
 import { sendJson } from "./server/httpHelpers.js";
 
@@ -31,6 +32,7 @@ function apiPlugin() {
       server.middlewares.use(projectsApiMiddleware);
       server.middlewares.use(clientProjectsApiMiddleware);
       server.middlewares.use(agentApiMiddleware);
+      server.middlewares.use(deliveryMessageApiMiddleware);
       server.middlewares.use(blockPublicProjectsJson);
     },
     configurePreviewServer(server) {
@@ -39,6 +41,7 @@ function apiPlugin() {
       server.middlewares.use(projectsApiMiddleware);
       server.middlewares.use(clientProjectsApiMiddleware);
       server.middlewares.use(agentApiMiddleware);
+      server.middlewares.use(deliveryMessageApiMiddleware);
       server.middlewares.use(blockPublicProjectsJson);
     },
   };
